@@ -1,0 +1,61 @@
+{
+  "topbar": {
+    "address": "Tunis, Tunisia",
+    "phone": "+216 70 000 000",
+    "email": "contact@tawiniya-tounisiya.tn",
+    "login": "Login"
+  },
+  "nav": {
+    "home": "Home",
+    "spaces": "Spaces",
+    "spaces_technicien": "Technician Space",
+    "spaces_entreprise": "Company Space",
+    "spaces_stagiaire": "Intern Space",
+    "spaces_beneficiel": "Beneficiary Space",
+    "formation": "Training Center",
+    "juridique": "Legal",
+    "reclamation": "Complaints",
+    "evenements": "Events",
+    "register": "Sign up"
+  },
+  "footer": {
+    "tagline": "The platform connecting technicians and companies across Tunisia.",
+    "links": "Useful links",
+    "services": "Services",
+    "contact": "Contact",
+    "rights": "All rights reserved."
+  },
+  "home": {
+    "hero_title_1": "Qualified technicians, all across Tunisia",
+    "hero_subtitle_1": "Find the right professional in just a few clicks",
+    "hero_title_2": "Companies who trust us",
+    "hero_subtitle_2": "Over 150 partner companies",
+    "hero_title_3": "Continuous certified training",
+    "hero_subtitle_3": "Grow your skills with our experts",
+    "hero_cta": "Discover the platform",
+    "about_title": "Who we are",
+    "about_body": "The Tunisian Cooperative of Technicians in Electricity, Renewable Energy and Related Activities supports technicians and companies in the sector by facilitating connections, continuous training, and professional follow-up, for a stronger and more united electrical and energy industry in Tunisia.",
+    "sponsors_title": "They trust us",
+    "stats_technicien": "Active technicians",
+    "stats_entreprise": "Partner companies",
+    "stats_intervention": "Interventions completed",
+    "stats_gouvernorat": "Governorates covered",
+    "services_title": "Our services",
+    "service_technicien": "Technician network",
+    "service_technicien_desc": "A verified directory of qualified technicians across Tunisia.",
+    "service_entreprise": "Company space",
+    "service_entreprise_desc": "Find and contact technicians that fit your needs.",
+    "service_formation": "Training center",
+    "service_formation_desc": "Continuous training sessions to stay competitive.",
+    "service_juridique": "Legal support",
+    "service_juridique_desc": "All the legal information related to your status.",
+    "service_evenements": "Industry events",
+    "service_evenements_desc": "Stay up to date with news and professional gatherings.",
+    "featured_title": "Featured technicians",
+    "featured_cta": "View profile"
+  },
+  "coming_soon": {
+    "title": "Coming soon",
+    "body": "This page is under construction. Check back soon!"
+  }
+}

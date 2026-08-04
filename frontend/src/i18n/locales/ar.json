@@ -1,0 +1,61 @@
+{
+  "topbar": {
+    "address": "تونس، تونس",
+    "phone": "+216 70 000 000",
+    "email": "contact@tawiniya-tounisiya.tn",
+    "login": "تسجيل الدخول"
+  },
+  "nav": {
+    "home": "الرئيسية",
+    "spaces": "الفضاءات",
+    "spaces_technicien": "فضاء الفني",
+    "spaces_entreprise": "فضاء المؤسسة",
+    "spaces_stagiaire": "فضاء المتدرب",
+    "spaces_beneficiel": "فضاء المنتفع",
+    "formation": "مركز التكوين",
+    "juridique": "الشؤون القانونية",
+    "reclamation": "الشكاوى",
+    "evenements": "الفعاليات",
+    "register": "إنشاء حساب"
+  },
+  "footer": {
+    "tagline": "المنصة التي تربط الفنيين بالمؤسسات في جميع أنحاء تونس.",
+    "links": "روابط مفيدة",
+    "services": "الخدمات",
+    "contact": "اتصل بنا",
+    "rights": "جميع الحقوق محفوظة."
+  },
+  "home": {
+    "hero_title_1": "فنيون مؤهلون في جميع أنحاء تونس",
+    "hero_subtitle_1": "اعثر على المختص المناسب بنقرات قليلة",
+    "hero_title_2": "مؤسسات تثق بنا",
+    "hero_subtitle_2": "أكثر من 150 مؤسسة شريكة",
+    "hero_title_3": "تكوين مستمر ومعتمد",
+    "hero_subtitle_3": "طوّر مهاراتك مع خبرائنا",
+    "hero_cta": "اكتشف المنصة",
+    "about_title": "من نحن",
+    "about_body": "تدعم تعاونية تونسية الفنيين والمؤسسات التونسية من خلال تسهيل التواصل والتكوين والمتابعة المهنية، لقطاع تقني أقوى وأكثر تضامنا.",
+    "sponsors_title": "يثقون بنا",
+    "stats_technicien": "فنيون نشيطون",
+    "stats_entreprise": "مؤسسات شريكة",
+    "stats_intervention": "تدخلات منجزة",
+    "stats_gouvernorat": "ولايات مغطاة",
+    "services_title": "خدماتنا",
+    "service_technicien": "شبكة الفنيين",
+    "service_technicien_desc": "دليل موثق للفنيين المؤهلين في جميع أنحاء تونس.",
+    "service_entreprise": "فضاء المؤسسات",
+    "service_entreprise_desc": "ابحث عن الفنيين المناسبين لاحتياجاتك واتصل بهم.",
+    "service_formation": "مركز التكوين",
+    "service_formation_desc": "دورات تكوين مستمر لتبقى في المستوى.",
+    "service_juridique": "المرافقة القانونية",
+    "service_juridique_desc": "كل المعلومات القانونية المتعلقة بوضعيتك.",
+    "service_evenements": "فعاليات القطاع",
+    "service_evenements_desc": "ابق على اطلاع بآخر الأخبار واللقاءات المهنية.",
+    "featured_title": "فنيونا المميزون",
+    "featured_cta": "عرض الملف"
+  },
+  "coming_soon": {
+    "title": "قريباً",
+    "body": "هذه الصفحة قيد الإنجاز. تابعونا قريباً!"
+  }
+}

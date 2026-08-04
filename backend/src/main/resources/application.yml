@@ -1,0 +1,40 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: tawiniya-backend
+
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:tawiniya_db}
+    username: ${DB_USER:postgres}
+    password: ${DB_PASSWORD:postgres}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+    open-in-view: false
+
+# Exposition Actuator (santé de l'application)
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always
+
+# Config JWT (utilisée à partir de TASK-B002) + CORS (React sur localhost:3000)
+app:
+  jwt:
+    secret: ${JWT_SECRET:changeMeInProdWithAStrongSecretKeyOf48CharsMinimum}
+    expiration-ms: 86400000 # 24h
+  cors:
+    allowed-origins: ${CORS_ORIGINS:http://localhost:3000}

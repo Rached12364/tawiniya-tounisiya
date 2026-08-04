@@ -1,0 +1,25 @@
+@import "tailwindcss";
+
+/* Palette imposée par le brief produit CTTEERA */
+@theme {
+  --color-navy: #1B3A5C;
+  --color-navy-dark: #12283F;
+  --color-gold: #C9A227;
+  --color-gold-light: #E0C158;
+  --color-teal: #0D9488;
+  --color-teal-light: #14B8A6;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+/* Support RTL (arabe) - basculé dynamiquement via i18next (dir="rtl" sur <html>) */
+[dir="rtl"] {
+  text-align: right;
+}

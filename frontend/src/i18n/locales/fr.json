@@ -1,0 +1,61 @@
+{
+  "topbar": {
+    "address": "Tunis, Tunisie",
+    "phone": "+216 70 000 000",
+    "email": "contact@tawiniya-tounisiya.tn",
+    "login": "Connexion"
+  },
+  "nav": {
+    "home": "Accueil",
+    "spaces": "Espaces",
+    "spaces_technicien": "Espace Technicien",
+    "spaces_entreprise": "Espace Entreprise",
+    "spaces_stagiaire": "Espace Stagiaire",
+    "spaces_beneficiel": "Espace Bénéficiel",
+    "formation": "Centre de formation",
+    "juridique": "Juridique",
+    "reclamation": "Réclamation",
+    "evenements": "Événements",
+    "register": "S'inscrire"
+  },
+  "footer": {
+    "tagline": "La plateforme qui connecte techniciens et entreprises partout en Tunisie.",
+    "links": "Liens utiles",
+    "services": "Services",
+    "contact": "Contact",
+    "rights": "Tous droits réservés."
+  },
+  "home": {
+    "hero_title_1": "Des techniciens qualifiés, partout en Tunisie",
+    "hero_subtitle_1": "Trouvez le bon professionnel en quelques clics",
+    "hero_title_2": "Des entreprises qui vous font confiance",
+    "hero_subtitle_2": "Plus de 150 entreprises partenaires",
+    "hero_title_3": "Une formation continue certifiée",
+    "hero_subtitle_3": "Développez vos compétences avec nos experts",
+    "hero_cta": "Découvrir la plateforme",
+    "about_title": "Qui sommes-nous ?",
+    "about_body": "La Coopérative Tunisienne des Techniciens en Électricité, Énergie Renouvelable et Activités Annexes accompagne les techniciens et entreprises du secteur en facilitant la mise en relation, la formation continue et le suivi professionnel, pour une filière électrique et énergétique plus forte et plus solidaire en Tunisie.",
+    "sponsors_title": "Ils nous font confiance",
+    "stats_technicien": "Techniciens actifs",
+    "stats_entreprise": "Entreprises partenaires",
+    "stats_intervention": "Interventions réalisées",
+    "stats_gouvernorat": "Gouvernorats couverts",
+    "services_title": "Nos services",
+    "service_technicien": "Réseau de techniciens",
+    "service_technicien_desc": "Un annuaire vérifié de techniciens qualifiés dans toute la Tunisie.",
+    "service_entreprise": "Espace entreprises",
+    "service_entreprise_desc": "Trouvez et contactez des techniciens adaptés à vos besoins.",
+    "service_formation": "Centre de formation",
+    "service_formation_desc": "Des sessions de formation continue pour rester compétitif.",
+    "service_juridique": "Accompagnement juridique",
+    "service_juridique_desc": "Toutes les informations légales liées à votre statut.",
+    "service_evenements": "Événements du secteur",
+    "service_evenements_desc": "Restez informé des actualités et rencontres professionnelles.",
+    "featured_title": "Nos techniciens à la une",
+    "featured_cta": "Voir le profil"
+  },
+  "coming_soon": {
+    "title": "Bientôt disponible",
+    "body": "Cette page est en cours de construction. Revenez bientôt !"
+  }
+}
