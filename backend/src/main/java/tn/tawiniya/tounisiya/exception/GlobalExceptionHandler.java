@@ -24,6 +24,18 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.CONFLICT, ex.getMessage(), null);
     }
 
+    // 404 - ressource introuvable
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<ApiError> handleNotFound(ResourceNotFoundException ex) {
+        return build(HttpStatus.NOT_FOUND, ex.getMessage(), null);
+    }
+
+    // 400 - fichier invalide (format/taille)
+    @ExceptionHandler(InvalidFileException.class)
+    public ResponseEntity<ApiError> handleInvalidFile(InvalidFileException ex) {
+        return build(HttpStatus.BAD_REQUEST, ex.getMessage(), null);
+    }
+
     // 401 - mauvais identifiants (login)
     @ExceptionHandler({ BadCredentialsException.class, AuthenticationException.class })
     public ResponseEntity<ApiError> handleBadCredentials(AuthenticationException ex) {

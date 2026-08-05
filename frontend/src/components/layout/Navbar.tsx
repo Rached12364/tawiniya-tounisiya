@@ -1,8 +1,9 @@
 ﻿import { useEffect, useState, useRef } from 'react';
 import { Link, NavLink as RouterNavLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Menu, X, ChevronDown } from 'lucide-react';
+import { Menu, X, ChevronDown, LayoutDashboard } from 'lucide-react';
 import { useUiStore } from '../../store/uiStore';
+import { useAuthStore } from '../../store/authStore';
 import { BRAND } from '../../config/brand';
 import type { LangCode } from '../../types/nav';
 const SPACE_LINKS = [
@@ -26,7 +27,9 @@ export default function Navbar() {
   const { t, i18n } = useTranslation();
   const [isSpacesOpen, setIsSpacesOpen] = useState(false);
   const { isMobileMenuOpen, toggleMobileMenu, closeMobileMenu } = useUiStore();
+  const { isAuthenticated, user } = useAuthStore();
   const spacesRef = useRef<HTMLDivElement>(null);
+  const isAdmin = isAuthenticated && user?.role === 'ADMIN';
   useEffect(() => {
     const onClickOutside = (e: MouseEvent) => {
       if (spacesRef.current && !spacesRef.current.contains(e.target as Node)) {
@@ -93,6 +96,14 @@ export default function Navbar() {
               {t(`nav.${link.key}`)}
             </RouterNavLink>
           ))}
+          {isAdmin && (
+            <RouterNavLink to="/admin" className={linkClass}>
+              <span className="flex items-center gap-1.5">
+                <LayoutDashboard size={16} />
+                Dashboard
+              </span>
+            </RouterNavLink>
+          )}
         </div>
         <div className="hidden lg:flex items-center gap-4">
           <div className="flex items-center gap-1 text-sm font-medium text-navy border-e border-navy/20 pe-4">
@@ -139,6 +150,14 @@ export default function Navbar() {
               <div className="py-2.5">{t(`nav.${link.key}`)}</div>
             </RouterNavLink>
           ))}
+          {isAdmin && (
+            <RouterNavLink to="/admin" className={linkClass} onClick={closeMobileMenu}>
+              <div className="py-2.5 flex items-center gap-1.5">
+                <LayoutDashboard size={16} />
+                Dashboard
+              </div>
+            </RouterNavLink>
+          )}
           <div className="flex items-center gap-1 py-2.5 text-sm">
             {LANGUAGES.map((lang) => (
               <button

@@ -21,6 +21,11 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
     open-in-view: false
 
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 10MB
+
 # Exposition Actuator (santé de l'application)
 management:
   endpoints:
@@ -38,3 +43,4 @@ app:
     expiration-ms: 86400000 # 24h
   cors:
     allowed-origins: ${CORS_ORIGINS:http://localhost:3000}
+  upload-dir: ${UPLOAD_DIR:uploads}
