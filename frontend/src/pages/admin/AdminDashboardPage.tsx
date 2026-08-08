@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { LayoutDashboard, Users, Image as ImageIcon } from 'lucide-react';
 import StatsPanel from '../../components/admin/StatsPanel';
 import UsersPanel from '../../components/admin/UsersPanel';
@@ -9,7 +9,7 @@ type Tab = 'stats' | 'users' | 'content';
 const TABS: { key: Tab; label: string; icon: typeof LayoutDashboard }[] = [
   { key: 'stats', label: 'Vue d\u2019ensemble', icon: LayoutDashboard },
   { key: 'users', label: 'Utilisateurs', icon: Users },
-  { key: 'content', label: 'Contenu (images)', icon: ImageIcon },
+  { key: 'content', label: 'Accueil', icon: ImageIcon },
 ];
 
 export default function AdminDashboardPage() {
@@ -44,3 +44,4 @@ export default function AdminDashboardPage() {
     </div>
   );
 }
+

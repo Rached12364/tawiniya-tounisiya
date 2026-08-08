@@ -14,18 +14,32 @@ export default function SponsorsSection() {
   return (
     <section className="bg-navy/[0.03] py-16">
       <div className="mx-auto max-w-7xl px-4">
-        <p className="text-center text-sm font-semibold tracking-wide text-navy/50 uppercase mb-8">
+        <p className="text-center text-sm font-semibold tracking-wide text-navy/50 uppercase mb-10">
           {t('home.sponsors_title')}
         </p>
         {images.length > 0 ? (
-          <div className="flex flex-wrap items-center justify-center gap-x-12 gap-y-6">
-            {images.map((img) => (
-              <img
+          <div className="space-y-10">
+            {images.map((img, i) => (
+              <div
                 key={img.id}
-                src={resolveImageUrl(img.imagePath)}
-                alt={img.title}
-                className="h-10 object-contain grayscale opacity-50 hover:grayscale-0 hover:opacity-100 transition-all"
-              />
+                className={`flex flex-col md:flex-row items-center gap-8 rounded-2xl bg-white border border-navy/10 p-6 md:p-8 ${
+                  i % 2 === 1 ? 'md:flex-row-reverse' : ''
+                }`}
+              >
+                <div className="w-full md:w-1/3 shrink-0">
+                  <img
+                    src={resolveImageUrl(img.imagePath)}
+                    alt={img.title}
+                    className="w-full h-48 md:h-56 object-cover rounded-xl"
+                  />
+                </div>
+                <div className="w-full md:w-2/3 text-center md:text-start">
+                  <h3 className="text-xl font-bold text-navy mb-2">{img.title}</h3>
+                  {img.description && (
+                    <p className="text-navy/70 leading-relaxed">{img.description}</p>
+                  )}
+                </div>
+              </div>
             ))}
           </div>
         ) : (
@@ -44,4 +58,3 @@ export default function SponsorsSection() {
     </section>
   );
 }
-

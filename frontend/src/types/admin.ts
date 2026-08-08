@@ -16,6 +16,7 @@ export interface ContentImage {
   id: number;
   section: ContentSection;
   title: string;
+  description: string | null;
   imagePath: string;
   displayOrder: number;
   active: boolean;

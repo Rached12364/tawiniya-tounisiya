@@ -1,7 +1,7 @@
 ﻿import { useEffect, useState, useRef } from 'react';
 import { Link, NavLink as RouterNavLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Menu, X, ChevronDown, LayoutDashboard } from 'lucide-react';
+import { Menu, X, ChevronDown } from 'lucide-react';
 import { useUiStore } from '../../store/uiStore';
 import { useAuthStore } from '../../store/authStore';
 import { BRAND } from '../../config/brand';
@@ -13,10 +13,10 @@ const SPACE_LINKS = [
   { key: 'spaces_beneficiel', path: '/espace/beneficiel' },
 ];
 const NAV_LINKS = [
-  { key: 'formation', path: '/centre-formation' },
-  { key: 'juridique', path: '/juridique' },
-  { key: 'reclamation', path: '/reclamation' },
-  { key: 'evenements', path: '/evenements' },
+  { key: 'formation', path: '/centre-formation', icon: '/icons/formations.png' },
+  { key: 'juridique', path: '/juridique', icon: '/icons/juridique.png' },
+  { key: 'reclamation', path: '/reclamation', icon: '/icons/reclamations.png' },
+  { key: 'evenements', path: '/evenements', icon: '/icons/evenements.png' },
 ];
 const LANGUAGES: { code: LangCode; label: string }[] = [
   { code: 'fr', label: 'FR' },
@@ -40,7 +40,7 @@ export default function Navbar() {
     return () => document.removeEventListener('mousedown', onClickOutside);
   }, []);
   const linkClass = ({ isActive }: { isActive: boolean }) =>
-    `text-base font-medium transition-colors hover:text-gold ${isActive ? 'text-gold' : 'text-navy'}`;
+    `flex items-center gap-1.5 whitespace-nowrap text-base font-medium transition-colors hover:text-gold ${isActive ? 'text-gold' : 'text-black'}`;
   return (
     <header className="absolute top-0 left-0 z-50 w-full bg-white/25 backdrop-blur-sm">
       <nav className="w-full pe-4 py-3 flex items-center justify-between text-white">
@@ -48,70 +48,75 @@ export default function Navbar() {
           <img
             src={BRAND.logoSrc}
             alt={BRAND.nameAr}
-            className="h-36 w-36 object-contain shrink-0"
+            className="h-24 w-24 object-contain shrink-0"
             onError={(e) => {
               e.currentTarget.style.display = 'none';
               e.currentTarget.nextElementSibling?.classList.remove('hidden');
             }}
           />
           <span className="hidden text-lg font-black tracking-tight text-navy">CTTEERA</span>
-          <div className="hidden sm:block max-w-[340px]">
-            <p dir="rtl" className="text-[13px] font-bold text-navy leading-[1.4]">
+          <div className="hidden xl:block max-w-[260px] shrink-0">
+            <p dir="rtl" className="text-[11px] font-bold text-navy leading-[1.3]">
               {BRAND.nameAr}
             </p>
-            <p className="mt-1 text-[9px] font-medium text-navy/70 uppercase tracking-wide leading-snug">
+            <p className="mt-1 text-[7px] font-medium text-navy/70 uppercase tracking-wide leading-snug">
               {BRAND.nameFr}
             </p>
           </div>
         </Link>
-        <div className="hidden lg:flex items-center gap-8">
+        <div className="hidden lg:flex items-center gap-4 min-w-0">
           <RouterNavLink to="/" className={linkClass} end>
+            <img src="/icons/accueil.png" alt="" className="h-4 w-4 object-contain shrink-0" />
             {t('nav.home')}
           </RouterNavLink>
-          <div className="relative" ref={spacesRef}>
+          <div className="relative shrink-0" ref={spacesRef}>
             <button
               onClick={() => setIsSpacesOpen((v) => !v)}
-              className="flex items-center gap-1 text-base font-medium text-navy hover:text-gold transition-colors"
+              className="flex items-center gap-1.5 whitespace-nowrap text-base font-medium text-black hover:text-gold transition-colors"
             >
-              {t('nav.spaces')}
               <ChevronDown size={14} className={`transition-transform ${isSpacesOpen ? 'rotate-180' : ''}`} />
+              <img src="/icons/espace.png" alt="" className="h-4 w-4 object-contain shrink-0" />
+              {t('nav.spaces')}
             </button>
             {isSpacesOpen && (
-              <div className="absolute top-full mt-2 start-0 w-56 rounded-lg bg-white text-navy shadow-xl overflow-hidden py-1 border border-navy/10">
-                {SPACE_LINKS.map((link) => (
-                  <Link
-                    key={link.path}
-                    to={link.path}
-                    onClick={() => setIsSpacesOpen(false)}
-                    className="block px-4 py-2.5 text-sm hover:bg-navy/5 hover:text-teal transition-colors"
-                  >
-                    {t(`nav.${link.key}`)}
-                  </Link>
-                ))}
+              <div className="absolute top-full mt-3 start-4 z-20">
+                <div className="absolute -top-1.5 start-3 h-3 w-3 rotate-45 bg-white border-t border-s border-navy/10 z-10" />
+                <div className="relative w-56 rounded-lg bg-white text-navy shadow-xl overflow-hidden py-1 border border-navy/10">
+                  {SPACE_LINKS.map((link) => (
+                    <Link
+                      key={link.path}
+                      to={link.path}
+                      onClick={() => setIsSpacesOpen(false)}
+                      className="block px-4 py-2.5 text-sm hover:bg-navy/5 hover:text-teal transition-colors"
+                    >
+                      {t(`nav.${link.key}`)}
+                    </Link>
+                  ))}
+                </div>
               </div>
             )}
           </div>
           {NAV_LINKS.map((link) => (
             <RouterNavLink key={link.path} to={link.path} className={linkClass}>
+              <img src={link.icon} alt="" className="h-4 w-4 object-contain shrink-0" />
               {t(`nav.${link.key}`)}
             </RouterNavLink>
           ))}
           {isAdmin && (
             <RouterNavLink to="/admin" className={linkClass}>
-              <span className="flex items-center gap-1.5">
-                <LayoutDashboard size={16} />
-                Dashboard
-              </span>
+              <img src="/icons/dashboard.png" alt="" className="h-4 w-4 object-contain shrink-0" />
+              Dashboard
             </RouterNavLink>
           )}
         </div>
-        <div className="hidden lg:flex items-center gap-4">
-          <div className="flex items-center gap-1 text-sm font-medium text-navy border-e border-navy/20 pe-4">
+        <div className="hidden lg:flex items-center gap-4 shrink-0">
+          <div className="flex items-center gap-1.5 text-sm font-medium text-navy border-e border-navy/20 pe-4 shrink-0 whitespace-nowrap">
             {LANGUAGES.map((lang) => (
               <button
                 key={lang.code}
+                type="button"
                 onClick={() => i18n.changeLanguage(lang.code)}
-                className={`px-1.5 py-0.5 rounded transition-colors ${
+                className={`shrink-0 px-1.5 py-0.5 rounded transition-colors ${
                   i18n.language === lang.code ? 'text-gold font-semibold' : 'hover:text-gold'
                 }`}
               >
@@ -121,7 +126,7 @@ export default function Navbar() {
           </div>
           <Link
             to="/register"
-            className="rounded-full bg-gold px-5 py-2 text-sm font-semibold text-navy-dark hover:bg-gold-light transition-colors"
+            className="shrink-0 whitespace-nowrap rounded-full bg-gold px-5 py-2 text-sm font-semibold text-navy-dark hover:bg-gold-light transition-colors"
           >
             {t('nav.register')}
           </Link>
@@ -137,7 +142,10 @@ export default function Navbar() {
       {isMobileMenuOpen && (
         <div className="lg:hidden bg-navy border-t border-white/10 px-4 py-4 flex flex-col gap-1 text-white">
           <RouterNavLink to="/" className={linkClass} end onClick={closeMobileMenu}>
-            <div className="py-2.5">{t('nav.home')}</div>
+            <div className="py-2.5 flex items-center gap-1.5">
+              <img src="/icons/accueil.png" alt="" className="h-4 w-4 object-contain" />
+              {t('nav.home')}
+            </div>
           </RouterNavLink>
           <div className="py-2.5 text-xs uppercase tracking-wide text-white/50">{t('nav.spaces')}</div>
           {SPACE_LINKS.map((link) => (
@@ -147,13 +155,16 @@ export default function Navbar() {
           ))}
           {NAV_LINKS.map((link) => (
             <RouterNavLink key={link.path} to={link.path} className={linkClass} onClick={closeMobileMenu}>
-              <div className="py-2.5">{t(`nav.${link.key}`)}</div>
+              <div className="py-2.5 flex items-center gap-1.5">
+                <img src={link.icon} alt="" className="h-4 w-4 object-contain" />
+                {t(`nav.${link.key}`)}
+              </div>
             </RouterNavLink>
           ))}
           {isAdmin && (
             <RouterNavLink to="/admin" className={linkClass} onClick={closeMobileMenu}>
               <div className="py-2.5 flex items-center gap-1.5">
-                <LayoutDashboard size={16} />
+                <img src="/icons/dashboard.png" alt="" className="h-4 w-4 object-contain" />
                 Dashboard
               </div>
             </RouterNavLink>

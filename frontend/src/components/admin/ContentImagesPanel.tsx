@@ -8,26 +8,22 @@ import {
   deleteContentImage,
 } from '../../services/adminService';
 import type { ContentImage, ContentSection } from '../../types/admin';
-
 const API_ORIGIN = (import.meta.env.VITE_API_URL || 'http://localhost:8080/api').replace(/\/api\/?$/, '');
-
 function imageUrl(path: string) {
   if (!path) return '';
   return path.startsWith('http') ? path : `${API_ORIGIN}${path.startsWith('/') ? '' : '/'}${path}`;
 }
-
 export default function ContentImagesPanel() {
   const [section, setSection] = useState<ContentSection>('HERO');
   const [images, setImages] = useState<ContentImage[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<number | null>(null);
-
   const [file, setFile] = useState<File | null>(null);
   const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
   const [displayOrder, setDisplayOrder] = useState(0);
   const [uploading, setUploading] = useState(false);
-
   const load = useCallback((s: ContentSection) => {
     setLoading(true);
     getContentImages(s)
@@ -35,20 +31,25 @@ export default function ContentImagesPanel() {
       .catch(() => setError('Impossible de charger les images.'))
       .finally(() => setLoading(false));
   }, []);
-
   useEffect(() => {
     load(section);
   }, [section, load]);
-
   async function handleUpload(e: React.FormEvent) {
     e.preventDefault();
     if (!file || !title.trim()) return;
     setUploading(true);
     setError(null);
     try {
-      await uploadContentImage({ file, section, title: title.trim(), displayOrder });
+      await uploadContentImage({
+        file,
+        section,
+        title: title.trim(),
+        description: description.trim() || undefined,
+        displayOrder,
+      });
       setFile(null);
       setTitle('');
+      setDescription('');
       setDisplayOrder(0);
       load(section);
     } catch {
@@ -57,7 +58,6 @@ export default function ContentImagesPanel() {
       setUploading(false);
     }
   }
-
   async function toggleEnabled(img: ContentImage) {
     setBusyId(img.id);
     try {
@@ -73,7 +73,6 @@ export default function ContentImagesPanel() {
       setBusyId(null);
     }
   }
-
   async function handleDelete(id: number) {
     setBusyId(id);
     try {
@@ -85,7 +84,6 @@ export default function ContentImagesPanel() {
       setBusyId(null);
     }
   }
-
   return (
     <div className="space-y-6">
       <div className="flex gap-2">
@@ -101,7 +99,6 @@ export default function ContentImagesPanel() {
           </button>
         ))}
       </div>
-
       <form
         onSubmit={handleUpload}
         className="rounded-xl border border-navy/10 bg-white p-5 grid grid-cols-1 sm:grid-cols-4 gap-3 items-end"
@@ -122,7 +119,7 @@ export default function ContentImagesPanel() {
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             className="w-full rounded-lg border border-navy/15 px-3 py-2 text-sm text-navy"
-            placeholder="Titre de l'image"
+            placeholder={section === 'SPONSOR' ? 'Nom du sponsor' : "Titre de l'image"}
           />
         </div>
         <div>
@@ -134,6 +131,20 @@ export default function ContentImagesPanel() {
             className="w-full rounded-lg border border-navy/15 px-3 py-2 text-sm text-navy"
           />
         </div>
+        {section === 'SPONSOR' && (
+          <div className="sm:col-span-4">
+            <label className="block text-xs font-medium text-navy/60 mb-1">
+              Description du sponsor (affichée sur la page d'accueil)
+            </label>
+            <textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              rows={3}
+              className="w-full rounded-lg border border-navy/15 px-3 py-2 text-sm text-navy resize-none"
+              placeholder="Présentez ce partenaire : son activité, sa relation avec la coopérative..."
+            />
+          </div>
+        )}
         <div className="sm:col-span-4">
           <button
             type="submit"
@@ -145,9 +156,7 @@ export default function ContentImagesPanel() {
           </button>
         </div>
       </form>
-
       {error && <p className="text-red-600 text-sm">{error}</p>}
-
       {loading ? (
         <p className="text-navy/60">Chargement des images…</p>
       ) : images.length === 0 ? (
@@ -159,6 +168,9 @@ export default function ContentImagesPanel() {
               <img src={imageUrl(img.imagePath)} alt={img.title} className="h-32 w-full object-cover" />
               <div className="p-3">
                 <p className="text-sm font-semibold text-navy truncate">{img.title}</p>
+                {img.description && (
+                  <p className="text-xs text-navy/50 mb-1 line-clamp-2">{img.description}</p>
+                )}
                 <p className="text-xs text-navy/50 mb-2">Ordre : {img.displayOrder}</p>
                 <div className="flex items-center gap-2">
                   <button
