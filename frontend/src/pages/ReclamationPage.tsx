@@ -1,4 +1,4 @@
-﻿import { useEffect, useState, type FormEvent } from 'react';
+import { useEffect, useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Paperclip, Loader2, Send, MessageSquareWarning } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
@@ -67,7 +67,7 @@ export default function ReclamationPage() {
     return null;
   }
   return (
-    <div className="min-h-[70vh] bg-navy/[0.02] pt-28 pb-16 px-4">
+    <div className="min-h-[70vh] bg-navy/[0.02] pt-44 pb-16 px-4">
       <div className="mx-auto max-w-3xl">
         <div className="flex items-center gap-3 mb-2">
           <span className="grid place-items-center h-10 w-10 rounded-xl bg-navy/5 text-navy">

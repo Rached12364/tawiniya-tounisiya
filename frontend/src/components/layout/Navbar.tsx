@@ -1,4 +1,4 @@
-﻿import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Link, NavLink as RouterNavLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Menu, X, ChevronDown } from 'lucide-react';
@@ -7,6 +7,8 @@ import { useAuthStore } from '../../store/authStore';
 import { BRAND } from '../../config/brand';
 import type { LangCode } from '../../types/nav';
 import { getUpcomingEvents } from '../../services/eventService';
+import { getTrainingCenters } from '../../services/trainingCenterService';
+import { juridiqueService } from '../../services/juridiqueService';
 import { getMyReclamations } from '../../services/reclamationService';
 const SPACE_LINKS = [
   { key: 'spaces_technicien', path: '/espace/technicien' },
@@ -41,7 +43,19 @@ export default function Navbar() {
   const spacesRef = useRef<HTMLDivElement>(null);
   const [eventsCount, setEventsCount] = useState(0);
   const [reclamationsCount, setReclamationsCount] = useState(0);
+  const [formationCount, setFormationCount] = useState(0);
+  const [juridiqueCount, setJuridiqueCount] = useState(0);
   const isAdmin = isAuthenticated && user?.role === 'ADMIN';
+  useEffect(() => {
+    getTrainingCenters(0, 1)
+      .then((res) => setFormationCount(res.totalElements))
+      .catch(() => setFormationCount(0));
+    juridiqueService
+      .getActive()
+      .then((sections) => setJuridiqueCount(sections.length))
+      .catch(() => setJuridiqueCount(0));
+  }, []);
+
   useEffect(() => {
     getUpcomingEvents(0, 1)
       .then((res) => setEventsCount(res.totalElements))
@@ -62,6 +76,8 @@ export default function Navbar() {
   const badgeForKey: Record<string, number> = {
     evenements: eventsCount,
     reclamation: reclamationsCount,
+    formation: formationCount,
+    juridique: juridiqueCount,
   };
   useEffect(() => {
     const onClickOutside = (e: MouseEvent) => {
@@ -73,7 +89,7 @@ export default function Navbar() {
     return () => document.removeEventListener('mousedown', onClickOutside);
   }, []);
   const linkClass = ({ isActive }: { isActive: boolean }) =>
-    `relative flex items-center gap-1.5 text-base font-medium transition-colors hover:text-gold ${isActive ? 'text-gold' : 'text-black'}`;
+    `relative flex items-center gap-1.5 whitespace-nowrap text-base font-medium transition-colors hover:text-gold ${isActive ? 'text-gold' : 'text-black'}`;
   return (
     <header className="absolute top-0 left-0 z-50 w-full bg-white/25 backdrop-blur-sm">
       <nav className="w-full pe-4 py-3 flex items-center justify-between text-white">

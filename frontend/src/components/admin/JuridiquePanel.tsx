@@ -1,145 +1,197 @@
-import { useEffect, useState } from 'react';
-import { useEditor, EditorContent } from '@tiptap/react';
-import StarterKit from '@tiptap/starter-kit';
-import { Plus, Pencil, Trash2, Eye, EyeOff, GripVertical, Bold, Italic, List, ListOrdered } from 'lucide-react';
+import { useEffect, useState, useCallback } from 'react';
+import { Trash2, UploadCloud, Scale, Pencil, X, ArrowUp, ArrowDown } from 'lucide-react';
+import RichTextEditor from '../shared/RichTextEditor';
 import { adminJuridiqueService } from '../../services/juridiqueService';
 import type { LegalSection, LegalSectionInput } from '../../types/juridique';
-const EMPTY: LegalSectionInput = { title: '', content: '', active: true };
-function RichTextEditor({ value, onChange }: { value: string; onChange: (html: string) => void }) {
-  const editor = useEditor({
-    extensions: [StarterKit],
-    content: value,
-    onUpdate: ({ editor }) => onChange(editor.getHTML()),
-  });
-  if (!editor) return null;
-  return (
-    <div className="border border-navy/15 rounded-lg overflow-hidden">
-      <div className="flex items-center gap-1 border-b border-navy/10 bg-navy/[0.02] px-2 py-1.5">
-        <button type="button" onClick={() => editor.chain().focus().toggleBold().run()} className={`p-1.5 rounded ${editor.isActive('bold') ? 'bg-navy/10 text-navy' : 'text-navy/50 hover:text-navy'}`}>
-          <Bold size={14} />
-        </button>
-        <button type="button" onClick={() => editor.chain().focus().toggleItalic().run()} className={`p-1.5 rounded ${editor.isActive('italic') ? 'bg-navy/10 text-navy' : 'text-navy/50 hover:text-navy'}`}>
-          <Italic size={14} />
-        </button>
-        <button type="button" onClick={() => editor.chain().focus().toggleBulletList().run()} className={`p-1.5 rounded ${editor.isActive('bulletList') ? 'bg-navy/10 text-navy' : 'text-navy/50 hover:text-navy'}`}>
-          <List size={14} />
-        </button>
-        <button type="button" onClick={() => editor.chain().focus().toggleOrderedList().run()} className={`p-1.5 rounded ${editor.isActive('orderedList') ? 'bg-navy/10 text-navy' : 'text-navy/50 hover:text-navy'}`}>
-          <ListOrdered size={14} />
-        </button>
-      </div>
-      <EditorContent editor={editor} className="prose prose-sm max-w-none px-3 py-2 min-h-[150px] focus:outline-none" />
-    </div>
-  );
-}
+const EMPTY_FORM: LegalSectionInput = { title: '', content: '', active: true };
 export default function JuridiquePanel() {
   const [sections, setSections] = useState<LegalSection[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [busyId, setBusyId] = useState<number | null>(null);
   const [editingId, setEditingId] = useState<number | null>(null);
-  const [isCreating, setIsCreating] = useState(false);
-  const [form, setForm] = useState<LegalSectionInput>(EMPTY);
+  const [form, setForm] = useState<LegalSectionInput>(EMPTY_FORM);
   const [saving, setSaving] = useState(false);
-  const load = () => {
+  const load = useCallback(() => {
     setLoading(true);
-    adminJuridiqueService.getAll().then(setSections).finally(() => setLoading(false));
-  };
-  useEffect(load, []);
-  const startCreate = () => {
-    setForm(EMPTY);
-    setIsCreating(true);
-    setEditingId(null);
-  };
-  const startEdit = (s: LegalSection) => {
-    setForm({ title: s.title, content: s.content, orderIndex: s.orderIndex, active: s.active });
+    adminJuridiqueService
+      .getAll()
+      .then((data) => setSections(data))
+      .catch(() => setError('Impossible de charger le contenu juridique.'))
+      .finally(() => setLoading(false));
+  }, []);
+  useEffect(() => {
+    load();
+  }, [load]);
+  function startEdit(s: LegalSection) {
     setEditingId(s.id);
-    setIsCreating(false);
-  };
-  const cancel = () => {
-    setIsCreating(false);
+    setForm({ title: s.title, content: s.content, active: s.active, orderIndex: s.orderIndex });
+  }
+  function cancelEdit() {
     setEditingId(null);
-    setForm(EMPTY);
-  };
-  const save = async () => {
-    if (!form.title.trim()) return;
+    setForm(EMPTY_FORM);
+  }
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!form.title.trim() || !form.content.trim()) return;
     setSaving(true);
+    setError(null);
     try {
-      if (editingId) {
+      if (editingId != null) {
         await adminJuridiqueService.update(editingId, form);
       } else {
         await adminJuridiqueService.create(form);
       }
-      cancel();
+      cancelEdit();
       load();
+    } catch {
+      setError("Échec de l'enregistrement de la section.");
     } finally {
       setSaving(false);
     }
-  };
-  const toggleActive = async (s: LegalSection) => {
-    await adminJuridiqueService.update(s.id, {
-      title: s.title,
-      content: s.content,
-      orderIndex: s.orderIndex,
-      active: !s.active,
-    });
-    load();
-  };
-  const remove = async (id: number) => {
-    if (!confirm('Supprimer cette section ?')) return;
-    await adminJuridiqueService.remove(id);
-    load();
-  };
-  const isFormOpen = isCreating || editingId !== null;
-  if (loading) return <div className="p-8 text-navy/50 text-sm">Chargement...</div>;
+  }
+  async function handleDelete(id: number) {
+    setBusyId(id);
+    try {
+      await adminJuridiqueService.remove(id);
+      load();
+    } catch {
+      setError('Impossible de supprimer la section.');
+    } finally {
+      setBusyId(null);
+    }
+  }
+  async function moveSection(index: number, direction: -1 | 1) {
+    const target = index + direction;
+    if (target < 0 || target >= sections.length) return;
+    const reordered = [...sections];
+    [reordered[index], reordered[target]] = [reordered[target], reordered[index]];
+    setSections(reordered);
+    try {
+      await adminJuridiqueService.reorder(reordered.map((s) => s.id));
+    } catch {
+      setError("Échec de la réorganisation.");
+      load();
+    }
+  }
   return (
-    <div className="bg-white rounded-2xl shadow-sm p-6">
-      <div className="flex items-center justify-between mb-5">
-        <h2 className="text-lg font-bold text-navy">Sections juridiques</h2>
-        {!isFormOpen && (
-          <button onClick={startCreate} className="flex items-center gap-1.5 rounded-full bg-navy text-white text-sm font-semibold px-4 py-2 hover:bg-navy-dark transition-colors">
-            <Plus size={16} /> Nouvelle section
-          </button>
-        )}
-      </div>
-      {isFormOpen && (
-        <div className="mb-6 border border-navy/10 rounded-xl p-4">
-          <input
-            value={form.title}
-            onChange={(e) => setForm({ ...form, title: e.target.value })}
-            placeholder="Titre de la section (ex: Conditions d'adhesion)"
-            className="w-full mb-3 rounded-lg border border-navy/15 px-3 py-2 text-sm focus:outline-none focus:border-gold"
-          />
-          <RichTextEditor value={form.content} onChange={(content) => setForm({ ...form, content })} />
-          <div className="flex items-center gap-3 mt-3">
-            <button onClick={save} disabled={saving} className="rounded-full bg-gold px-5 py-2 text-sm font-semibold text-navy-dark hover:bg-gold-light transition-colors disabled:opacity-50">
-              {saving ? 'Enregistrement...' : 'Enregistrer'}
-            </button>
-            <button onClick={cancel} className="text-sm text-navy/50 hover:text-navy">
+    <div className="space-y-6">
+      <form
+        onSubmit={handleSubmit}
+        className="rounded-xl border border-navy/10 bg-white p-5 grid grid-cols-1 gap-4"
+      >
+        <div className="flex items-center justify-between">
+          <p className="text-sm font-semibold text-navy">
+            {editingId != null ? 'Modifier la section' : 'Nouvelle section juridique'}
+          </p>
+          {editingId != null && (
+            <button
+              type="button"
+              onClick={cancelEdit}
+              className="text-navy/40 hover:text-navy inline-flex items-center gap-1 text-xs"
+            >
+              <X size={14} />
               Annuler
             </button>
-          </div>
+          )}
+        </div>
+        <div>
+          <label className="block text-xs font-medium text-navy/60 mb-1">Titre</label>
+          <input
+            type="text"
+            value={form.title}
+            onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
+            className="w-full rounded-lg border border-navy/15 px-3 py-2 text-sm text-navy"
+            placeholder="Ex: Statuts de la coopérative"
+          />
+        </div>
+        <div>
+          <label className="block text-xs font-medium text-navy/60 mb-1">
+            Contenu
+          </label>
+          <RichTextEditor
+            value={form.content}
+            onChange={(html) => setForm((f) => ({ ...f, content: html }))}
+          />
+        </div>
+        <label className="inline-flex items-center gap-2 text-sm text-navy/70">
+          <input
+            type="checkbox"
+            checked={form.active}
+            onChange={(e) => setForm((f) => ({ ...f, active: e.target.checked }))}
+            className="rounded border-navy/30"
+          />
+          Visible publiquement
+        </label>
+        <div>
+          <button
+            type="submit"
+            disabled={!form.title.trim() || !form.content.trim() || saving}
+            className="inline-flex items-center gap-2 rounded-full bg-gold px-5 py-2 text-sm font-semibold text-navy-dark hover:bg-gold-light transition-colors disabled:opacity-50"
+          >
+            <UploadCloud size={16} />
+            {saving ? 'Enregistrement…' : editingId != null ? 'Enregistrer' : 'Créer la section'}
+          </button>
+        </div>
+      </form>
+      {error && <p className="text-red-600 text-sm">{error}</p>}
+      {loading ? (
+        <p className="text-navy/60">Chargement…</p>
+      ) : sections.length === 0 ? (
+        <p className="text-navy/60">Aucune section juridique pour le moment.</p>
+      ) : (
+        <div className="flex flex-col gap-3">
+          {sections.map((s, index) => (
+            <div
+              key={s.id}
+              className="rounded-xl border border-navy/10 bg-white p-4 flex items-start justify-between gap-4"
+            >
+              <div className="flex items-start gap-3 min-w-0">
+                <Scale size={18} className="text-gold shrink-0 mt-0.5" />
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold text-navy truncate">{s.title}</p>
+                  <p className="text-xs text-navy/40 mt-0.5">
+                    {s.active ? 'Visible' : 'Masquée'} · ordre {s.orderIndex}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-1 shrink-0">
+                <button
+                  onClick={() => moveSection(index, -1)}
+                  disabled={index === 0}
+                  className="p-1.5 rounded-full text-navy/40 hover:text-navy hover:bg-navy/5 disabled:opacity-30"
+                  title="Monter"
+                >
+                  <ArrowUp size={14} />
+                </button>
+                <button
+                  onClick={() => moveSection(index, 1)}
+                  disabled={index === sections.length - 1}
+                  className="p-1.5 rounded-full text-navy/40 hover:text-navy hover:bg-navy/5 disabled:opacity-30"
+                  title="Descendre"
+                >
+                  <ArrowDown size={14} />
+                </button>
+                <button
+                  onClick={() => startEdit(s)}
+                  className="p-1.5 rounded-full text-navy/40 hover:text-navy hover:bg-navy/5"
+                  title="Modifier"
+                >
+                  <Pencil size={14} />
+                </button>
+                <button
+                  onClick={() => handleDelete(s.id)}
+                  disabled={busyId === s.id}
+                  className="p-1.5 rounded-full text-red-500/70 hover:text-red-600 hover:bg-red-50 disabled:opacity-50"
+                  title="Supprimer"
+                >
+                  <Trash2 size={14} />
+                </button>
+              </div>
+            </div>
+          ))}
         </div>
       )}
-      <div className="flex flex-col gap-2">
-        {sections.map((s) => (
-          <div key={s.id} className="flex items-center gap-3 border border-navy/10 rounded-xl px-4 py-3">
-            <GripVertical size={16} className="text-navy/20 shrink-0" />
-            <div className="flex-1 min-w-0">
-              <p className={`text-sm font-semibold truncate ${s.active ? 'text-navy' : 'text-navy/40'}`}>{s.title}</p>
-              {!s.active && <span className="text-xs text-navy/40">Masquee cote client</span>}
-            </div>
-            <button onClick={() => toggleActive(s)} className="p-1.5 text-navy/40 hover:text-navy" title={s.active ? 'Masquer' : 'Afficher'}>
-              {s.active ? <Eye size={16} /> : <EyeOff size={16} />}
-            </button>
-            <button onClick={() => startEdit(s)} className="p-1.5 text-navy/40 hover:text-gold">
-              <Pencil size={16} />
-            </button>
-            <button onClick={() => remove(s.id)} className="p-1.5 text-navy/40 hover:text-red-500">
-              <Trash2 size={16} />
-            </button>
-          </div>
-        ))}
-        {sections.length === 0 && <p className="text-sm text-navy/40 text-center py-8">Aucune section pour l'instant.</p>}
-      </div>
     </div>
   );
 }

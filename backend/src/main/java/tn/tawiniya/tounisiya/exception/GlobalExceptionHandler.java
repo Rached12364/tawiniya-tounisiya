@@ -29,6 +29,11 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiError> handleNotFound(ResourceNotFoundException ex) {
         return build(HttpStatus.NOT_FOUND, ex.getMessage(), null);
     }
+    // 403 - opération non autorisée (ex: modifier le centre d'un autre utilisateur)
+    @ExceptionHandler(ForbiddenOperationException.class)
+    public ResponseEntity<ApiError> handleForbidden(ForbiddenOperationException ex) {
+        return build(HttpStatus.FORBIDDEN, ex.getMessage(), null);
+    }
 
     // 400 - fichier invalide (format/taille)
     @ExceptionHandler(InvalidFileException.class)

@@ -13,7 +13,7 @@ export default function JuridiquePage() {
     }).finally(() => setLoading(false));
   }, []);
   return (
-    <div className="min-h-[70vh] pt-28 pb-16 px-4 bg-navy/[0.02]">
+    <div className="min-h-[70vh] pt-44 pb-16 px-4 bg-navy/[0.02]">
       <div className="mx-auto max-w-3xl">
         <div className="flex items-center gap-2 mb-8">
           <Scale className="text-gold" size={24} />

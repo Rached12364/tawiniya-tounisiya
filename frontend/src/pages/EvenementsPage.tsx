@@ -20,7 +20,7 @@ export default function EvenementsPage() {
       .finally(() => setLoading(false));
   }, []);
   return (
-    <div className="min-h-[70vh] bg-navy/[0.02] pt-28 pb-16 px-4">
+    <div className="min-h-[70vh] bg-navy/[0.02] pt-44 pb-16 px-4">
       <div className="mx-auto max-w-5xl">
         <div className="flex items-center gap-3 mb-2">
           <span className="grid place-items-center h-10 w-10 rounded-xl bg-navy/5 text-navy">
