@@ -1,9 +1,12 @@
-import { Routes, Route } from 'react-router-dom';
+﻿import { Routes, Route } from 'react-router-dom';
 import Layout from './components/layout/Layout';
 import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import ComingSoonPage from './pages/ComingSoonPage';
+import JuridiquePage from './pages/JuridiquePage';
+import ReclamationPage from './pages/ReclamationPage';
+import EvenementsPage from './pages/EvenementsPage';
 import NotFoundPage from './pages/NotFoundPage';
 import AdminDashboardPage from './pages/admin/AdminDashboardPage';
 import ProtectedRoute from './components/admin/ProtectedRoute';
@@ -31,12 +34,14 @@ function App() {
         <Route path="espace/beneficiel" element={<ComingSoonPage />} />
         {/* Modules additionnels (Sprint 4) */}
         <Route path="centre-formation" element={<ComingSoonPage />} />
-        <Route path="juridique" element={<ComingSoonPage />} />
-        <Route path="reclamation" element={<ComingSoonPage />} />
-        <Route path="evenements" element={<ComingSoonPage />} />
+        <Route path="juridique" element={<JuridiquePage />} />
+        <Route path="reclamation" element={<ReclamationPage />} />
+        <Route path="evenements" element={<EvenementsPage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Route>
     </Routes>
   );
 }
 export default App;
+
+

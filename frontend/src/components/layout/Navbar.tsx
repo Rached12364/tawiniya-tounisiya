@@ -6,6 +6,8 @@ import { useUiStore } from '../../store/uiStore';
 import { useAuthStore } from '../../store/authStore';
 import { BRAND } from '../../config/brand';
 import type { LangCode } from '../../types/nav';
+import { getUpcomingEvents } from '../../services/eventService';
+import { getMyReclamations } from '../../services/reclamationService';
 const SPACE_LINKS = [
   { key: 'spaces_technicien', path: '/espace/technicien' },
   { key: 'spaces_entreprise', path: '/espace/entreprise' },
@@ -23,13 +25,44 @@ const LANGUAGES: { code: LangCode; label: string }[] = [
   { code: 'en', label: 'EN' },
   { code: 'ar', label: 'عربي' },
 ];
+function NavBadge({ count }: { count: number }) {
+  if (!count || count <= 0) return null;
+  return (
+    <span className="absolute -top-1.5 -end-2 min-w-[16px] h-[16px] px-1 rounded-full bg-red-600 text-white text-[10px] font-bold leading-[16px] text-center">
+      {count > 99 ? '99+' : count}
+    </span>
+  );
+}
 export default function Navbar() {
   const { t, i18n } = useTranslation();
   const [isSpacesOpen, setIsSpacesOpen] = useState(false);
   const { isMobileMenuOpen, toggleMobileMenu, closeMobileMenu } = useUiStore();
   const { isAuthenticated, user } = useAuthStore();
   const spacesRef = useRef<HTMLDivElement>(null);
+  const [eventsCount, setEventsCount] = useState(0);
+  const [reclamationsCount, setReclamationsCount] = useState(0);
   const isAdmin = isAuthenticated && user?.role === 'ADMIN';
+  useEffect(() => {
+    getUpcomingEvents(0, 1)
+      .then((res) => setEventsCount(res.totalElements))
+      .catch(() => setEventsCount(0));
+  }, []);
+  useEffect(() => {
+    if (!isAuthenticated) {
+      setReclamationsCount(0);
+      return;
+    }
+    getMyReclamations(0, 100)
+      .then((res) => {
+        const pending = res.content.filter((r) => r.status === 'OUVERTE' || r.status === 'EN_COURS').length;
+        setReclamationsCount(pending);
+      })
+      .catch(() => setReclamationsCount(0));
+  }, [isAuthenticated]);
+  const badgeForKey: Record<string, number> = {
+    evenements: eventsCount,
+    reclamation: reclamationsCount,
+  };
   useEffect(() => {
     const onClickOutside = (e: MouseEvent) => {
       if (spacesRef.current && !spacesRef.current.contains(e.target as Node)) {
@@ -40,7 +73,7 @@ export default function Navbar() {
     return () => document.removeEventListener('mousedown', onClickOutside);
   }, []);
   const linkClass = ({ isActive }: { isActive: boolean }) =>
-    `flex items-center gap-1.5 whitespace-nowrap text-base font-medium transition-colors hover:text-gold ${isActive ? 'text-gold' : 'text-black'}`;
+    `relative flex items-center gap-1.5 text-base font-medium transition-colors hover:text-gold ${isActive ? 'text-gold' : 'text-black'}`;
   return (
     <header className="absolute top-0 left-0 z-50 w-full bg-white/25 backdrop-blur-sm">
       <nav className="w-full pe-4 py-3 flex items-center justify-between text-white">
@@ -48,14 +81,14 @@ export default function Navbar() {
           <img
             src={BRAND.logoSrc}
             alt={BRAND.nameAr}
-            className="h-24 w-24 object-contain shrink-0"
+            className="h-36 w-36 object-contain shrink-0"
             onError={(e) => {
               e.currentTarget.style.display = 'none';
               e.currentTarget.nextElementSibling?.classList.remove('hidden');
             }}
           />
           <span className="hidden text-lg font-black tracking-tight text-navy">CTTEERA</span>
-          <div className="hidden xl:block max-w-[260px] shrink-0">
+          <div className="hidden sm:block max-w-[340px]">
             <p dir="rtl" className="text-[11px] font-bold text-navy leading-[1.3]">
               {BRAND.nameAr}
             </p>
@@ -64,18 +97,18 @@ export default function Navbar() {
             </p>
           </div>
         </Link>
-        <div className="hidden lg:flex items-center gap-4 min-w-0">
+        <div className="hidden lg:flex items-center gap-8">
           <RouterNavLink to="/" className={linkClass} end>
-            <img src="/icons/accueil.png" alt="" className="h-4 w-4 object-contain shrink-0" />
+            <img src="/icons/accueil.png" alt="" className="h-4 w-4 object-contain" />
             {t('nav.home')}
           </RouterNavLink>
-          <div className="relative shrink-0" ref={spacesRef}>
+          <div className="relative" ref={spacesRef}>
             <button
               onClick={() => setIsSpacesOpen((v) => !v)}
-              className="flex items-center gap-1.5 whitespace-nowrap text-base font-medium text-black hover:text-gold transition-colors"
+              className="flex items-center gap-1.5 text-base font-medium text-black hover:text-gold transition-colors"
             >
               <ChevronDown size={14} className={`transition-transform ${isSpacesOpen ? 'rotate-180' : ''}`} />
-              <img src="/icons/espace.png" alt="" className="h-4 w-4 object-contain shrink-0" />
+              <img src="/icons/espace.png" alt="" className="h-4 w-4 object-contain" />
               {t('nav.spaces')}
             </button>
             {isSpacesOpen && (
@@ -98,25 +131,27 @@ export default function Navbar() {
           </div>
           {NAV_LINKS.map((link) => (
             <RouterNavLink key={link.path} to={link.path} className={linkClass}>
-              <img src={link.icon} alt="" className="h-4 w-4 object-contain shrink-0" />
+              <span className="relative inline-block h-4 w-4 shrink-0">
+                <img src={link.icon} alt="" className="h-4 w-4 object-contain" />
+                <NavBadge count={badgeForKey[link.key] ?? 0} />
+              </span>
               {t(`nav.${link.key}`)}
             </RouterNavLink>
           ))}
           {isAdmin && (
             <RouterNavLink to="/admin" className={linkClass}>
-              <img src="/icons/dashboard.png" alt="" className="h-4 w-4 object-contain shrink-0" />
+              <img src="/icons/dashboard.png" alt="" className="h-4 w-4 object-contain" />
               Dashboard
             </RouterNavLink>
           )}
         </div>
-        <div className="hidden lg:flex items-center gap-4 shrink-0">
-          <div className="flex items-center gap-1.5 text-sm font-medium text-navy border-e border-navy/20 pe-4 shrink-0 whitespace-nowrap">
+        <div className="hidden lg:flex items-center gap-4">
+          <div className="flex items-center gap-1 text-sm font-medium text-navy border-e border-navy/20 pe-4">
             {LANGUAGES.map((lang) => (
               <button
                 key={lang.code}
-                type="button"
                 onClick={() => i18n.changeLanguage(lang.code)}
-                className={`shrink-0 px-1.5 py-0.5 rounded transition-colors ${
+                className={`px-1.5 py-0.5 rounded transition-colors ${
                   i18n.language === lang.code ? 'text-gold font-semibold' : 'hover:text-gold'
                 }`}
               >
@@ -126,7 +161,7 @@ export default function Navbar() {
           </div>
           <Link
             to="/register"
-            className="shrink-0 whitespace-nowrap rounded-full bg-gold px-5 py-2 text-sm font-semibold text-navy-dark hover:bg-gold-light transition-colors"
+            className="rounded-full bg-gold px-5 py-2 text-sm font-semibold text-navy-dark hover:bg-gold-light transition-colors"
           >
             {t('nav.register')}
           </Link>
@@ -156,7 +191,10 @@ export default function Navbar() {
           {NAV_LINKS.map((link) => (
             <RouterNavLink key={link.path} to={link.path} className={linkClass} onClick={closeMobileMenu}>
               <div className="py-2.5 flex items-center gap-1.5">
-                <img src={link.icon} alt="" className="h-4 w-4 object-contain" />
+                <span className="relative inline-block h-4 w-4 shrink-0">
+                  <img src={link.icon} alt="" className="h-4 w-4 object-contain" />
+                  <NavBadge count={badgeForKey[link.key] ?? 0} />
+                </span>
                 {t(`nav.${link.key}`)}
               </div>
             </RouterNavLink>

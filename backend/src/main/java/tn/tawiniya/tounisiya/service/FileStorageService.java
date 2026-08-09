@@ -18,6 +18,8 @@ import java.util.UUID;
 public class FileStorageService {
 
     private static final Set<String> ALLOWED_TYPES = Set.of("image/jpeg", "image/png", "image/webp");
+    private static final Set<String> ALLOWED_ATTACHMENT_TYPES = Set.of(
+            "image/jpeg", "image/png", "image/webp", "application/pdf");
     private static final long MAX_SIZE_BYTES = 5L * 1024 * 1024; // 5 Mo
 
     @Value("${app.upload-dir:uploads}")
@@ -61,6 +63,34 @@ public class FileStorageService {
             Files.deleteIfExists(target);
         } catch (IOException ignored) {
             // Suppression best-effort : on ne bloque pas la suppression en base si le fichier physique manque déjà.
+        }
+    }
+
+    /** Sauvegarde une pièce jointe (image ou PDF) dans /uploads/reclamations/ et renvoie son chemin public. */
+    public String storeAttachment(MultipartFile file) {
+        if (file == null || file.isEmpty()) {
+            return null;
+        }
+        if (!ALLOWED_ATTACHMENT_TYPES.contains(file.getContentType())) {
+            throw new InvalidFileException("Format non autorisé. Formats acceptés : JPG, PNG, WEBP, PDF.");
+        }
+        if (file.getSize() > MAX_SIZE_BYTES) {
+            throw new InvalidFileException("Le fichier dépasse la taille maximale de 5 Mo.");
+        }
+
+        try {
+            Path targetDir = Paths.get(uploadDir, "reclamations");
+            Files.createDirectories(targetDir);
+
+            String extension = getExtension(file.getOriginalFilename());
+            String filename = UUID.randomUUID() + extension;
+            Path targetPath = targetDir.resolve(filename);
+
+            Files.copy(file.getInputStream(), targetPath, StandardCopyOption.REPLACE_EXISTING);
+
+            return "/uploads/reclamations/" + filename;
+        } catch (IOException e) {
+            throw new InvalidFileException("Erreur lors de l'enregistrement du fichier.");
         }
     }
 

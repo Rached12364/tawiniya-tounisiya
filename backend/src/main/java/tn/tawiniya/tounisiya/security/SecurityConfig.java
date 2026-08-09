@@ -20,6 +20,13 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import java.util.Arrays;
 import java.util.List;
+/**
+ * Configuration de sécurité : stateless + authentification JWT + CORS.
+ * - /actuator/health, /api/auth/**, /api/content/**, /api/events/** (lecture) et /uploads/** sont publics
+ * - /api/admin/** est réservé au rôle ADMIN
+ * - /api/reclamations/** nécessite d'être connecté (n'importe quel rôle)
+ * - toute autre route nécessite un token JWT valide (JwtFilter)
+ */
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
@@ -39,8 +46,10 @@ public class SecurityConfig {
                 .requestMatchers("/actuator/health", "/actuator/info").permitAll()
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/content/**").permitAll()
+                .requestMatchers("/api/events/**").permitAll()
                 .requestMatchers("/uploads/**").permitAll()
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                .requestMatchers("/api/reclamations/**").authenticated()
                 .anyRequest().authenticated()
             )
             .authenticationProvider(authenticationProvider())
