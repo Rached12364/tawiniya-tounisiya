@@ -1,0 +1,44 @@
+package tn.tawiniya.tounisiya.dto;
+import lombok.Data;
+import tn.tawiniya.tounisiya.entity.GroupeSanguin;
+import java.time.LocalDate;
+@Data
+public class TechnicienProfileRequest {
+    private String nom;
+    private String prenom;
+    private LocalDate dateNaissance;
+    private String cin;
+    private String nomParent;
+    private String adresse;
+    private String gsm;
+    private String gsmParent;
+    private String gsmBinome;
+    private String email;
+    private String facebook;
+    private String tiktok;
+    private String instagram;
+    private String diplome;
+    private String specialite;
+    private String niveauScolaire;
+    private boolean permisConduite;
+    private LocalDate datePermis;
+    private String typeContrat;
+    private String numeroCnss;
+    private String numeroD17;
+    private String numeroBanquePoste;
+    private GroupeSanguin groupeSanguin;
+    private Double poidsKg;
+    private Double hauteurCm;
+    private String pointureChaussure;
+    private String tailleVetements;
+    private String maladiesChroniques;
+    private String allergies;
+    private String operations;
+    private boolean tatouage;
+    private LocalDate dateEmbauche;
+    private String experience;
+    private String societesEtPeriodes;
+    private Double salaireDepart;
+    private Integer nombreJoursConge;
+    private String gsmSociete;
+}

@@ -22,9 +22,9 @@ import java.util.Arrays;
 import java.util.List;
 /**
  * Configuration de sécurité : stateless + authentification JWT + CORS.
- * - /actuator/health, /api/auth/**, /api/content/**, /api/events/** (lecture), /api/juridique/** (lecture) et /uploads/** sont publics
+ * - /actuator/health, /api/auth/**, /api/content/**, /api/events/** (lecture) et /uploads/** sont publics
  * - /api/admin/** est réservé au rôle ADMIN
- * - /api/reclamations/** nécessite d'être connecté (n'importe quel rôle)
+ * - /api/reclamations/**, /api/technicien-profile/** nécessitent d'être connecté (n'importe quel rôle)
  * - toute autre route nécessite un token JWT valide (JwtFilter)
  */
 @Configuration
@@ -47,11 +47,10 @@ public class SecurityConfig {
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/content/**").permitAll()
                 .requestMatchers("/api/events/**").permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/training-centers", "/api/training-centers/*").permitAll()
-                .requestMatchers("/api/juridique/**").permitAll()
                 .requestMatchers("/uploads/**").permitAll()
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
                 .requestMatchers("/api/reclamations/**").authenticated()
+                .requestMatchers("/api/technicien-profile/**").authenticated()
                 .anyRequest().authenticated()
             )
             .authenticationProvider(authenticationProvider())
@@ -86,4 +85,3 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 }
-

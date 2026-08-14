@@ -7,6 +7,7 @@ import ComingSoonPage from './pages/ComingSoonPage';
 import JuridiquePage from './pages/JuridiquePage';
 import ReclamationPage from './pages/ReclamationPage';
 import EvenementsPage from './pages/EvenementsPage';
+import ProfilPage from './pages/ProfilPage';
 import CentreFormationPage from './pages/CentreFormationPage';
 import CentreFormationDetailPage from './pages/CentreFormationDetailPage';
 import MonCentreFormationPage from './pages/MonCentreFormationPage';
@@ -18,10 +19,10 @@ function App() {
     <Routes>
       <Route element={<Layout />}>
         <Route index element={<HomePage />} />
-        {/* Authentification (TASK-F006) — connectées aux vraies APIs backend */}
+        {/* Authentification (TASK-F006) — connectees aux vraies APIs backend */}
         <Route path="login" element={<LoginPage />} />
         <Route path="register" element={<RegisterPage />} />
-        {/* Espace admin (protégé, rôle ADMIN uniquement) */}
+        {/* Espace admin (protege, role ADMIN uniquement) */}
         <Route
           path="admin"
           element={
@@ -30,8 +31,16 @@ function App() {
             </ProtectedRoute>
           }
         />
-        {/* Espaces connectés (TASK-F007/F008) */}
-        <Route path="espace/technicien" element={<ComingSoonPage />} />
+        {/* Profil personnel (technicien connecte) */}
+        <Route
+          path="profil"
+          element={
+            <ProtectedRoute>
+              <ProfilPage />
+            </ProtectedRoute>
+          }
+        />
+        {/* Espaces connectes (TASK-F007/F008) */}
         <Route path="espace/entreprise" element={<ComingSoonPage />} />
         <Route path="espace/stagiaire" element={<ComingSoonPage />} />
         <Route path="espace/beneficiel" element={<ComingSoonPage />} />
@@ -55,5 +64,3 @@ function App() {
   );
 }
 export default App;
-
-

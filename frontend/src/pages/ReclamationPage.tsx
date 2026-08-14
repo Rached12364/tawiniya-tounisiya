@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from 'react';
+﻿import { useEffect, useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Paperclip, Loader2, Send, MessageSquareWarning } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
@@ -177,3 +177,4 @@ export default function ReclamationPage() {
     </div>
   );
 }
+

@@ -23,3 +23,8 @@ body {
 [dir="rtl"] {
   text-align: right;
 }
+
+html, body {
+  overflow-x: hidden;
+}
+
