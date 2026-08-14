@@ -1,4 +1,4 @@
-import { Routes, Route } from 'react-router-dom';
+﻿import { Routes, Route } from 'react-router-dom';
 import Layout from './components/layout/Layout';
 import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
@@ -41,6 +41,7 @@ function App() {
           }
         />
         {/* Espaces connectes (TASK-F007/F008) */}
+        <Route path="espace/technicien" element={<ComingSoonPage />} />
         <Route path="espace/entreprise" element={<ComingSoonPage />} />
         <Route path="espace/stagiaire" element={<ComingSoonPage />} />
         <Route path="espace/beneficiel" element={<ComingSoonPage />} />

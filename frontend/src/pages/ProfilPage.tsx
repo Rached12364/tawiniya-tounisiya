@@ -29,12 +29,12 @@ const GROUPES: GroupeSanguin[] = ['A_POSITIF', 'A_NEGATIF', 'B_POSITIF', 'B_NEGA
 function TextField({ label, value, onChange, type = 'text' }: { label: string; value: string; onChange: (v: string) => void; type?: string }) {
   return (
     <div>
-      <label className="block text-xs font-medium text-navy/60 mb-1">{label}</label>
+      <label className="block text-[11px] font-medium text-navy/60 mb-1">{label}</label>
       <input
         type={type}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full rounded-lg border border-navy/15 px-3 py-2 text-sm text-navy focus:outline-none focus:ring-2 focus:ring-teal/40 focus:border-teal"
+        className="w-full rounded-lg border border-navy/15 px-3 py-1.5 text-sm text-navy focus:outline-none focus:ring-2 focus:ring-teal/40 focus:border-teal"
       />
     </div>
   );
@@ -42,12 +42,12 @@ function TextField({ label, value, onChange, type = 'text' }: { label: string; v
 function NumberField({ label, value, onChange }: { label: string; value: number | null; onChange: (v: number | null) => void }) {
   return (
     <div>
-      <label className="block text-xs font-medium text-navy/60 mb-1">{label}</label>
+      <label className="block text-[11px] font-medium text-navy/60 mb-1">{label}</label>
       <input
         type="number"
         value={value ?? ''}
         onChange={(e) => onChange(e.target.value === '' ? null : Number(e.target.value))}
-        className="w-full rounded-lg border border-navy/15 px-3 py-2 text-sm text-navy focus:outline-none focus:ring-2 focus:ring-teal/40 focus:border-teal"
+        className="w-full rounded-lg border border-navy/15 px-3 py-1.5 text-sm text-navy focus:outline-none focus:ring-2 focus:ring-teal/40 focus:border-teal"
       />
     </div>
   );
@@ -55,32 +55,32 @@ function NumberField({ label, value, onChange }: { label: string; value: number 
 function TextAreaField({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
   return (
     <div className="sm:col-span-2">
-      <label className="block text-xs font-medium text-navy/60 mb-1">{label}</label>
+      <label className="block text-[11px] font-medium text-navy/60 mb-1">{label}</label>
       <textarea
         value={value}
         onChange={(e) => onChange(e.target.value)}
         rows={2}
-        className="w-full rounded-lg border border-navy/15 px-3 py-2 text-sm text-navy resize-none focus:outline-none focus:ring-2 focus:ring-teal/40 focus:border-teal"
+        className="w-full rounded-lg border border-navy/15 px-3 py-1.5 text-sm text-navy resize-none focus:outline-none focus:ring-2 focus:ring-teal/40 focus:border-teal"
       />
     </div>
   );
 }
 function Card({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="bg-white rounded-2xl shadow-sm p-6 flex flex-col gap-4">
-      <h2 className="text-base font-bold text-navy">{title}</h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">{children}</div>
+    <div className="bg-white rounded-xl shadow-sm p-5 flex flex-col gap-3">
+      <h2 className="text-sm font-bold text-navy">{title}</h2>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">{children}</div>
     </div>
   );
 }
 function InfoRow({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
   if (!value) return null;
   return (
-    <div className="flex items-start gap-2.5">
+    <div className="flex items-start gap-2">
       <span className="mt-0.5 text-teal shrink-0">{icon}</span>
       <div className="min-w-0">
-        <p className="text-[11px] text-navy/45 leading-none mb-0.5">{label}</p>
-        <p className="text-sm text-navy font-medium truncate">{value}</p>
+        <p className="text-[10px] text-navy/45 leading-none mb-0.5">{label}</p>
+        <p className="text-[13px] text-navy font-medium truncate">{value}</p>
       </div>
     </div>
   );
@@ -186,72 +186,72 @@ export default function ProfilPage() {
   const subtitle = [form.specialite, form.diplome].filter(Boolean).join(' • ');
   return (
     <div className="min-h-[70vh] bg-navy/[0.02] pt-24 pb-16">
-      {/* Couverture */}
-      <div className="relative h-48 md:h-72 w-full bg-gradient-to-br from-navy to-teal overflow-hidden">
+      {/* Couverture compacte */}
+      <div className="relative h-24 md:h-32 w-full bg-gradient-to-br from-navy to-teal overflow-hidden">
         {profile?.photoCouverturePath && (
           <img src={imageUrl(profile.photoCouverturePath)} alt="Couverture" className="w-full h-full object-cover" />
         )}
-        <label className="absolute bottom-3 end-3 flex items-center gap-1.5 rounded-full bg-white/90 px-3 py-1.5 text-xs font-semibold text-navy cursor-pointer hover:bg-white shadow">
-          {uploadingKey === 'photoCouverture' ? <Loader2 size={14} className="animate-spin" /> : <ImageIcon size={14} />}
-          Photo de couverture
+        <label className="absolute bottom-2 end-2 flex items-center gap-1.5 rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-semibold text-navy cursor-pointer hover:bg-white shadow">
+          {uploadingKey === 'photoCouverture' ? <Loader2 size={12} className="animate-spin" /> : <ImageIcon size={12} />}
+          Couverture
           <input type="file" accept="image/jpeg,image/png,image/webp" className="hidden"
             onChange={(e) => handlePhotoCouverture(e.target.files?.[0] ?? null)} />
         </label>
       </div>
       <div className="mx-auto max-w-6xl px-4">
-        {/* Header profil */}
-        <div className="relative -mt-16 mb-6 bg-white rounded-2xl shadow-sm px-6 pt-4 pb-6 flex flex-col sm:flex-row sm:items-end gap-4">
-          <div className="relative h-32 w-32 rounded-full border-4 border-white bg-navy/10 overflow-hidden shrink-0 -mt-14">
+        {/* Header profil compact */}
+        <div className="relative -mt-10 mb-5 bg-white rounded-xl shadow-sm px-5 pt-3 pb-4 flex flex-col sm:flex-row sm:items-end gap-3">
+          <div className="relative h-20 w-20 rounded-full border-4 border-white bg-navy/10 overflow-hidden shrink-0 -mt-9">
             {profile?.photoProfilPath ? (
               <img src={imageUrl(profile.photoProfilPath)} alt="Profil" className="w-full h-full object-cover" />
             ) : (
-              <div className="w-full h-full grid place-items-center text-navy/30"><UserIcon size={44} /></div>
+              <div className="w-full h-full grid place-items-center text-navy/30"><UserIcon size={28} /></div>
             )}
             <label className="absolute inset-0 grid place-items-center bg-black/0 hover:bg-black/30 transition-colors cursor-pointer group">
               {uploadingKey === 'photoProfil' ? (
-                <Loader2 size={18} className="animate-spin text-white" />
+                <Loader2 size={14} className="animate-spin text-white" />
               ) : (
-                <Camera size={18} className="text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                <Camera size={14} className="text-white opacity-0 group-hover:opacity-100 transition-opacity" />
               )}
               <input type="file" accept="image/jpeg,image/png,image/webp" className="hidden"
                 onChange={(e) => handlePhotoProfil(e.target.files?.[0] ?? null)} />
             </label>
           </div>
           <div className="flex-1 min-w-0">
-            <h1 className="text-2xl font-black text-navy truncate">{fullName}</h1>
-            <p className="text-sm text-navy/50">{subtitle || 'Technicien — CTTE-ERAA'}</p>
+            <h1 className="text-lg font-black text-navy truncate">{fullName}</h1>
+            <p className="text-xs text-navy/50">{subtitle || 'Technicien — CTTE-ERAA'}</p>
           </div>
         </div>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
           {/* Sidebar infos rapides */}
-          <aside className="lg:col-span-1 flex flex-col gap-6">
-            <div className="bg-white rounded-2xl shadow-sm p-6 flex flex-col gap-4">
-              <h2 className="text-sm font-bold text-navy/70 uppercase tracking-wide">Infos rapides</h2>
-              <InfoRow icon={<Phone size={16} />} label="GSM" value={form.gsm ?? ''} />
-              <InfoRow icon={<Mail size={16} />} label="Email" value={form.email ?? ''} />
-              <InfoRow icon={<Droplet size={16} />} label="Groupe sanguin" value={form.groupeSanguin ? GROUPE_SANGUIN_LABELS[form.groupeSanguin] : ''} />
-              <InfoRow icon={<GraduationCap size={16} />} label="Diplome" value={form.diplome ?? ''} />
-              <InfoRow icon={<Briefcase size={16} />} label="Type de contrat" value={form.typeContrat ?? ''} />
+          <aside className="lg:col-span-1 flex flex-col gap-5">
+            <div className="bg-white rounded-xl shadow-sm p-5 flex flex-col gap-3">
+              <h2 className="text-[11px] font-bold text-navy/60 uppercase tracking-wide">Infos rapides</h2>
+              <InfoRow icon={<Phone size={14} />} label="GSM" value={form.gsm ?? ''} />
+              <InfoRow icon={<Mail size={14} />} label="Email" value={form.email ?? ''} />
+              <InfoRow icon={<Droplet size={14} />} label="Groupe sanguin" value={form.groupeSanguin ? GROUPE_SANGUIN_LABELS[form.groupeSanguin] : ''} />
+              <InfoRow icon={<GraduationCap size={14} />} label="Diplome" value={form.diplome ?? ''} />
+              <InfoRow icon={<Briefcase size={14} />} label="Type de contrat" value={form.typeContrat ?? ''} />
             </div>
             {/* Documents justificatifs */}
-            <div className="bg-white rounded-2xl shadow-sm p-6">
-              <h2 className="text-sm font-bold text-navy/70 uppercase tracking-wide mb-4">Documents justificatifs</h2>
-              <div className="flex flex-col gap-3">
+            <div className="bg-white rounded-xl shadow-sm p-5">
+              <h2 className="text-[11px] font-bold text-navy/60 uppercase tracking-wide mb-3">Documents justificatifs</h2>
+              <div className="flex flex-col gap-2.5">
                 {([
                   { key: 'cin' as DocumentType, label: "Copie carte d'identite", path: profile?.copieCinPath },
                   { key: 'extraitNaissance' as DocumentType, label: 'Extrait de naissance', path: profile?.copieExtraitNaissancePath },
                   { key: 'diplome' as DocumentType, label: 'Copie de diplome', path: profile?.copieDiplomePath },
                   { key: 'permis' as DocumentType, label: 'Copie de permis', path: profile?.copiePermisPath },
                 ]).map((doc) => (
-                  <div key={doc.key} className="flex items-center justify-between gap-3 rounded-xl border border-navy/10 p-3">
+                  <div key={doc.key} className="flex items-center justify-between gap-2 rounded-lg border border-navy/10 p-2.5">
                     <div className="min-w-0">
-                      <p className="text-sm text-navy font-medium truncate">{doc.label}</p>
-                      <span className={`text-xs font-medium ${doc.path ? 'text-green-700' : 'text-navy/50'}`}>
+                      <p className="text-[13px] text-navy font-medium truncate">{doc.label}</p>
+                      <span className={`text-[10px] font-medium ${doc.path ? 'text-green-700' : 'text-navy/50'}`}>
                         {doc.path ? '✓ Depose' : 'Non depose'}
                       </span>
                     </div>
-                    <label className="shrink-0 flex items-center gap-1.5 rounded-full bg-navy/5 px-3 py-1.5 text-xs font-semibold text-navy cursor-pointer hover:bg-navy/10">
-                      {uploadingKey === doc.key ? <Loader2 size={13} className="animate-spin" /> : <Upload size={13} />}
+                    <label className="shrink-0 flex items-center gap-1 rounded-full bg-navy/5 px-2.5 py-1 text-[11px] font-semibold text-navy cursor-pointer hover:bg-navy/10">
+                      {uploadingKey === doc.key ? <Loader2 size={12} className="animate-spin" /> : <Upload size={12} />}
                       {doc.path ? 'Remplacer' : 'Deposer'}
                       <input
                         type="file"
@@ -266,7 +266,7 @@ export default function ProfilPage() {
             </div>
           </aside>
           {/* Colonne principale : formulaire par sections */}
-          <form onSubmit={handleSubmit} className="lg:col-span-2 flex flex-col gap-6">
+          <form onSubmit={handleSubmit} className="lg:col-span-2 flex flex-col gap-5">
             <Card title="Identite">
               <TextField label="Nom" value={form.nom} onChange={(v) => set('nom', v)} />
               <TextField label="Prenom" value={form.prenom} onChange={(v) => set('prenom', v)} />
@@ -289,8 +289,8 @@ export default function ProfilPage() {
               <TextField label="Specialite" value={form.specialite ?? ''} onChange={(v) => set('specialite', v)} />
               <TextField label="Niveau scolaire" value={form.niveauScolaire ?? ''} onChange={(v) => set('niveauScolaire', v)} />
               <div>
-                <label className="block text-xs font-medium text-navy/60 mb-1">Permis de conduire</label>
-                <div className="flex items-center gap-4 mt-2">
+                <label className="block text-[11px] font-medium text-navy/60 mb-1">Permis de conduire</label>
+                <div className="flex items-center gap-4 mt-1.5">
                   <label className="flex items-center gap-1.5 text-sm text-navy">
                     <input type="radio" checked={form.permisConduite} onChange={() => set('permisConduite', true)} /> Oui
                   </label>
@@ -311,11 +311,11 @@ export default function ProfilPage() {
             </Card>
             <Card title="Sante">
               <div>
-                <label className="block text-xs font-medium text-navy/60 mb-1">Groupe sanguin</label>
+                <label className="block text-[11px] font-medium text-navy/60 mb-1">Groupe sanguin</label>
                 <select
                   value={form.groupeSanguin ?? ''}
                   onChange={(e) => set('groupeSanguin', (e.target.value || null) as GroupeSanguin | null)}
-                  className="w-full rounded-lg border border-navy/15 px-3 py-2 text-sm text-navy bg-white"
+                  className="w-full rounded-lg border border-navy/15 px-3 py-1.5 text-sm text-navy bg-white"
                 >
                   <option value="">—</option>
                   {GROUPES.map((g) => <option key={g} value={g}>{GROUPE_SANGUIN_LABELS[g]}</option>)}
@@ -326,8 +326,8 @@ export default function ProfilPage() {
               <TextField label="Pointure chaussure" value={form.pointureChaussure ?? ''} onChange={(v) => set('pointureChaussure', v)} />
               <TextField label="Taille vetements" value={form.tailleVetements ?? ''} onChange={(v) => set('tailleVetements', v)} />
               <div>
-                <label className="block text-xs font-medium text-navy/60 mb-1">Tatouage</label>
-                <div className="flex items-center gap-4 mt-2">
+                <label className="block text-[11px] font-medium text-navy/60 mb-1">Tatouage</label>
+                <div className="flex items-center gap-4 mt-1.5">
                   <label className="flex items-center gap-1.5 text-sm text-navy">
                     <input type="radio" checked={form.tatouage} onChange={() => set('tatouage', true)} /> Oui
                   </label>
@@ -353,7 +353,7 @@ export default function ProfilPage() {
             <button
               type="submit"
               disabled={saving}
-              className="self-start flex items-center gap-2 rounded-full bg-gold px-6 py-2.5 text-sm font-semibold text-navy-dark hover:bg-gold-light transition-colors disabled:opacity-60"
+              className="self-start flex items-center gap-2 rounded-full bg-gold px-5 py-2 text-sm font-semibold text-navy-dark hover:bg-gold-light transition-colors disabled:opacity-60"
             >
               {saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
               Enregistrer ma fiche
