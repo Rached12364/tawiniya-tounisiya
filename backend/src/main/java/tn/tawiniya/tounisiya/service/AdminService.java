@@ -1,4 +1,4 @@
-package tn.tawiniya.tounisiya.service;
+﻿package tn.tawiniya.tounisiya.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -42,6 +42,7 @@ public class AdminService {
                 .build();
     }
 
+    @Transactional(readOnly = true)
     public Page<UserResponse> listUsers(Pageable pageable) {
         return userRepository.findAll(pageable).map(userMapper::toResponse);
     }
@@ -55,3 +56,4 @@ public class AdminService {
         return userMapper.toResponse(user);
     }
 }
+
