@@ -96,6 +96,91 @@ function TechnicienDetail({ u }: { u: User }) {
     </div>
   );
 }
+function EntrepriseDetail({ u }: { u: User }) {
+  return (
+    <div className="flex flex-col gap-3 p-4">
+      <DetailSection title="Informations générales">
+        <Field label="Raison sociale" value={u.raisonSociale} />
+        <Field label="Matricule fiscal" value={u.matriculeFiscal} />
+        <Field label="Registre de commerce" value={u.registreCommerce} />
+        <Field label="Secteur d'activité" value={u.secteurActivite} />
+        <Field label="Année de création" value={u.anneeCreation} />
+        <Field label="Taille de l'entreprise" value={u.tailleEntreprise} />
+      </DetailSection>
+      {u.descriptionEntreprise && (
+        <div className="rounded-lg border border-navy/10 bg-navy/[0.02] p-3">
+          <p className="text-xs font-bold text-teal mb-2">Description</p>
+          <p className="text-sm text-navy whitespace-pre-line">{u.descriptionEntreprise}</p>
+        </div>
+      )}
+      <DetailSection title="Coordonnées">
+        <Field label="Adresse" value={u.entrepriseAdresse} />
+        <Field label="Gouvernorat" value={u.gouvernorat} />
+        <Field label="Ville" value={u.ville} />
+        <Field label="Téléphone entreprise" value={u.entrepriseTelephone} />
+        <Field label="Email entreprise" value={u.entrepriseEmail} />
+        <Field label="Site web" value={u.siteWeb} />
+        <Field label="LinkedIn" value={u.linkedin} />
+      </DetailSection>
+      <DetailSection title="Contact (responsable)">
+        <Field label="Nom du responsable" value={u.nomResponsable} />
+        <Field label="Fonction" value={u.fonctionResponsable} />
+        <Field label="Téléphone" value={u.telephoneResponsable} />
+        <Field label="Email" value={u.emailResponsable} />
+      </DetailSection>
+      <DetailSection title="Informations professionnelles">
+        <Field label="Domaines d'activité" value={u.domainesActivite} />
+        <Field label="Technologies utilisées" value={u.technologiesUtilisees} />
+        <Field label="Services proposés" value={u.servicesProposes} />
+        <Field label="Nb techniciens" value={u.nombreTechniciens} />
+        <Field label="Nb stagiaires" value={u.nombreStagiaires} />
+        <Field label="Nb employés" value={u.nombreEmployes} />
+      </DetailSection>
+    </div>
+  );
+}
+function StagiaireDetail({ u }: { u: User }) {
+  return (
+    <div className="flex flex-col gap-3 p-4">
+      <DetailSection title="Informations personnelles">
+        <Field label="CIN" value={u.cin} />
+        <Field label="Date de naissance" value={u.dateNaissance} />
+        <Field label="Adresse" value={u.adresse} />
+      </DetailSection>
+      <DetailSection title="Informations académiques">
+        <Field label="Établissement" value={u.etablissement} />
+        <Field label="Filière / Spécialité" value={u.domaineFormation} />
+        <Field label="Niveau / Année" value={u.niveauFormation} />
+        <Field label="Classe / groupe" value={u.classeGroupe} />
+        <Field label="Année universitaire" value={u.anneeUniversitaire} />
+        <Field label="Diplôme préparé" value={u.diplomePrepare} />
+      </DetailSection>
+      {u.competencesStagiaire && (
+        <div className="rounded-lg border border-navy/10 bg-navy/[0.02] p-3">
+          <p className="text-xs font-bold text-teal mb-2">Compétences</p>
+          <p className="text-sm text-navy whitespace-pre-line">{u.competencesStagiaire}</p>
+        </div>
+      )}
+      <DetailSection title="Informations du stage">
+        <Field label="Type de stage" value={u.typeStage} />
+        <Field label="Statut" value={u.statutStage} />
+        <Field label="Début" value={u.dateDebutStage} />
+        <Field label="Fin" value={u.dateFinStage} />
+        <Field label="Durée" value={u.dureeStage} />
+        <Field label="Sujet" value={u.sujetStage} />
+        <Field label="Encadrant entreprise" value={u.encadrantEntreprise} />
+        <Field label="Encadrant académique" value={u.encadrantAcademique} />
+        <Field label="Département" value={u.departementStage} />
+      </DetailSection>
+      {u.descriptionProjet && (
+        <div className="rounded-lg border border-navy/10 bg-navy/[0.02] p-3">
+          <p className="text-xs font-bold text-teal mb-2">Description du projet</p>
+          <p className="text-sm text-navy whitespace-pre-line">{u.descriptionProjet}</p>
+        </div>
+      )}
+    </div>
+  );
+}
 export default function UsersPanel() {
   const [pageData, setPageData] = useState<PagedUsers | null>(null);
   const [page, setPage] = useState(0);
@@ -153,15 +238,15 @@ export default function UsersPanel() {
           <tbody>
             {pageData.content.map((u) => {
               const isExpanded = expandedId === u.id;
-              const isTechnicien = u.role === 'TECHNICIEN';
+              const hasDetail = u.role === 'TECHNICIEN' || u.role === 'ENTREPRISE' || u.role === 'STAGIAIRE';
               return (
                 <Fragment key={u.id}>
                   <tr
-                    className={`border-t border-navy/5 ${isTechnicien ? 'cursor-pointer hover:bg-navy/[0.02]' : ''}`}
-                    onClick={() => isTechnicien && setExpandedId(isExpanded ? null : u.id)}
+                    className={`border-t border-navy/5 ${hasDetail ? 'cursor-pointer hover:bg-navy/[0.02]' : ''}`}
+                    onClick={() => hasDetail && setExpandedId(isExpanded ? null : u.id)}
                   >
                     <td className="px-4 py-3">
-                      {isTechnicien && (
+                      {hasDetail && (
                         <ChevronDown
                           size={14}
                           className={`text-navy/40 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
@@ -203,10 +288,12 @@ export default function UsersPanel() {
                       </button>
                     </td>
                   </tr>
-                  {isTechnicien && isExpanded && (
+                  {hasDetail && isExpanded && (
                     <tr className="border-t border-navy/5 bg-navy/[0.015]">
                       <td colSpan={7}>
-                        <TechnicienDetail u={u} />
+                        {u.role === 'TECHNICIEN' && <TechnicienDetail u={u} />}
+                        {u.role === 'ENTREPRISE' && <EntrepriseDetail u={u} />}
+                        {u.role === 'STAGIAIRE' && <StagiaireDetail u={u} />}
                       </td>
                     </tr>
                   )}
@@ -240,3 +327,4 @@ export default function UsersPanel() {
     </div>
   );
 }
+
