@@ -49,6 +49,7 @@ export default function Navbar() {
   const [juridiqueCount, setJuridiqueCount] = useState(0);
   const isAdmin = isAuthenticated && user?.role === 'ADMIN';
   useEffect(() => {
+    if (isAdmin) return;
     getTrainingCenters(0, 1)
       .then((res) => setFormationCount(res.totalElements))
       .catch(() => setFormationCount(0));
@@ -56,14 +57,15 @@ export default function Navbar() {
       .getActive()
       .then((sections) => setJuridiqueCount(sections.length))
       .catch(() => setJuridiqueCount(0));
-  }, []);
+  }, [isAdmin]);
   useEffect(() => {
+    if (isAdmin) return;
     getUpcomingEvents(0, 1)
       .then((res) => setEventsCount(res.totalElements))
       .catch(() => setEventsCount(0));
-  }, []);
+  }, [isAdmin]);
   useEffect(() => {
-    if (!isAuthenticated) {
+    if (!isAuthenticated || isAdmin) {
       setReclamationsCount(0);
       return;
     }
@@ -73,7 +75,7 @@ export default function Navbar() {
         setReclamationsCount(pending);
       })
       .catch(() => setReclamationsCount(0));
-  }, [isAuthenticated]);
+  }, [isAuthenticated, isAdmin]);
   const badgeForKey: Record<string, number> = {
     evenements: eventsCount,
     reclamation: reclamationsCount,
@@ -99,7 +101,7 @@ export default function Navbar() {
   return (
     <header className="absolute top-0 left-0 z-50 w-full bg-white/25 backdrop-blur-sm">
       <nav className="w-full pe-4 py-2 flex flex-wrap items-center justify-between gap-y-2 text-white">
-        <Link to="/" className="flex items-center gap-2 shrink-0" onClick={closeMobileMenu}>
+        <Link to={isAdmin ? '/admin' : '/'} className="flex items-center gap-2 shrink-0" onClick={closeMobileMenu}>
           <img
             src={BRAND.logoSrc}
             alt={BRAND.nameAr}
@@ -120,46 +122,52 @@ export default function Navbar() {
           </div>
         </Link>
         <div className="hidden lg:flex flex-wrap items-center gap-x-6 gap-y-2 min-w-0">
-          <RouterNavLink to="/" className={linkClass} end>
-            <img src="/icons/accueil.png" alt="" className="h-3.5 w-3.5 object-contain" />
-            {t('nav.home')}
-          </RouterNavLink>
-          <div className="relative shrink-0" ref={spacesRef}>
-            <button
-              onClick={() => setIsSpacesOpen((v) => !v)}
-              className="flex items-center gap-1.5 whitespace-nowrap text-sm font-medium text-black hover:text-gold transition-colors"
-            >
-              <ChevronDown size={12} className={`transition-transform ${isSpacesOpen ? 'rotate-180' : ''}`} />
-              <img src="/icons/espace.png" alt="" className="h-3.5 w-3.5 object-contain" />
-              {t('nav.spaces')}
-            </button>
-            {isSpacesOpen && (
-              <div className="absolute top-full mt-3 start-4 z-20">
-                <div className="absolute -top-1.5 start-3 h-3 w-3 rotate-45 bg-white border-t border-s border-navy/10 z-10" />
-                <div className="relative w-52 rounded-lg bg-white text-navy shadow-xl overflow-hidden py-1 border border-navy/10">
-                  {SPACE_LINKS.map((link) => (
-                    <Link
-                      key={link.path}
-                      to={link.path}
-                      onClick={() => setIsSpacesOpen(false)}
-                      className="block px-3.5 py-2 text-[13px] hover:bg-navy/5 hover:text-teal transition-colors"
-                    >
-                      {t(`nav.${link.key}`)}
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-          {NAV_LINKS.map((link) => (
-            <RouterNavLink key={link.path} to={link.path} className={linkClass}>
-              <span className="relative inline-block h-3.5 w-3.5 shrink-0">
-                <img src={link.icon} alt="" className="h-3.5 w-3.5 object-contain" />
-                <NavBadge count={badgeForKey[link.key] ?? 0} />
-              </span>
-              {t(`nav.${link.key}`)}
+          {!isAdmin && (
+            <RouterNavLink to="/" className={linkClass} end>
+              <img src="/icons/accueil.png" alt="" className="h-3.5 w-3.5 object-contain" />
+              {t('nav.home')}
             </RouterNavLink>
-          ))}
+          )}
+          {!isAdmin && isAuthenticated && (
+            <>
+              <div className="relative shrink-0" ref={spacesRef}>
+                <button
+                  onClick={() => setIsSpacesOpen((v) => !v)}
+                  className="flex items-center gap-1.5 whitespace-nowrap text-sm font-medium text-black hover:text-gold transition-colors"
+                >
+                  <ChevronDown size={12} className={`transition-transform ${isSpacesOpen ? 'rotate-180' : ''}`} />
+                  <img src="/icons/espace.png" alt="" className="h-3.5 w-3.5 object-contain" />
+                  {t('nav.spaces')}
+                </button>
+                {isSpacesOpen && (
+                  <div className="absolute top-full mt-3 start-4 z-20">
+                    <div className="absolute -top-1.5 start-3 h-3 w-3 rotate-45 bg-white border-t border-s border-navy/10 z-10" />
+                    <div className="relative w-52 rounded-lg bg-white text-navy shadow-xl overflow-hidden py-1 border border-navy/10">
+                      {SPACE_LINKS.map((link) => (
+                        <Link
+                          key={link.path}
+                          to={link.path}
+                          onClick={() => setIsSpacesOpen(false)}
+                          className="block px-3.5 py-2 text-[13px] hover:bg-navy/5 hover:text-teal transition-colors"
+                        >
+                          {t(`nav.${link.key}`)}
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+              {NAV_LINKS.map((link) => (
+                <RouterNavLink key={link.path} to={link.path} className={linkClass}>
+                  <span className="relative inline-block h-3.5 w-3.5 shrink-0">
+                    <img src={link.icon} alt="" className="h-3.5 w-3.5 object-contain" />
+                    <NavBadge count={badgeForKey[link.key] ?? 0} />
+                  </span>
+                  {t(`nav.${link.key}`)}
+                </RouterNavLink>
+              ))}
+            </>
+          )}
           {isAdmin && (
             <RouterNavLink to="/admin" className={linkClass}>
               <img src="/icons/dashboard.png" alt="" className="h-3.5 w-3.5 object-contain" />
@@ -200,14 +208,16 @@ export default function Navbar() {
                 <div className="absolute top-full mt-3 end-0 z-20">
                   <div className="absolute -top-1.5 end-4 h-3 w-3 rotate-45 bg-white border-t border-s border-navy/10 z-10" />
                   <div className="relative w-48 rounded-lg bg-white text-navy shadow-xl overflow-hidden py-1 border border-navy/10">
-                    <Link
-                      to="/profil"
-                      onClick={() => setIsAccountOpen(false)}
-                      className="flex items-center gap-2 px-3.5 py-2 text-[13px] hover:bg-navy/5 hover:text-teal transition-colors"
-                    >
-                      <UserIcon size={14} />
-                      Mon profil
-                    </Link>
+                    {!isAdmin && (
+                      <Link
+                        to="/profil"
+                        onClick={() => setIsAccountOpen(false)}
+                        className="flex items-center gap-2 px-3.5 py-2 text-[13px] hover:bg-navy/5 hover:text-teal transition-colors"
+                      >
+                        <UserIcon size={14} />
+                        Mon profil
+                      </Link>
+                    )}
                     <button
                       onClick={() => {
                         setIsAccountOpen(false);
@@ -240,35 +250,39 @@ export default function Navbar() {
       </nav>
       {isMobileMenuOpen && (
         <div className="lg:hidden bg-navy border-t border-white/10 px-4 py-3 flex flex-col gap-1 text-white">
-          <RouterNavLink to="/" className={linkClass} end onClick={closeMobileMenu}>
-            <div className="py-2 flex items-center gap-1.5">
-              <img src="/icons/accueil.png" alt="" className="h-3.5 w-3.5 object-contain" />
-              {t('nav.home')}
-            </div>
-          </RouterNavLink>
-          {isAuthenticated && (
-            <Link to="/profil" onClick={closeMobileMenu} className="py-2 flex items-center gap-1.5 text-sm hover:text-gold">
-              <UserIcon size={15} />
-              Mon profil
-            </Link>
-          )}
-          <div className="py-2 text-[11px] uppercase tracking-wide text-white/50">{t('nav.spaces')}</div>
-          {SPACE_LINKS.map((link) => (
-            <Link key={link.path} to={link.path} onClick={closeMobileMenu} className="py-2 ps-3 text-sm hover:text-gold">
-              {t(`nav.${link.key}`)}
-            </Link>
-          ))}
-          {NAV_LINKS.map((link) => (
-            <RouterNavLink key={link.path} to={link.path} className={linkClass} onClick={closeMobileMenu}>
+          {!isAdmin && (
+            <RouterNavLink to="/" className={linkClass} end onClick={closeMobileMenu}>
               <div className="py-2 flex items-center gap-1.5">
-                <span className="relative inline-block h-3.5 w-3.5 shrink-0">
-                  <img src={link.icon} alt="" className="h-3.5 w-3.5 object-contain" />
-                  <NavBadge count={badgeForKey[link.key] ?? 0} />
-                </span>
-                {t(`nav.${link.key}`)}
+                <img src="/icons/accueil.png" alt="" className="h-3.5 w-3.5 object-contain" />
+                {t('nav.home')}
               </div>
             </RouterNavLink>
-          ))}
+          )}
+          {!isAdmin && isAuthenticated && (
+            <>
+              <Link to="/profil" onClick={closeMobileMenu} className="py-2 flex items-center gap-1.5 text-sm hover:text-gold">
+                <UserIcon size={15} />
+                Mon profil
+              </Link>
+              <div className="py-2 text-[11px] uppercase tracking-wide text-white/50">{t('nav.spaces')}</div>
+              {SPACE_LINKS.map((link) => (
+                <Link key={link.path} to={link.path} onClick={closeMobileMenu} className="py-2 ps-3 text-sm hover:text-gold">
+                  {t(`nav.${link.key}`)}
+                </Link>
+              ))}
+              {NAV_LINKS.map((link) => (
+                <RouterNavLink key={link.path} to={link.path} className={linkClass} onClick={closeMobileMenu}>
+                  <div className="py-2 flex items-center gap-1.5">
+                    <span className="relative inline-block h-3.5 w-3.5 shrink-0">
+                      <img src={link.icon} alt="" className="h-3.5 w-3.5 object-contain" />
+                      <NavBadge count={badgeForKey[link.key] ?? 0} />
+                    </span>
+                    {t(`nav.${link.key}`)}
+                  </div>
+                </RouterNavLink>
+              ))}
+            </>
+          )}
           {isAdmin && (
             <RouterNavLink to="/admin" className={linkClass} onClick={closeMobileMenu}>
               <div className="py-2 flex items-center gap-1.5">
@@ -312,3 +326,4 @@ export default function Navbar() {
     </header>
   );
 }
+
