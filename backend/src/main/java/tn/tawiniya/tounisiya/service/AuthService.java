@@ -1,4 +1,4 @@
-﻿package tn.tawiniya.tounisiya.service;
+package tn.tawiniya.tounisiya.service;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;

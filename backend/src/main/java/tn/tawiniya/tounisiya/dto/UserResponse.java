@@ -1,4 +1,4 @@
-﻿package tn.tawiniya.tounisiya.dto;
+package tn.tawiniya.tounisiya.dto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

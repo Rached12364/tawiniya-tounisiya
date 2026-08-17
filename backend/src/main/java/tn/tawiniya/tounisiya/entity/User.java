@@ -1,4 +1,4 @@
-﻿package tn.tawiniya.tounisiya.entity;
+package tn.tawiniya.tounisiya.entity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
