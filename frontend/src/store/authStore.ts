@@ -34,18 +34,9 @@ export const useAuthStore = create<AuthState>((set) => ({
 }));
 /** Chemin de redirection après connexion, selon le rôle. */
 export function redirectPathForRole(role: User['role']): string {
-  switch (role) {
-    case 'ADMIN':
-      return '/admin';
-    case 'TECHNICIEN':
-      return '/espace/technicien';
-    case 'ENTREPRISE':
-      return '/espace/entreprise';
-    case 'STAGIAIRE':
-      return '/espace/stagiaire';
-    case 'BENEFICIEL':
-      return '/espace/beneficiel';
-    default:
-      return '/';
+  if (role === 'ADMIN') {
+    return '/admin';
   }
+  return '/';
 }
+
