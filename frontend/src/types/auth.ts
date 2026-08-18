@@ -1,4 +1,4 @@
-﻿export type Role = 'ADMIN' | 'TECHNICIEN' | 'ENTREPRISE' | 'STAGIAIRE' | 'BENEFICIEL';
+export type Role = 'ADMIN' | 'TECHNICIEN' | 'ENTREPRISE' | 'STAGIAIRE' | 'BENEFICIEL';
 export interface ExperiencePro {
   societe: string;
   periode: string;
@@ -94,6 +94,9 @@ export interface User extends TechnicienProfil, EntrepriseProfil, StagiaireProfi
   role: Role;
   enabled: boolean;
   createdAt: string;
+  bio?: string;
+  photoProfilPath?: string;
+  photoCouverturePath?: string;
 }
 export interface AuthResponse {
   token: string;

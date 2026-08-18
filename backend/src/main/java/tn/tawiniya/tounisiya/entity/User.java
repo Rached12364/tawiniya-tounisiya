@@ -43,6 +43,12 @@ public class User implements UserDetails {
     private boolean enabled = true;
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
+    @Column(name = "photo_profil_path")
+    private String photoProfilPath;
+    @Column(name = "photo_couverture_path")
+    private String photoCouverturePath;
+    @Column(columnDefinition = "TEXT")
+    private String bio;
     // ================== Profil Technicien ==================
     // Certains champs (cin, dateNaissance, adresse) sont partagés avec le profil Stagiaire.
     // Tous ces champs restent null pour les rôles qui ne les utilisent pas.

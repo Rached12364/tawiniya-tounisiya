@@ -1,27 +1,12 @@
 package tn.tawiniya.tounisiya.dto;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
-import tn.tawiniya.tounisiya.entity.Role;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 @Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class UserResponse {
-    private Long id;
+public class UpdateProfileRequest {
     private String nom;
     private String prenom;
-    private String email;
     private String phone;
-    private Role role;
-    private boolean enabled;
-    private LocalDateTime createdAt;
-    private String photoProfilPath;
-    private String photoCouverturePath;
     private String bio;
     // ================== Profil Technicien ==================
     private LocalDate dateNaissance;
