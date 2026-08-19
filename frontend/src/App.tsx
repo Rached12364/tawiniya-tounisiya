@@ -14,6 +14,7 @@ import MonCentreFormationPage from './pages/MonCentreFormationPage';
 import NotFoundPage from './pages/NotFoundPage';
 import NetworkSpacePage from './pages/NetworkSpacePage';
 import PublicProfilePage from './pages/PublicProfilePage';
+import ActualitesPage from './pages/ActualitesPage';
 import AdminDashboardPage from './pages/admin/AdminDashboardPage';
 import ProtectedRoute from './components/admin/ProtectedRoute';
 function App() {
@@ -30,6 +31,15 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={['ADMIN']}>
               <AdminDashboardPage />
+            </ProtectedRoute>
+          }
+        />
+        {/* Fil d'actualite : posts, reactions, commentaires (tous roles) */}
+        <Route
+          path="actualites"
+          element={
+            <ProtectedRoute>
+              <ActualitesPage />
             </ProtectedRoute>
           }
         />

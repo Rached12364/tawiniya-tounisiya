@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { Link, NavLink as RouterNavLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Menu, X, ChevronDown, User as UserIcon } from 'lucide-react';
+import { Menu, X, ChevronDown, User as UserIcon, Users } from 'lucide-react';
 import { useUiStore } from '../../store/uiStore';
 import { useAuthStore } from '../../store/authStore';
 import { BRAND } from '../../config/brand';
@@ -135,6 +135,10 @@ export default function Navbar() {
           )}
           {!isAdmin && isAuthenticated && (
             <>
+              <RouterNavLink to="/actualites" className={linkClass}>
+                <Users size={14} />
+                Actualités
+              </RouterNavLink>
               <div className="relative shrink-0" ref={spacesRef}>
                 <button
                   onClick={() => setIsSpacesOpen((v) => !v)}
@@ -269,6 +273,10 @@ export default function Navbar() {
           )}
           {!isAdmin && isAuthenticated && (
             <>
+              <Link to="/actualites" onClick={closeMobileMenu} className="py-2 flex items-center gap-1.5 text-sm hover:text-gold">
+                <Users size={15} />
+                Actualités
+              </Link>
               <Link to="/profil" onClick={closeMobileMenu} className="py-2 flex items-center gap-1.5 text-sm hover:text-gold">
                 <UserIcon size={15} />
                 Mon profil
