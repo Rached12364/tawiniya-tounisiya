@@ -1,4 +1,4 @@
-﻿import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Link, NavLink as RouterNavLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Menu, X, ChevronDown, User as UserIcon } from 'lucide-react';
@@ -10,6 +10,11 @@ import { getUpcomingEvents } from '../../services/eventService';
 import { getTrainingCenters } from '../../services/trainingCenterService';
 import { juridiqueService } from '../../services/juridiqueService';
 import { getMyReclamations } from '../../services/reclamationService';
+const API_ORIGIN = (import.meta.env.VITE_API_URL || 'http://localhost:8080/api').replace(/\/api\/?$/, '');
+function imageUrl(path?: string) {
+  if (!path) return '';
+  return path.startsWith('http') ? path : `${API_ORIGIN}${path}`;
+}
 const SPACE_LINKS = [
   { key: 'spaces_technicien', path: '/espace/technicien' },
   { key: 'spaces_entreprise', path: '/espace/entreprise' },
@@ -196,8 +201,12 @@ export default function Navbar() {
                 onClick={() => setIsAccountOpen((v) => !v)}
                 className="flex items-center gap-1.5 rounded-full bg-white/70 hover:bg-white pe-2.5 ps-1 py-1 transition-colors"
               >
-                <span className="h-6 w-6 rounded-full bg-navy text-white text-[11px] font-bold grid place-items-center">
-                  {userInitial}
+                <span className="h-6 w-6 rounded-full bg-navy text-white text-[11px] font-bold grid place-items-center overflow-hidden shrink-0">
+                  {user?.photoProfilPath ? (
+                    <img src={imageUrl(user.photoProfilPath)} alt="" className="w-full h-full object-cover" />
+                  ) : (
+                    userInitial
+                  )}
                 </span>
                 <span className="text-[13px] font-medium text-navy max-w-[100px] truncate">
                   {userDisplayName}

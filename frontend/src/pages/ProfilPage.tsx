@@ -452,7 +452,7 @@ export default function ProfilPage() {
         {user.photoCouverturePath && (
           <img src={imageUrl(user.photoCouverturePath)} alt="Couverture" className="w-full h-full object-cover" />
         )}
-        <label className="absolute top-4 end-4 grid place-items-center h-9 w-9 rounded-full bg-white/90 hover:bg-white cursor-pointer shadow transition-colors">
+        <label className="absolute bottom-4 end-4 grid place-items-center h-9 w-9 rounded-full bg-white/90 hover:bg-white cursor-pointer shadow transition-colors">
           {uploadingKey === 'photoCouverture' ? (
             <Loader2 size={15} className="animate-spin text-navy" />
           ) : (

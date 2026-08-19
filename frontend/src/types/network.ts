@@ -7,6 +7,7 @@ export interface UserCard {
   role: Role;
   bio?: string;
   photoProfilPath?: string;
+  photoCouverturePath?: string;
   subtitle?: string;
   connectionStatus: ConnectionStatusValue;
   connectionId?: number;

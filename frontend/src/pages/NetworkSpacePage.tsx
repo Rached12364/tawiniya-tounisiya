@@ -31,7 +31,11 @@ function UserCardTile({ card, onAction }: { card: UserCard; onAction: (card: Use
   }
   return (
     <div className="bg-white rounded-xl border border-navy/10 overflow-hidden flex flex-col hover:shadow-md transition-shadow">
-      <div className="h-16 bg-gradient-to-br from-navy to-teal" />
+      <div className="h-16 bg-gradient-to-br from-navy to-teal overflow-hidden">
+        {card.photoCouverturePath && (
+          <img src={imageUrl(card.photoCouverturePath)} alt="" className="w-full h-full object-cover" />
+        )}
+      </div>
       <div className="px-4 pb-4 -mt-8 flex flex-col items-center text-center">
         <div className="h-16 w-16 rounded-full border-4 border-white bg-navy/10 overflow-hidden shrink-0">
           {card.photoProfilPath ? (

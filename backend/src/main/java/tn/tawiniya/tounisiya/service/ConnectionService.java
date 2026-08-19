@@ -53,6 +53,7 @@ public class ConnectionService {
                 .role(u.getRole())
                 .bio(u.getBio())
                 .photoProfilPath(u.getPhotoProfilPath())
+                .photoCouverturePath(u.getPhotoCouverturePath())
                 .subtitle(subtitleFor(u))
                 .connectionStatus(connectionStatus)
                 .connectionId(connectionId)
