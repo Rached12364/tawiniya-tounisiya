@@ -19,6 +19,36 @@ export interface ConnectionItem {
   createdAt: string;
   sentByMe: boolean;
 }
+export interface UserPublicProfile {
+  id: number;
+  nom: string;
+  prenom: string;
+  role: Role;
+  bio?: string;
+  photoProfilPath?: string;
+  photoCouverturePath?: string;
+  phone?: string;
+  diplome?: string;
+  specialite?: string;
+  niveauScolaire?: string;
+  facebook?: string;
+  tiktok?: string;
+  instagram?: string;
+  raisonSociale?: string;
+  secteurActivite?: string;
+  descriptionEntreprise?: string;
+  ville?: string;
+  gouvernorat?: string;
+  siteWeb?: string;
+  linkedin?: string;
+  entrepriseTelephone?: string;
+  entrepriseEmail?: string;
+  etablissement?: string;
+  domaineFormation?: string;
+  niveauFormation?: string;
+  connectionStatus: ConnectionStatusValue | 'SELF';
+  connectionId?: number;
+}
 export interface PagedUserCards {
   content: UserCard[];
   totalElements: number;

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   User as UserIcon, Loader2, UserPlus, Clock, Check, Users, Inbox,
 } from 'lucide-react';
@@ -20,6 +21,7 @@ const ROLE_LABELS: Record<Role, string> = {
 type Tab = 'browse' | 'connections' | 'invitations';
 function UserCardTile({ card, onAction }: { card: UserCard; onAction: (card: UserCard) => Promise<void> }) {
   const [busy, setBusy] = useState(false);
+  const navigate = useNavigate();
   const fullName = `${card.prenom} ${card.nom}`.trim();
   async function handleClick() {
     setBusy(true);
@@ -30,7 +32,10 @@ function UserCardTile({ card, onAction }: { card: UserCard; onAction: (card: Use
     }
   }
   return (
-    <div className="bg-white rounded-xl border border-navy/10 overflow-hidden flex flex-col hover:shadow-md transition-shadow">
+    <div
+      onClick={() => navigate(`/profil/${card.id}`)}
+      className="bg-white rounded-xl border border-navy/10 overflow-hidden flex flex-col hover:shadow-md transition-shadow cursor-pointer"
+    >
       <div className="h-16 bg-gradient-to-br from-navy to-teal overflow-hidden">
         {card.photoCouverturePath && (
           <img src={imageUrl(card.photoCouverturePath)} alt="" className="w-full h-full object-cover" />
@@ -48,7 +53,7 @@ function UserCardTile({ card, onAction }: { card: UserCard; onAction: (card: Use
         <p className="text-xs text-navy/50 truncate max-w-full">{card.subtitle || ROLE_LABELS[card.role]}</p>
         {card.bio && <p className="mt-1.5 text-[11px] text-navy/60 italic line-clamp-2">{card.bio}</p>}
         <button
-          onClick={handleClick}
+          onClick={(e) => { e.stopPropagation(); handleClick(); }}
           disabled={busy || card.connectionStatus === 'ACCEPTED' || card.connectionStatus === 'PENDING_SENT'}
           className={`mt-3 w-full flex items-center justify-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-colors disabled:opacity-70 ${
             card.connectionStatus === 'ACCEPTED'

@@ -16,6 +16,13 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class ConnectionController {
     private final ConnectionService connectionService;
+    @GetMapping("/profile/{userId}")
+    public tn.tawiniya.tounisiya.dto.UserPublicProfileResponse getPublicProfile(
+            @AuthenticationPrincipal User currentUser,
+            @PathVariable Long userId
+    ) {
+        return connectionService.getPublicProfile(userId, currentUser);
+    }
     @GetMapping("/browse/{role}")
     public Page<UserCardResponse> browse(
             @AuthenticationPrincipal User currentUser,

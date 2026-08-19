@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tn.tawiniya.tounisiya.dto.ConnectionResponse;
 import tn.tawiniya.tounisiya.dto.UserCardResponse;
+import tn.tawiniya.tounisiya.dto.UserPublicProfileResponse;
 import tn.tawiniya.tounisiya.entity.Connection;
 import tn.tawiniya.tounisiya.entity.ConnectionStatus;
 import tn.tawiniya.tounisiya.entity.Role;
@@ -55,6 +56,58 @@ public class ConnectionService {
                 .photoProfilPath(u.getPhotoProfilPath())
                 .photoCouverturePath(u.getPhotoCouverturePath())
                 .subtitle(subtitleFor(u))
+                .connectionStatus(connectionStatus)
+                .connectionId(connectionId)
+                .build();
+    }
+    @Transactional(readOnly = true)
+    public UserPublicProfileResponse getPublicProfile(Long targetUserId, User currentUser) {
+        User u = userRepository.findById(targetUserId)
+                .orElseThrow(() -> new ResourceNotFoundException("Utilisateur introuvable : " + targetUserId));
+        String connectionStatus = "NONE";
+        Long connectionId = null;
+        if (!u.getId().equals(currentUser.getId())) {
+            var existing = connectionRepository.findBetween(currentUser.getId(), u.getId());
+            if (existing.isPresent()) {
+                Connection c = existing.get();
+                connectionId = c.getId();
+                if (c.getStatus() == ConnectionStatus.ACCEPTED) {
+                    connectionStatus = "ACCEPTED";
+                } else if (c.getStatus() == ConnectionStatus.PENDING) {
+                    connectionStatus = c.getRequester().getId().equals(currentUser.getId())
+                            ? "PENDING_SENT" : "PENDING_RECEIVED";
+                }
+            }
+        } else {
+            connectionStatus = "SELF";
+        }
+        return UserPublicProfileResponse.builder()
+                .id(u.getId())
+                .nom(u.getNom())
+                .prenom(u.getPrenom())
+                .role(u.getRole())
+                .bio(u.getBio())
+                .photoProfilPath(u.getPhotoProfilPath())
+                .photoCouverturePath(u.getPhotoCouverturePath())
+                .phone(u.getPhone())
+                .diplome(u.getDiplome())
+                .specialite(u.getSpecialite())
+                .niveauScolaire(u.getNiveauScolaire())
+                .facebook(u.getFacebook())
+                .tiktok(u.getTiktok())
+                .instagram(u.getInstagram())
+                .raisonSociale(u.getRaisonSociale())
+                .secteurActivite(u.getSecteurActivite())
+                .descriptionEntreprise(u.getDescriptionEntreprise())
+                .ville(u.getVille())
+                .gouvernorat(u.getGouvernorat())
+                .siteWeb(u.getSiteWeb())
+                .linkedin(u.getLinkedin())
+                .entrepriseTelephone(u.getEntrepriseTelephone())
+                .entrepriseEmail(u.getEntrepriseEmail())
+                .etablissement(u.getEtablissement())
+                .domaineFormation(u.getDomaineFormation())
+                .niveauFormation(u.getNiveauFormation())
                 .connectionStatus(connectionStatus)
                 .connectionId(connectionId)
                 .build();

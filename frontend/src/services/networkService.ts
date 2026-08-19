@@ -1,6 +1,10 @@
 import api from './api';
 import type { Role } from '../types/auth';
-import type { PagedUserCards, ConnectionItem } from '../types/network';
+import type { PagedUserCards, ConnectionItem, UserPublicProfile } from '../types/network';
+export async function getPublicProfile(userId: number): Promise<UserPublicProfile> {
+  const { data } = await api.get<UserPublicProfile>(`/network/profile/${userId}`);
+  return data;
+}
 export async function browseByRole(role: Role, page = 0, size = 20): Promise<PagedUserCards> {
   const { data } = await api.get<PagedUserCards>(`/network/browse/${role}`, { params: { page, size } });
   return data;

@@ -13,6 +13,7 @@ import CentreFormationDetailPage from './pages/CentreFormationDetailPage';
 import MonCentreFormationPage from './pages/MonCentreFormationPage';
 import NotFoundPage from './pages/NotFoundPage';
 import NetworkSpacePage from './pages/NetworkSpacePage';
+import PublicProfilePage from './pages/PublicProfilePage';
 import AdminDashboardPage from './pages/admin/AdminDashboardPage';
 import ProtectedRoute from './components/admin/ProtectedRoute';
 function App() {
@@ -67,6 +68,14 @@ function App() {
           }
         />
         <Route path="espace/beneficiel" element={<ComingSoonPage />} />
+        <Route
+          path="profil/:id"
+          element={
+            <ProtectedRoute>
+              <PublicProfilePage />
+            </ProtectedRoute>
+          }
+        />
         {/* Modules additionnels (Sprint 4) */}
         <Route path="centre-formation" element={<CentreFormationPage />} />
         <Route path="centre-formation/:id" element={<CentreFormationDetailPage />} />
