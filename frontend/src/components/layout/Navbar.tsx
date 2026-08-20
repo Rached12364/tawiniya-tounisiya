@@ -27,11 +27,23 @@ const NAV_LINKS = [
   { key: 'reclamation', path: '/reclamation', icon: '/icons/reclamations.png' },
   { key: 'evenements', path: '/evenements', icon: '/icons/evenements.png' },
 ];
-const LANGUAGES: { code: LangCode; label: string }[] = [
-  { code: 'fr', label: 'FR' },
-  { code: 'en', label: 'EN' },
-  { code: 'ar', label: 'عربي' },
+const LANGUAGES: { code: LangCode; label: string; flagCode: string }[] = [
+  { code: 'fr', label: 'Français', flagCode: 'fr' },
+  { code: 'en', label: 'English', flagCode: 'gb' },
+  { code: 'ar', label: 'العربية', flagCode: 'tn' },
 ];
+function FlagImg({ code, size = 18 }: { code: string; size?: number }) {
+  return (
+    <img
+      src={`https://flagcdn.com/w40/${code}.png`}
+      alt=""
+      width={size}
+      height={size * 0.75}
+      className="rounded-[2px] object-cover shrink-0"
+      style={{ width: size, height: size * 0.75 }}
+    />
+  );
+}
 function NavBadge({ count }: { count: number }) {
   if (!count || count <= 0) return null;
   return (
@@ -44,6 +56,8 @@ export default function Navbar() {
   const { t, i18n } = useTranslation();
   const [isSpacesOpen, setIsSpacesOpen] = useState(false);
   const [isAccountOpen, setIsAccountOpen] = useState(false);
+  const [isLangOpen, setIsLangOpen] = useState(false);
+  const langRef = useRef<HTMLDivElement>(null);
   const { isMobileMenuOpen, toggleMobileMenu, closeMobileMenu } = useUiStore();
   const { isAuthenticated, user, logout } = useAuthStore();
   const spacesRef = useRef<HTMLDivElement>(null);
@@ -94,6 +108,9 @@ export default function Navbar() {
       }
       if (accountRef.current && !accountRef.current.contains(e.target as Node)) {
         setIsAccountOpen(false);
+      }
+      if (langRef.current && !langRef.current.contains(e.target as Node)) {
+        setIsLangOpen(false);
       }
     };
     document.addEventListener('mousedown', onClickOutside);
@@ -185,19 +202,35 @@ export default function Navbar() {
           )}
         </div>
         <div className="hidden lg:flex flex-wrap items-center gap-3 shrink-0">
-          <div className="flex items-center gap-1 text-[13px] font-medium text-navy border-e border-navy/20 pe-3 shrink-0 whitespace-nowrap">
-            {LANGUAGES.map((lang) => (
-              <button
-                key={lang.code}
-                type="button"
-                onClick={() => i18n.changeLanguage(lang.code)}
-                className={`shrink-0 px-1 py-0.5 rounded transition-colors ${
-                  i18n.language === lang.code ? 'text-gold font-semibold' : 'hover:text-gold'
-                }`}
-              >
-                {lang.label}
-              </button>
-            ))}
+          <div className="relative shrink-0 border-e border-navy/20 pe-3" ref={langRef}>
+            <button
+              type="button"
+              onClick={() => setIsLangOpen((v) => !v)}
+              className="flex items-center gap-1.5 text-[13px] font-medium text-navy hover:text-gold transition-colors"
+            >
+              <FlagImg code={LANGUAGES.find((l) => l.code === i18n.language)?.flagCode ?? 'fr'} size={20} />
+              <ChevronDown size={11} className={`transition-transform ${isLangOpen ? 'rotate-180' : ''}`} />
+            </button>
+            {isLangOpen && (
+              <div className="absolute top-full mt-3 start-0 z-20">
+                <div className="absolute -top-1.5 start-3 h-3 w-3 rotate-45 bg-white border-t border-s border-navy/10 z-10" />
+                <div className="relative w-40 rounded-lg bg-white text-navy shadow-xl overflow-hidden py-1 border border-navy/10">
+                  {LANGUAGES.map((lang) => (
+                    <button
+                      key={lang.code}
+                      type="button"
+                      onClick={() => { i18n.changeLanguage(lang.code); setIsLangOpen(false); }}
+                      className={`w-full flex items-center gap-2.5 px-3.5 py-2 text-[13px] text-left hover:bg-navy/5 transition-colors ${
+                        i18n.language === lang.code ? 'text-teal font-semibold' : 'text-navy'
+                      }`}
+                    >
+                      <FlagImg code={lang.flagCode} size={20} />
+                      {lang.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
           {isAuthenticated ? (
             <div className="relative shrink-0" ref={accountRef}>
@@ -308,14 +341,14 @@ export default function Navbar() {
               </div>
             </RouterNavLink>
           )}
-          <div className="flex items-center gap-1 py-2 text-sm">
+          <div className="flex items-center gap-2 py-2">
             {LANGUAGES.map((lang) => (
               <button
                 key={lang.code}
                 onClick={() => i18n.changeLanguage(lang.code)}
-                className={`px-1.5 py-0.5 rounded ${i18n.language === lang.code ? 'text-gold font-semibold' : ''}`}
+                className={`flex items-center gap-1 px-2 py-1 rounded text-sm ${i18n.language === lang.code ? 'text-gold font-semibold' : ''}`}
               >
-                {lang.label}
+                <FlagImg code={lang.flagCode} size={18} /> {lang.label}
               </button>
             ))}
           </div>
