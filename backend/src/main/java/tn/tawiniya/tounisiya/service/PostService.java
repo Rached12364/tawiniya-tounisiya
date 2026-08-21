@@ -12,6 +12,7 @@ import tn.tawiniya.tounisiya.exception.ResourceNotFoundException;
 import tn.tawiniya.tounisiya.repository.PostCommentRepository;
 import tn.tawiniya.tounisiya.repository.PostReactionRepository;
 import tn.tawiniya.tounisiya.repository.PostRepository;
+import tn.tawiniya.tounisiya.repository.PostSaveRepository;
 import java.util.*;
 import java.util.stream.Collectors;
 @Service
@@ -20,6 +21,7 @@ public class PostService {
     private final PostRepository postRepository;
     private final PostReactionRepository postReactionRepository;
     private final PostCommentRepository postCommentRepository;
+    private final PostSaveRepository postSaveRepository;
     private final FileStorageService fileStorageService;
     private PostAuthorDto toAuthorDto(User u) {
         return PostAuthorDto.builder()
@@ -43,6 +45,8 @@ public class PostService {
                 .findFirst()
                 .orElse(null);
         long totalComments = postCommentRepository.countByPostId(post.getId());
+        boolean savedByMe = postSaveRepository.findByPostIdAndUserId(post.getId(), currentUser.getId()).isPresent();
+        boolean canEdit = post.getAuthor().getId().equals(currentUser.getId()) || currentUser.getRole() == Role.ADMIN;
         return PostResponse.builder()
                 .id(post.getId())
                 .author(toAuthorDto(post.getAuthor()))
@@ -53,12 +57,26 @@ public class PostService {
                 .totalReactions(reactions.size())
                 .totalComments(totalComments)
                 .myReaction(myReaction)
+                .pinned(post.isPinned())
+                .savedByMe(savedByMe)
+                .canEdit(canEdit)
                 .build();
     }
     @Transactional(readOnly = true)
     public Page<PostResponse> listFeed(User currentUser, Pageable pageable) {
         return postRepository.findAllByOrderByCreatedAtDesc(pageable)
                 .map(p -> toResponse(p, currentUser));
+    }
+    @Transactional(readOnly = true)
+    public Page<PostResponse> listByAuthor(Long authorId, User currentUser, Pageable pageable) {
+        return postRepository.findByAuthorIdOrderByPinnedDescCreatedAtDesc(authorId, pageable)
+                .map(p -> toResponse(p, currentUser));
+    }
+    @Transactional(readOnly = true)
+    public List<PostResponse> listSaved(User currentUser) {
+        return postSaveRepository.findByUserIdOrderByCreatedAtDesc(currentUser.getId()).stream()
+                .map(s -> toResponse(s.getPost(), currentUser))
+                .collect(Collectors.toList());
     }
     @Transactional
     public PostResponse createPost(User currentUser, PostRequest request, MultipartFile image) {
@@ -71,19 +89,49 @@ public class PostService {
         postRepository.save(post);
         return toResponse(post, currentUser);
     }
-    @Transactional
-    public void deletePost(User currentUser, Long postId) {
+    private Post findOwnedOrAdmin(User currentUser, Long postId) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new ResourceNotFoundException("Post introuvable : " + postId));
         boolean isOwner = post.getAuthor().getId().equals(currentUser.getId());
         boolean isAdmin = currentUser.getRole() == Role.ADMIN;
         if (!isOwner && !isAdmin) {
-            throw new ForbiddenOperationException("Vous ne pouvez pas supprimer ce post.");
+            throw new ForbiddenOperationException("Action non autorisée sur ce post.");
         }
+        return post;
+    }
+    @Transactional
+    public PostResponse updatePost(User currentUser, Long postId, PostRequest request) {
+        Post post = findOwnedOrAdmin(currentUser, postId);
+        post.setContent(request.getContent());
+        postRepository.save(post);
+        return toResponse(post, currentUser);
+    }
+    @Transactional
+    public void deletePost(User currentUser, Long postId) {
+        Post post = findOwnedOrAdmin(currentUser, postId);
         if (post.getImagePath() != null) {
             fileStorageService.deleteImage(post.getImagePath());
         }
         postRepository.delete(post);
+    }
+    @Transactional
+    public PostResponse togglePin(User currentUser, Long postId) {
+        Post post = findOwnedOrAdmin(currentUser, postId);
+        post.setPinned(!post.isPinned());
+        postRepository.save(post);
+        return toResponse(post, currentUser);
+    }
+    @Transactional
+    public PostResponse toggleSave(User currentUser, Long postId) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new ResourceNotFoundException("Post introuvable : " + postId));
+        Optional<PostSave> existing = postSaveRepository.findByPostIdAndUserId(postId, currentUser.getId());
+        if (existing.isPresent()) {
+            postSaveRepository.delete(existing.get());
+        } else {
+            postSaveRepository.save(PostSave.builder().post(post).user(currentUser).build());
+        }
+        return toResponse(post, currentUser);
     }
     @Transactional
     public PostResponse react(User currentUser, Long postId, ReactionType type) {
@@ -93,7 +141,7 @@ public class PostService {
         if (existing.isPresent()) {
             PostReaction r = existing.get();
             if (r.getType() == type) {
-                postReactionRepository.delete(r); // toggle off si même réaction
+                postReactionRepository.delete(r);
             } else {
                 r.setType(type);
                 postReactionRepository.save(r);

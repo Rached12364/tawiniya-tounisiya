@@ -17,6 +17,9 @@ export interface Post {
   totalReactions: number;
   totalComments: number;
   myReaction: ReactionType | null;
+  pinned: boolean;
+  savedByMe: boolean;
+  canEdit: boolean;
 }
 export interface Comment {
   id: number;

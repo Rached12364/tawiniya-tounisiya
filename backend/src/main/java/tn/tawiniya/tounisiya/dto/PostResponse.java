@@ -20,4 +20,7 @@ public class PostResponse {
     private long totalReactions;
     private long totalComments;
     private String myReaction; // null si l'utilisateur courant n'a pas réagi
+    private boolean pinned;
+    private boolean savedByMe;
+    private boolean canEdit; // auteur ou admin
 }

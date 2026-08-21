@@ -13,8 +13,28 @@ export async function createPost(content: string, image: File | null): Promise<P
   });
   return data;
 }
+export async function updatePost(postId: number, content: string): Promise<Post> {
+  const { data } = await api.put<Post>(`/posts/${postId}`, { content });
+  return data;
+}
 export async function deletePost(postId: number): Promise<void> {
   await api.delete(`/posts/${postId}`);
+}
+export async function togglePin(postId: number): Promise<Post> {
+  const { data } = await api.post<Post>(`/posts/${postId}/pin`);
+  return data;
+}
+export async function toggleSave(postId: number): Promise<Post> {
+  const { data } = await api.post<Post>(`/posts/${postId}/save`);
+  return data;
+}
+export async function getPostsByAuthor(authorId: number, page = 0, size = 20): Promise<PagedPosts> {
+  const { data } = await api.get<PagedPosts>(`/posts/by-user/${authorId}`, { params: { page, size } });
+  return data;
+}
+export async function getSavedPosts(): Promise<Post[]> {
+  const { data } = await api.get<Post[]>('/posts/saved');
+  return data;
 }
 export async function reactToPost(postId: number, type: ReactionType): Promise<Post> {
   const { data } = await api.post<Post>(`/posts/${postId}/react`, { type });

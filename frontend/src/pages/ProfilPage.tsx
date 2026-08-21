@@ -6,6 +6,7 @@ import {
 import {
   getMyUserProfile, updateMyUserProfile, uploadMyPhotoProfil, uploadMyPhotoCouverture,
 } from '../services/userProfileService';
+import UserPostsList from '../components/post/UserPostsList';
 import type { User, ExperiencePro } from '../types/auth';
 const API_ORIGIN = (import.meta.env.VITE_API_URL || 'http://localhost:8080/api').replace(/\/api\/?$/, '');
 function imageUrl(path: string | null | undefined) {
@@ -494,6 +495,10 @@ export default function ProfilPage() {
           {user.role === 'TECHNICIEN' && (
             <ExperiencesSection experiences={experiences} setExperiences={setExperiences} onSave={persist} saving={saving} />
           )}
+        </div>
+        <div className="mt-6">
+          <h2 className="text-sm font-bold text-teal uppercase tracking-wide mb-3">Publications</h2>
+          <UserPostsList authorId={user.id} />
         </div>
       </div>
     </div>

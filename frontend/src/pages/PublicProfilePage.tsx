@@ -5,6 +5,7 @@ import {
   Phone, Mail, Globe, MapPin, GraduationCap, Building2, Link as LinkIcon,
 } from 'lucide-react';
 import { getPublicProfile, sendConnectionRequest, acceptConnection } from '../services/networkService';
+import UserPostsList from '../components/post/UserPostsList';
 import type { UserPublicProfile } from '../types/network';
 const API_ORIGIN = (import.meta.env.VITE_API_URL || 'http://localhost:8080/api').replace(/\/api\/?$/, '');
 function imageUrl(path?: string) {
@@ -171,6 +172,10 @@ export default function PublicProfilePage() {
             <InfoRow icon={<Globe size={16} />} label="TikTok" value={profile.tiktok} />
             <InfoRow icon={<Globe size={16} />} label="LinkedIn" value={profile.linkedin} />
           </div>
+        </div>
+        <div className="mt-6">
+          <h2 className="text-sm font-bold text-teal uppercase tracking-wide mb-3">Publications</h2>
+          <UserPostsList authorId={profile.id} />
         </div>
       </div>
     </div>

@@ -6,27 +6,23 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 @Entity
-@Table(name = "posts")
+@Table(name = "post_saves", uniqueConstraints = @UniqueConstraint(columnNames = {"post_id", "user_id"}))
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Post {
+public class PostSave {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "author_id", nullable = false)
-    private User author;
-    @Column(columnDefinition = "TEXT", nullable = false)
-    private String content;
-    @Column(name = "image_path")
-    private String imagePath;
+    @JoinColumn(name = "post_id", nullable = false)
+    private Post post;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
-    @Builder.Default
-    @Column(nullable = false)
-    private boolean pinned = false;
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();

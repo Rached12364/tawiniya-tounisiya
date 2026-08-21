@@ -24,6 +24,19 @@ public class PostController {
     ) {
         return postService.listFeed(currentUser, PageRequest.of(page, size));
     }
+    @GetMapping("/by-user/{authorId}")
+    public Page<PostResponse> listByAuthor(
+            @AuthenticationPrincipal User currentUser,
+            @PathVariable Long authorId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size
+    ) {
+        return postService.listByAuthor(authorId, currentUser, PageRequest.of(page, size));
+    }
+    @GetMapping("/saved")
+    public List<PostResponse> listSaved(@AuthenticationPrincipal User currentUser) {
+        return postService.listSaved(currentUser);
+    }
     @PostMapping(consumes = "multipart/form-data")
     public PostResponse create(
             @AuthenticationPrincipal User currentUser,
@@ -34,10 +47,26 @@ public class PostController {
         request.setContent(content);
         return postService.createPost(currentUser, request, image);
     }
+    @PutMapping("/{postId}")
+    public PostResponse update(
+            @AuthenticationPrincipal User currentUser,
+            @PathVariable Long postId,
+            @Valid @RequestBody PostRequest request
+    ) {
+        return postService.updatePost(currentUser, postId, request);
+    }
     @DeleteMapping("/{postId}")
     public Map<String, Boolean> delete(@AuthenticationPrincipal User currentUser, @PathVariable Long postId) {
         postService.deletePost(currentUser, postId);
         return Map.of("deleted", true);
+    }
+    @PostMapping("/{postId}/pin")
+    public PostResponse togglePin(@AuthenticationPrincipal User currentUser, @PathVariable Long postId) {
+        return postService.togglePin(currentUser, postId);
+    }
+    @PostMapping("/{postId}/save")
+    public PostResponse toggleSave(@AuthenticationPrincipal User currentUser, @PathVariable Long postId) {
+        return postService.toggleSave(currentUser, postId);
     }
     @PostMapping("/{postId}/react")
     public PostResponse react(
