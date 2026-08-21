@@ -2,7 +2,7 @@
 import {
   LayoutDashboard,
   Users,
-  Image as ImageIcon,
+  Home,
   MessageSquareWarning,
   Calendar,
   Scale,
@@ -29,7 +29,7 @@ type Tab = 'stats' | 'users' | 'content' | 'reclamations' | 'events' | 'juridiqu
 const TABS: { key: Tab; label: string; icon: typeof LayoutDashboard }[] = [
   { key: 'stats', label: 'Vue d\u2019ensemble', icon: LayoutDashboard },
   { key: 'users', label: 'Utilisateurs', icon: Users },
-  { key: 'content', label: 'Accueil', icon: ImageIcon },
+  { key: 'content', label: 'Accueil', icon: Home },
   { key: 'reclamations', label: 'Réclamations', icon: MessageSquareWarning },
   { key: 'events', label: 'Événements', icon: Calendar },
   { key: 'juridique', label: 'Juridique', icon: Scale },
