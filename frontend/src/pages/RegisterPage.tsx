@@ -77,6 +77,7 @@ export default function RegisterPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [confirmPassword, setConfirmPassword] = useState('');
   const update = (key: keyof RegisterPayload) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
     setForm((f) => ({ ...f, [key]: e.target.value }));
   const selectRole = (role: Role) => setForm((f) => ({ ...f, role }));
@@ -88,6 +89,10 @@ export default function RegisterPage() {
     e.preventDefault();
     setError(null);
     setFieldErrors({});
+    if (form.password !== confirmPassword) {
+      setError('Les mots de passe ne correspondent pas.');
+      return;
+    }
     setIsLoading(true);
     try {
       const payload: RegisterPayload = {
@@ -184,6 +189,23 @@ export default function RegisterPage() {
                 <input type="password" required minLength={6} value={form.password} onChange={update('password')} placeholder="6 caractères min." className={`${inputCls} ps-10`} />
               </div>
               {fieldErrors.password && <p className="mt-1 text-xs text-red-600">{fieldErrors.password}</p>}
+            </Field>
+            <Field label="Confirmer le mot de passe">
+              <div className="relative">
+                <Lock size={17} className="absolute start-3 top-1/2 -translate-y-1/2 text-navy/30" />
+                <input
+                  type="password"
+                  required
+                  minLength={6}
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="Retapez le mot de passe"
+                  className={`${inputCls} ps-10`}
+                />
+              </div>
+              {confirmPassword && form.password !== confirmPassword && (
+                <p className="mt-1 text-xs text-red-600">Les mots de passe ne correspondent pas.</p>
+              )}
             </Field>
           </div>
           {form.role === 'TECHNICIEN' && (
