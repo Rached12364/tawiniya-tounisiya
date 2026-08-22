@@ -1,4 +1,4 @@
-﻿import { useState, type FormEvent } from 'react';
+import { useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { User, Mail, Phone, Lock, UserPlus, Loader2, Wrench, Building2, GraduationCap, Check, Plus, Trash2 } from 'lucide-react';
@@ -40,10 +40,13 @@ const initialForm: RegisterPayload = {
 };
 const inputCls = "w-full rounded-lg border border-navy/15 bg-white px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal/40 focus:border-teal";
 const labelCls = "block text-sm font-medium text-navy mb-1.5";
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+function Field({ label, children, required }: { label: string; children: React.ReactNode; required?: boolean }) {
   return (
     <div>
-      <label className={labelCls}>{label}</label>
+      <label className={labelCls}>
+        {label}
+        {required && <span className="text-red-500"> *</span>}
+      </label>
       {children}
     </div>
   );
@@ -157,19 +160,19 @@ export default function RegisterPage() {
             </div>
           </div>
           <div className="grid sm:grid-cols-2 gap-4">
-            <Field label="Nom">
+            <Field label="Nom" required>
               <div className="relative">
                 <User size={17} className="absolute start-3 top-1/2 -translate-y-1/2 text-navy/30" />
                 <input required value={form.nom} onChange={update('nom')} className={`${inputCls} ps-10`} />
               </div>
               {fieldErrors.nom && <p className="mt-1 text-xs text-red-600">{fieldErrors.nom}</p>}
             </Field>
-            <Field label="Prénom">
+            <Field label="Prénom" required>
               <input required value={form.prenom} onChange={update('prenom')} className={inputCls} />
               {fieldErrors.prenom && <p className="mt-1 text-xs text-red-600">{fieldErrors.prenom}</p>}
             </Field>
           </div>
-          <Field label="Email">
+          <Field label="Email" required>
             <div className="relative">
               <Mail size={17} className="absolute start-3 top-1/2 -translate-y-1/2 text-navy/30" />
               <input type="email" required value={form.email} onChange={update('email')} className={`${inputCls} ps-10`} />
@@ -177,20 +180,20 @@ export default function RegisterPage() {
             {fieldErrors.email && <p className="mt-1 text-xs text-red-600">{fieldErrors.email}</p>}
           </Field>
           <div className="grid sm:grid-cols-2 gap-4">
-            <Field label="Téléphone">
+            <Field label="Téléphone" required>
               <div className="relative">
                 <Phone size={17} className="absolute start-3 top-1/2 -translate-y-1/2 text-navy/30" />
-                <input value={form.phone} onChange={update('phone')} placeholder="+216 ..." className={`${inputCls} ps-10`} />
+                <input required value={form.phone} onChange={update('phone')} placeholder="+216 ..." className={`${inputCls} ps-10`} />
               </div>
             </Field>
-            <Field label="Mot de passe">
+            <Field label="Mot de passe" required>
               <div className="relative">
                 <Lock size={17} className="absolute start-3 top-1/2 -translate-y-1/2 text-navy/30" />
                 <input type="password" required minLength={6} value={form.password} onChange={update('password')} placeholder="6 caractères min." className={`${inputCls} ps-10`} />
               </div>
               {fieldErrors.password && <p className="mt-1 text-xs text-red-600">{fieldErrors.password}</p>}
             </Field>
-            <Field label="Confirmer le mot de passe">
+            <Field label="Confirmer le mot de passe" required>
               <div className="relative">
                 <Lock size={17} className="absolute start-3 top-1/2 -translate-y-1/2 text-navy/30" />
                 <input

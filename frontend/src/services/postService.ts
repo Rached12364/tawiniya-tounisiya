@@ -44,8 +44,12 @@ export async function getComments(postId: number): Promise<Comment[]> {
   const { data } = await api.get<Comment[]>(`/posts/${postId}/comments`);
   return data;
 }
-export async function addComment(postId: number, content: string): Promise<Comment> {
-  const { data } = await api.post<Comment>(`/posts/${postId}/comments`, { content });
+export async function addComment(postId: number, content: string, parentCommentId?: number): Promise<Comment> {
+  const { data } = await api.post<Comment>(`/posts/${postId}/comments`, { content, parentCommentId });
+  return data;
+}
+export async function reactToComment(commentId: number, type: ReactionType): Promise<Comment> {
+  const { data } = await api.post<Comment>(`/posts/comments/${commentId}/react`, { type });
   return data;
 }
 export async function deleteComment(commentId: number): Promise<void> {

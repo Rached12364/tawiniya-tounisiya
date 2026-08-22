@@ -26,6 +26,11 @@ export interface Comment {
   author: PostAuthor;
   content: string;
   createdAt: string;
+  parentCommentId: number | null;
+  reactionsCount: Partial<Record<ReactionType, number>>;
+  totalReactions: number;
+  myReaction: ReactionType | null;
+  replies: Comment[] | null;
 }
 export interface PagedPosts {
   content: Post[];
