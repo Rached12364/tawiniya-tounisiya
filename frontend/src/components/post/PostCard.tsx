@@ -6,7 +6,7 @@ import {
 } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
 import {
-  reactToPost, getComments, addComment, deleteComment,
+  reactToPost, getComments, addComment, deleteComment, reactToComment,
   updatePost, deletePost, togglePin, toggleSave,
 } from '../../services/postService';
 import type { Post, Comment, ReactionType } from '../../types/post';
@@ -77,6 +77,133 @@ function ReactionPicker({ onPick }: { onPick: (t: ReactionType) => void }) {
     </div>
   );
 }
+function CommentReactionPicker({ onPick }: { onPick: (t: ReactionType) => void }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="relative inline-block" onMouseEnter={() => setOpen(true)} onMouseLeave={() => setOpen(false)}>
+      {open && (
+        <div className="absolute bottom-full mb-1 start-0 flex gap-1 bg-white rounded-full shadow-lg border border-navy/10 px-2 py-1 z-10">
+          {REACTIONS.map((r) => (
+            <button
+              key={r.type}
+              onClick={() => { onPick(r.type); setOpen(false); }}
+              title={r.label}
+              className="text-sm hover:scale-125 transition-transform"
+            >
+              {r.emoji}
+            </button>
+          ))}
+        </div>
+      )}
+      <button onClick={() => onPick('LIKE')} className="text-xs font-semibold text-navy/50 hover:text-teal transition-colors">
+        J'aime
+      </button>
+    </div>
+  );
+}
+function CommentItem({ comment, postId, onReplyAdded, onUpdated, onDeleted, depth = 0 }: {
+  comment: Comment;
+  postId: number;
+  onReplyAdded: (parentId: number, reply: Comment) => void;
+  onUpdated: (updated: Comment) => void;
+  onDeleted: (id: number, parentId: number | null) => void;
+  depth?: number;
+}) {
+  const { user } = useAuthStore();
+  const [replying, setReplying] = useState(false);
+  const [replyText, setReplyText] = useState('');
+  const [sendingReply, setSendingReply] = useState(false);
+  const topReactions = REACTIONS.filter((r) => (comment.reactionsCount[r.type] ?? 0) > 0).slice(0, 3);
+  async function react(type: ReactionType) {
+    const updated = await reactToComment(comment.id, type);
+    onUpdated(updated);
+  }
+  async function submitReply() {
+    if (!replyText.trim()) return;
+    setSendingReply(true);
+    try {
+      const reply = await addComment(postId, replyText.trim(), comment.id);
+      onReplyAdded(comment.id, reply);
+      setReplyText('');
+      setReplying(false);
+    } finally {
+      setSendingReply(false);
+    }
+  }
+  async function remove() {
+    await deleteComment(comment.id);
+    onDeleted(comment.id, comment.parentCommentId);
+  }
+  return (
+    <div className="flex gap-2.5 items-start group">
+      <Avatar path={comment.author.photoProfilPath} size={30} />
+      <div className="flex-1 min-w-0">
+        <div className="bg-navy/[0.03] rounded-xl px-3 py-2">
+          <div className="flex items-center justify-between gap-2">
+            <p className="text-xs font-semibold text-navy">{comment.author.prenom} {comment.author.nom}</p>
+            {(comment.author.id === user?.id) && (
+              <button onClick={remove} className="opacity-0 group-hover:opacity-100 text-navy/30 hover:text-red-500 transition-opacity">
+                <Trash2 size={12} />
+              </button>
+            )}
+          </div>
+          <p className="text-sm text-navy/80 mt-0.5 whitespace-pre-line">{comment.content}</p>
+        </div>
+        <div className="flex items-center gap-3 mt-1 px-1">
+          {comment.myReaction ? (
+            <button onClick={() => react(comment.myReaction as ReactionType)} className="text-xs font-semibold text-teal">
+              {REACTIONS.find((r) => r.type === comment.myReaction)?.emoji} {REACTIONS.find((r) => r.type === comment.myReaction)?.label}
+            </button>
+          ) : (
+            <CommentReactionPicker onPick={react} />
+          )}
+          {depth === 0 && (
+            <button onClick={() => setReplying((v) => !v)} className="text-xs font-semibold text-navy/50 hover:text-teal transition-colors">
+              Répondre
+            </button>
+          )}
+          {comment.totalReactions > 0 && (
+            <span className="flex items-center gap-1 text-xs text-navy/40">
+              <span className="flex -space-x-0.5">{topReactions.map((r) => <span key={r.type}>{r.emoji}</span>)}</span>
+              {comment.totalReactions}
+            </span>
+          )}
+        </div>
+        {replying && (
+          <div className="flex gap-2 items-center mt-2">
+            <Avatar path={user?.photoProfilPath} size={24} />
+            <input
+              autoFocus
+              value={replyText}
+              onChange={(e) => setReplyText(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && submitReply()}
+              placeholder="Répondre..."
+              className="flex-1 rounded-full border border-navy/15 px-3 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-teal/40 focus:border-teal"
+            />
+            <button onClick={submitReply} disabled={sendingReply || !replyText.trim()} className="text-teal disabled:opacity-40">
+              {sendingReply ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
+            </button>
+          </div>
+        )}
+        {comment.replies && comment.replies.length > 0 && (
+          <div className="mt-2 pl-2 border-l-2 border-navy/10 flex flex-col gap-2">
+            {comment.replies.map((r) => (
+              <CommentItem
+                key={r.id}
+                comment={r}
+                postId={postId}
+                onReplyAdded={onReplyAdded}
+                onUpdated={onUpdated}
+                onDeleted={onDeleted}
+                depth={depth + 1}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
 function PostComments({ postId }: { postId: number }) {
   const { user } = useAuthStore();
   const [comments, setComments] = useState<Comment[]>([]);
@@ -97,9 +224,27 @@ function PostComments({ postId }: { postId: number }) {
       setSending(false);
     }
   }
-  async function remove(commentId: number) {
-    await deleteComment(commentId);
-    setComments((cs) => cs.filter((c) => c.id !== commentId));
+  function handleReplyAdded(parentId: number, reply: Comment) {
+    setComments((cs) => cs.map((c) => c.id === parentId
+      ? { ...c, replies: [...(c.replies ?? []), reply] }
+      : c
+    ));
+  }
+  function handleUpdated(updated: Comment) {
+    setComments((cs) => cs.map((c) => {
+      if (c.id === updated.id) return { ...c, ...updated, replies: c.replies };
+      if (c.replies) return { ...c, replies: c.replies.map((r) => r.id === updated.id ? { ...r, ...updated } : r) };
+      return c;
+    }));
+  }
+  function handleDeleted(id: number, parentId: number | null) {
+    setComments((cs) => {
+      if (!parentId) return cs.filter((c) => c.id !== id);
+      return cs.map((c) => c.id === parentId
+        ? { ...c, replies: (c.replies ?? []).filter((r) => r.id !== id) }
+        : c
+      );
+    });
   }
   return (
     <div className="mt-3 pt-3 border-t border-navy/10 flex flex-col gap-3">
@@ -107,20 +252,14 @@ function PostComments({ postId }: { postId: number }) {
         <Loader2 size={16} className="animate-spin text-navy/30" />
       ) : (
         comments.map((c) => (
-          <div key={c.id} className="flex gap-2.5 items-start group">
-            <Avatar path={c.author.photoProfilPath} size={30} />
-            <div className="flex-1 min-w-0 bg-navy/[0.03] rounded-xl px-3 py-2">
-              <div className="flex items-center justify-between gap-2">
-                <p className="text-xs font-semibold text-navy">{c.author.prenom} {c.author.nom}</p>
-                {(c.author.id === user?.id) && (
-                  <button onClick={() => remove(c.id)} className="opacity-0 group-hover:opacity-100 text-navy/30 hover:text-red-500 transition-opacity">
-                    <Trash2 size={12} />
-                  </button>
-                )}
-              </div>
-              <p className="text-sm text-navy/80 mt-0.5 whitespace-pre-line">{c.content}</p>
-            </div>
-          </div>
+          <CommentItem
+            key={c.id}
+            comment={c}
+            postId={postId}
+            onReplyAdded={handleReplyAdded}
+            onUpdated={handleUpdated}
+            onDeleted={handleDeleted}
+          />
         ))
       )}
       <div className="flex gap-2.5 items-center">
