@@ -8,9 +8,6 @@ import JuridiquePage from './pages/JuridiquePage';
 import ReclamationPage from './pages/ReclamationPage';
 import EvenementsPage from './pages/EvenementsPage';
 import ProfilPage from './pages/ProfilPage';
-import CentreFormationPage from './pages/CentreFormationPage';
-import CentreFormationDetailPage from './pages/CentreFormationDetailPage';
-import MonCentreFormationPage from './pages/MonCentreFormationPage';
 import NotFoundPage from './pages/NotFoundPage';
 import NetworkSpacePage from './pages/NetworkSpacePage';
 import PublicProfilePage from './pages/PublicProfilePage';
@@ -83,17 +80,6 @@ function App() {
           element={
             <ProtectedRoute>
               <PublicProfilePage />
-            </ProtectedRoute>
-          }
-        />
-        {/* Modules additionnels (Sprint 4) */}
-        <Route path="centre-formation" element={<CentreFormationPage />} />
-        <Route path="centre-formation/:id" element={<CentreFormationDetailPage />} />
-        <Route
-          path="mon-centre-formation"
-          element={
-            <ProtectedRoute>
-              <MonCentreFormationPage />
             </ProtectedRoute>
           }
         />

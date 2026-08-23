@@ -56,7 +56,6 @@ export default function Footer() {
           <ul className="space-y-2.5 text-sm">
             <li><Link to="/espace/technicien" className="hover:text-gold transition-colors">{t('nav.spaces_technicien')}</Link></li>
             <li><Link to="/espace/entreprise" className="hover:text-gold transition-colors">{t('nav.spaces_entreprise')}</Link></li>
-            <li><Link to="/centre-formation" className="hover:text-gold transition-colors">{t('nav.formation')}</Link></li>
           </ul>
         </div>
 

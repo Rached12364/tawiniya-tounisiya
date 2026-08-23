@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  User as UserIcon, Loader2, UserPlus, Clock, Check, Users, Inbox,
+  User as UserIcon, Loader2, UserPlus, Clock, Check, Users, Inbox, Search,
 } from 'lucide-react';
 import {
   browseByRole, sendConnectionRequest, acceptConnection, rejectConnection,
@@ -88,6 +88,13 @@ export default function NetworkSpacePage({ role }: { role: Role }) {
   const [invitations, setInvitations] = useState<ConnectionItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [search, setSearch] = useState('');
+  const filteredCards = cards.filter((c) => {
+    const q = search.trim().toLowerCase();
+    if (!q) return true;
+    const fullName = `${c.prenom} ${c.nom}`.toLowerCase();
+    return fullName.includes(q) || (c.subtitle ?? '').toLowerCase().includes(q);
+  });
   function loadBrowse() {
     setLoading(true);
     browseByRole(role, 0, 40)
@@ -157,14 +164,27 @@ export default function NetworkSpacePage({ role }: { role: Role }) {
           ))}
         </div>
         {error && <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2 mb-4">{error}</p>}
+        {tab === 'browse' && (
+          <div className="relative mb-5 max-w-sm">
+            <Search size={16} className="absolute start-3 top-1/2 -translate-y-1/2 text-navy/30" />
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder={`Rechercher un ${ROLE_LABELS[role].toLowerCase()}...`}
+              className="w-full rounded-full border border-navy/15 bg-white ps-9 pe-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal/40 focus:border-teal"
+            />
+          </div>
+        )}
         {loading ? (
           <div className="grid place-items-center py-16"><Loader2 className="animate-spin text-navy/40" size={28} /></div>
         ) : tab === 'browse' ? (
           cards.length === 0 ? (
             <p className="text-navy/50 text-sm">Aucun profil {ROLE_LABELS[role].toLowerCase()} pour le moment.</p>
+          ) : filteredCards.length === 0 ? (
+            <p className="text-navy/50 text-sm">Aucun résultat pour « {search} ».</p>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-              {cards.map((c) => <UserCardTile key={c.id} card={c} onAction={handleCardAction} />)}
+              {filteredCards.map((c) => <UserCardTile key={c.id} card={c} onAction={handleCardAction} />)}
             </div>
           )
         ) : tab === 'connections' ? (

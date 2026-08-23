@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   LayoutDashboard,
   Users,
@@ -6,7 +6,6 @@ import {
   MessageSquareWarning,
   Calendar,
   Scale,
-  GraduationCap,
   ChevronsLeft,
   ChevronsRight,
   LogOut,
@@ -17,15 +16,13 @@ import ContentImagesPanel from '../../components/admin/ContentImagesPanel';
 import ReclamationsPanel from '../../components/admin/ReclamationsPanel';
 import EventsPanel from '../../components/admin/EventsPanel';
 import JuridiquePanel from '../../components/admin/JuridiquePanel';
-import CentreFormationAdminPanel from '../../components/admin/CentreFormationAdminPanel';
 import { getStats } from '../../services/adminService';
 import { getAllReclamations } from '../../services/reclamationService';
 import { getAllEventsAdmin } from '../../services/eventService';
 import { adminJuridiqueService } from '../../services/juridiqueService';
-import { adminTrainingCenterService } from '../../services/trainingCenterService';
 import { useAuthStore } from '../../store/authStore';
 import { BRAND } from '../../config/brand';
-type Tab = 'stats' | 'users' | 'content' | 'reclamations' | 'events' | 'juridique' | 'centreFormation';
+type Tab = 'stats' | 'users' | 'content' | 'reclamations' | 'events' | 'juridique';
 const TABS: { key: Tab; label: string; icon: typeof LayoutDashboard }[] = [
   { key: 'stats', label: 'Vue d\u2019ensemble', icon: LayoutDashboard },
   { key: 'users', label: 'Utilisateurs', icon: Users },
@@ -33,7 +30,6 @@ const TABS: { key: Tab; label: string; icon: typeof LayoutDashboard }[] = [
   { key: 'reclamations', label: 'Réclamations', icon: MessageSquareWarning },
   { key: 'events', label: 'Événements', icon: Calendar },
   { key: 'juridique', label: 'Juridique', icon: Scale },
-  { key: 'centreFormation', label: 'Centre de formation', icon: GraduationCap },
 ];
 const TAB_TITLES: Record<Tab, string> = {
   stats: 'Vue d\u2019ensemble',
@@ -42,7 +38,6 @@ const TAB_TITLES: Record<Tab, string> = {
   reclamations: 'Réclamations',
   events: 'Événements',
   juridique: 'Juridique',
-  centreFormation: 'Centre de formation',
 };
 function TabBadge({ count, collapsed }: { count: number; collapsed: boolean }) {
   if (!count || count <= 0) return null;
@@ -77,10 +72,6 @@ export default function AdminDashboardPage() {
     adminJuridiqueService
       .getAll()
       .then((sections) => setCounts((c) => ({ ...c, juridique: sections.length })))
-      .catch(() => {});
-    adminTrainingCenterService
-      .list(0, 1)
-      .then((r) => setCounts((c) => ({ ...c, centreFormation: r.totalElements })))
       .catch(() => {});
   }, []);
   const userInitial = (user?.prenom ?? user?.email ?? '?').charAt(0).toUpperCase();
@@ -183,7 +174,6 @@ export default function AdminDashboardPage() {
           {tab === 'reclamations' && <ReclamationsPanel />}
           {tab === 'events' && <EventsPanel />}
           {tab === 'juridique' && <JuridiquePanel />}
-          {tab === 'centreFormation' && <CentreFormationAdminPanel />}
         </div>
       </main>
     </div>

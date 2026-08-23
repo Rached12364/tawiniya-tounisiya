@@ -7,7 +7,6 @@ import { useAuthStore } from '../../store/authStore';
 import { BRAND } from '../../config/brand';
 import type { LangCode } from '../../types/nav';
 import { getUpcomingEvents } from '../../services/eventService';
-import { getTrainingCenters } from '../../services/trainingCenterService';
 import { juridiqueService } from '../../services/juridiqueService';
 import { getMyReclamations } from '../../services/reclamationService';
 const API_ORIGIN = (import.meta.env.VITE_API_URL || 'http://localhost:8080/api').replace(/\/api\/?$/, '');
@@ -22,7 +21,6 @@ const SPACE_LINKS = [
   { key: 'spaces_beneficiel', path: '/espace/beneficiel' },
 ];
 const NAV_LINKS = [
-  { key: 'formation', path: '/centre-formation', icon: '/icons/formations.png' },
   { key: 'juridique', path: '/juridique', icon: '/icons/juridique.png' },
   { key: 'reclamation', path: '/reclamation', icon: '/icons/reclamations.png' },
   { key: 'evenements', path: '/evenements', icon: '/icons/evenements.png' },
@@ -64,14 +62,10 @@ export default function Navbar() {
   const accountRef = useRef<HTMLDivElement>(null);
   const [eventsCount, setEventsCount] = useState(0);
   const [reclamationsCount, setReclamationsCount] = useState(0);
-  const [formationCount, setFormationCount] = useState(0);
   const [juridiqueCount, setJuridiqueCount] = useState(0);
   const isAdmin = isAuthenticated && user?.role === 'ADMIN';
   useEffect(() => {
     if (isAdmin) return;
-    getTrainingCenters(0, 1)
-      .then((res) => setFormationCount(res.totalElements))
-      .catch(() => setFormationCount(0));
     juridiqueService
       .getActive()
       .then((sections) => setJuridiqueCount(sections.length))
@@ -98,7 +92,6 @@ export default function Navbar() {
   const badgeForKey: Record<string, number> = {
     evenements: eventsCount,
     reclamation: reclamationsCount,
-    formation: formationCount,
     juridique: juridiqueCount,
   };
   useEffect(() => {
