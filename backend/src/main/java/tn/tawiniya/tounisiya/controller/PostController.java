@@ -77,8 +77,8 @@ public class PostController {
         return postService.react(currentUser, postId, request.getType());
     }
     @GetMapping("/{postId}/comments")
-    public List<CommentResponse> comments(@PathVariable Long postId) {
-        return postService.listComments(postId);
+    public List<CommentResponse> comments(@AuthenticationPrincipal User currentUser, @PathVariable Long postId) {
+        return postService.listComments(postId, currentUser);
     }
     @PostMapping("/{postId}/comments")
     public CommentResponse addComment(
@@ -87,6 +87,14 @@ public class PostController {
             @Valid @RequestBody CommentRequest request
     ) {
         return postService.addComment(currentUser, postId, request);
+    }
+    @PostMapping("/comments/{commentId}/react")
+    public CommentResponse reactToComment(
+            @AuthenticationPrincipal User currentUser,
+            @PathVariable Long commentId,
+            @Valid @RequestBody ReactionRequest request
+    ) {
+        return postService.reactToComment(currentUser, commentId, request.getType());
     }
     @DeleteMapping("/comments/{commentId}")
     public Map<String, Boolean> deleteComment(@AuthenticationPrincipal User currentUser, @PathVariable Long commentId) {

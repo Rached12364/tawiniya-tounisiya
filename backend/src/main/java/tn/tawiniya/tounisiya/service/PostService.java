@@ -9,6 +9,7 @@ import tn.tawiniya.tounisiya.dto.*;
 import tn.tawiniya.tounisiya.entity.*;
 import tn.tawiniya.tounisiya.exception.ForbiddenOperationException;
 import tn.tawiniya.tounisiya.exception.ResourceNotFoundException;
+import tn.tawiniya.tounisiya.repository.CommentReactionRepository;
 import tn.tawiniya.tounisiya.repository.PostCommentRepository;
 import tn.tawiniya.tounisiya.repository.PostReactionRepository;
 import tn.tawiniya.tounisiya.repository.PostRepository;
@@ -21,6 +22,7 @@ public class PostService {
     private final PostRepository postRepository;
     private final PostReactionRepository postReactionRepository;
     private final PostCommentRepository postCommentRepository;
+    private final CommentReactionRepository commentReactionRepository;
     private final PostSaveRepository postSaveRepository;
     private final FileStorageService fileStorageService;
     private PostAuthorDto toAuthorDto(User u) {
@@ -152,33 +154,81 @@ public class PostService {
         }
         return toResponse(post, currentUser);
     }
+    private CommentResponse toCommentResponse(PostComment comment, User currentUser, boolean withReplies) {
+        List<CommentReaction> reactions = commentReactionRepository.findByCommentId(comment.getId());
+        Map<String, Long> counts = new LinkedHashMap<>();
+        for (ReactionType type : ReactionType.values()) {
+            long c = reactions.stream().filter(r -> r.getType() == type).count();
+            if (c > 0) counts.put(type.name(), c);
+        }
+        String myReaction = reactions.stream()
+                .filter(r -> r.getUser().getId().equals(currentUser.getId()))
+                .map(r -> r.getType().name())
+                .findFirst()
+                .orElse(null);
+        List<CommentResponse> replies = withReplies
+                ? postCommentRepository.findByParentCommentIdOrderByCreatedAtAsc(comment.getId()).stream()
+                        .map(c -> toCommentResponse(c, currentUser, false))
+                        .collect(Collectors.toList())
+                : null;
+        return CommentResponse.builder()
+                .id(comment.getId())
+                .author(toAuthorDto(comment.getAuthor()))
+                .content(comment.getContent())
+                .createdAt(comment.getCreatedAt())
+                .parentCommentId(comment.getParentComment() != null ? comment.getParentComment().getId() : null)
+                .reactionsCount(counts)
+                .totalReactions(reactions.size())
+                .myReaction(myReaction)
+                .replies(replies)
+                .build();
+    }
     @Transactional(readOnly = true)
-    public List<CommentResponse> listComments(Long postId) {
-        return postCommentRepository.findByPostIdOrderByCreatedAtAsc(postId).stream()
-                .map(c -> CommentResponse.builder()
-                        .id(c.getId())
-                        .author(toAuthorDto(c.getAuthor()))
-                        .content(c.getContent())
-                        .createdAt(c.getCreatedAt())
-                        .build())
+    public List<CommentResponse> listComments(Long postId, User currentUser) {
+        return postCommentRepository.findByPostIdAndParentCommentIsNullOrderByCreatedAtAsc(postId).stream()
+                .map(c -> toCommentResponse(c, currentUser, true))
                 .collect(Collectors.toList());
     }
     @Transactional
     public CommentResponse addComment(User currentUser, Long postId, CommentRequest request) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new ResourceNotFoundException("Post introuvable : " + postId));
+        PostComment parent = null;
+        if (request.getParentCommentId() != null) {
+            parent = postCommentRepository.findById(request.getParentCommentId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Commentaire introuvable : " + request.getParentCommentId()));
+            if (!parent.getPost().getId().equals(postId)) {
+                throw new ForbiddenOperationException("Ce commentaire n'appartient pas a ce post.");
+            }
+        }
         PostComment comment = PostComment.builder()
                 .post(post)
                 .author(currentUser)
                 .content(request.getContent())
+                .parentComment(parent)
                 .build();
         postCommentRepository.save(comment);
-        return CommentResponse.builder()
-                .id(comment.getId())
-                .author(toAuthorDto(currentUser))
-                .content(comment.getContent())
-                .createdAt(comment.getCreatedAt())
-                .build();
+        return toCommentResponse(comment, currentUser, true);
+    }
+    @Transactional
+    public CommentResponse reactToComment(User currentUser, Long commentId, ReactionType type) {
+        PostComment comment = postCommentRepository.findById(commentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Commentaire introuvable : " + commentId));
+        Optional<CommentReaction> existing = commentReactionRepository.findByCommentIdAndUserId(commentId, currentUser.getId());
+        if (existing.isPresent()) {
+            CommentReaction r = existing.get();
+            if (r.getType() == type) {
+                commentReactionRepository.delete(r);
+            } else {
+                r.setType(type);
+                commentReactionRepository.save(r);
+            }
+        } else {
+            CommentReaction r = CommentReaction.builder().comment(comment).user(currentUser).type(type).build();
+            commentReactionRepository.save(r);
+        }
+        boolean isTopLevel = comment.getParentComment() == null;
+        return toCommentResponse(comment, currentUser, isTopLevel);
     }
     @Transactional
     public void deleteComment(User currentUser, Long commentId) {

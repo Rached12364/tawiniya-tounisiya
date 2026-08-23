@@ -23,6 +23,9 @@ public class PostComment {
     private User author;
     @Column(columnDefinition = "TEXT", nullable = false)
     private String content;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "parent_comment_id")
+    private PostComment parentComment;
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
     @PrePersist
