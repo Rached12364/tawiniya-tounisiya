@@ -132,6 +132,10 @@ export default function RegisterPage() {
       setError('Les mots de passe ne correspondent pas.');
       return;
     }
+    if (form.role === 'TECHNICIEN' && !form.specialite?.trim()) {
+      setError('Veuillez sélectionner au moins une spécialité.');
+      return;
+    }
     setIsLoading(true);
     try {
       const payload: RegisterPayload = {
@@ -256,8 +260,8 @@ export default function RegisterPage() {
               </div>
               <div className="grid sm:grid-cols-2 gap-4">
                 <Field label="Nom parent"><input value={form.nomParent} onChange={update('nomParent')} className={inputCls} /></Field>
-                <Field label="Adresse">
-                  <select value={form.adresse} onChange={update('adresse')} className={`${inputCls} bg-white`}>
+                <Field label="Adresse" required>
+                  <select required value={form.adresse} onChange={update('adresse')} className={`${inputCls} bg-white`}>
                     <option value="">Sélectionner...</option>
                     {GOUVERNORATS.map((g) => <option key={g} value={g}>{g}</option>)}
                   </select>
@@ -275,7 +279,7 @@ export default function RegisterPage() {
               </div>
               <SectionTitle>Formation</SectionTitle>
               <Field label="Diplôme"><input value={form.diplome} onChange={update('diplome')} className={inputCls} /></Field>
-              <Field label="Spécialité(s)">
+              <Field label="Spécialité(s)" required>
                 <SpecialiteMultiSelect
                   value={form.specialite}
                   onChange={(v) => setForm((f) => ({ ...f, specialite: v }))}
