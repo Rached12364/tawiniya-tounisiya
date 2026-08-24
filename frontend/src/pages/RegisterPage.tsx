@@ -12,6 +12,12 @@ const ROLE_OPTIONS: { value: Role; label: string; icon: typeof Wrench; descripti
   { value: 'BENEFICIEL', label: 'Bénéficiaire', icon: HeartHandshake, description: 'Beneficiaire des services' },
 ];
 const GROUPES_SANGUINS = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
+const GOUVERNORATS = [
+  'Ariana', 'Béja', 'Ben Arous', 'Bizerte', 'Gabès', 'Gafsa', 'Jendouba', 'Kairouan',
+  'Kasserine', 'Kébili', 'Le Kef', 'Mahdia', 'La Manouba', 'Médenine', 'Monastir',
+  'Nabeul', 'Sfax', 'Sidi Bouzid', 'Siliana', 'Sousse', 'Tataouine', 'Tozeur', 'Tunis', 'Zaghouan',
+];
+const SPECIALITES_TECHNICIEN = ['Électricité', 'Énergie renouvelable', 'Climatisation / Froid', 'Plomberie', 'Autre'];
 const initialForm: RegisterPayload = {
   nom: '', prenom: '', email: '', phone: '', password: '', role: 'TECHNICIEN',
   // Technicien
@@ -215,7 +221,12 @@ export default function RegisterPage() {
               </div>
               <div className="grid sm:grid-cols-2 gap-4">
                 <Field label="Nom parent"><input value={form.nomParent} onChange={update('nomParent')} className={inputCls} /></Field>
-                <Field label="Adresse"><input value={form.adresse} onChange={update('adresse')} className={inputCls} /></Field>
+                <Field label="Adresse">
+                  <select value={form.adresse} onChange={update('adresse')} className={`${inputCls} bg-white`}>
+                    <option value="">Sélectionner...</option>
+                    {GOUVERNORATS.map((g) => <option key={g} value={g}>{g}</option>)}
+                  </select>
+                </Field>
               </div>
               <SectionTitle>Contacts</SectionTitle>
               <div className="grid sm:grid-cols-2 gap-4">
@@ -230,7 +241,12 @@ export default function RegisterPage() {
               <SectionTitle>Formation</SectionTitle>
               <div className="grid sm:grid-cols-2 gap-4">
                 <Field label="Diplôme"><input value={form.diplome} onChange={update('diplome')} className={inputCls} /></Field>
-                <Field label="Spécialité"><input value={form.specialite} onChange={update('specialite')} className={inputCls} /></Field>
+                <Field label="Spécialité">
+                  <select value={form.specialite} onChange={update('specialite')} className={`${inputCls} bg-white`}>
+                    <option value="">Sélectionner...</option>
+                    {SPECIALITES_TECHNICIEN.map((s) => <option key={s} value={s}>{s}</option>)}
+                  </select>
+                </Field>
               </div>
               <Field label="Niveau scolaire"><input value={form.niveauScolaire} onChange={update('niveauScolaire')} className={inputCls} /></Field>
               <Field label="Permis de conduire">
