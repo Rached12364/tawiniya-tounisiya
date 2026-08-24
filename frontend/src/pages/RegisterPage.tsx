@@ -17,7 +17,13 @@ const GOUVERNORATS = [
   'Kasserine', 'Kébili', 'Le Kef', 'Mahdia', 'La Manouba', 'Médenine', 'Monastir',
   'Nabeul', 'Sfax', 'Sidi Bouzid', 'Siliana', 'Sousse', 'Tataouine', 'Tozeur', 'Tunis', 'Zaghouan',
 ];
-const SPECIALITES_TECHNICIEN = ['Électricité', 'Énergie renouvelable', 'Climatisation / Froid', 'Plomberie', 'Autre'];
+const SPECIALITES_CATEGORIES: { title: string; options: string[] }[] = [
+  { title: 'Électricité', options: ['Électricité bâtiment', 'Électricité industrielle'] },
+  { title: 'Sécurité & Protection', options: ['Caméras de surveillance', 'Contrôle d\u2019accès', 'Système anti-incendie', 'Système anti-intrusion'] },
+  { title: 'Smart Home & Automatisation', options: ['Smart Home / Domotique', 'Automatisation'] },
+  { title: 'Énergie Renouvelable', options: ['Photovoltaïque', 'Pompage solaire', 'STEG Off-grid / On-grid / Installation'] },
+  { title: 'Réseaux', options: ['Réseaux informatiques', 'Fibre optique'] },
+];
 const initialForm: RegisterPayload = {
   nom: '', prenom: '', email: '', phone: '', password: '', role: 'TECHNICIEN',
   // Technicien
@@ -69,6 +75,35 @@ function OuiNonToggle({ value, onChange }: { value: 'OUI' | 'NON' | null | undef
         >
           {opt === 'OUI' ? 'Oui' : 'Non'}
         </button>
+      ))}
+    </div>
+  );
+}
+function SpecialiteMultiSelect({ value, onChange }: { value?: string; onChange: (v: string) => void }) {
+  const selected = (value ?? '').split(',').map((s) => s.trim()).filter(Boolean);
+  function toggle(opt: string) {
+    const next = selected.includes(opt) ? selected.filter((s) => s !== opt) : [...selected, opt];
+    onChange(next.join(', '));
+  }
+  return (
+    <div className="flex flex-col gap-3 rounded-lg border border-navy/15 bg-white p-3 max-h-64 overflow-y-auto">
+      {SPECIALITES_CATEGORIES.map((cat) => (
+        <div key={cat.title}>
+          <p className="text-[11px] font-bold uppercase tracking-wide text-teal/70 mb-1.5">{cat.title}</p>
+          <div className="flex flex-col gap-1">
+            {cat.options.map((opt) => (
+              <label key={opt} className="flex items-center gap-2 text-sm text-navy cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={selected.includes(opt)}
+                  onChange={() => toggle(opt)}
+                  className="rounded border-navy/30 text-teal focus:ring-teal/40"
+                />
+                {opt}
+              </label>
+            ))}
+          </div>
+        </div>
       ))}
     </div>
   );
@@ -239,15 +274,13 @@ export default function RegisterPage() {
                 <Field label="Instagram"><input value={form.instagram} onChange={update('instagram')} className={inputCls} /></Field>
               </div>
               <SectionTitle>Formation</SectionTitle>
-              <div className="grid sm:grid-cols-2 gap-4">
-                <Field label="Diplôme"><input value={form.diplome} onChange={update('diplome')} className={inputCls} /></Field>
-                <Field label="Spécialité">
-                  <select value={form.specialite} onChange={update('specialite')} className={`${inputCls} bg-white`}>
-                    <option value="">Sélectionner...</option>
-                    {SPECIALITES_TECHNICIEN.map((s) => <option key={s} value={s}>{s}</option>)}
-                  </select>
-                </Field>
-              </div>
+              <Field label="Diplôme"><input value={form.diplome} onChange={update('diplome')} className={inputCls} /></Field>
+              <Field label="Spécialité(s)">
+                <SpecialiteMultiSelect
+                  value={form.specialite}
+                  onChange={(v) => setForm((f) => ({ ...f, specialite: v }))}
+                />
+              </Field>
               <Field label="Niveau scolaire"><input value={form.niveauScolaire} onChange={update('niveauScolaire')} className={inputCls} /></Field>
               <Field label="Permis de conduire">
                 <OuiNonToggle value={form.permisConduire} onChange={(v) => setForm((f) => ({ ...f, permisConduire: v }))} />
