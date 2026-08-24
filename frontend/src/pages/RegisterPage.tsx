@@ -17,6 +17,12 @@ const GOUVERNORATS = [
   'Kasserine', 'Kébili', 'Le Kef', 'Mahdia', 'La Manouba', 'Médenine', 'Monastir',
   'Nabeul', 'Sfax', 'Sidi Bouzid', 'Siliana', 'Sousse', 'Tataouine', 'Tozeur', 'Tunis', 'Zaghouan',
 ];
+const SECTEURS_ACTIVITE = [
+  'Électricité & Énergie renouvelable', 'Bâtiment & Construction', 'Industrie & Manufacture',
+  'Climatisation & Froid', 'Sécurité & Surveillance', 'Technologies de l\u2019information',
+  'Automatisation & Robotique', 'Commerce & Distribution', 'Services & Conseil',
+  'Agriculture & Agroalimentaire', 'Transport & Logistique', 'Autre',
+];
 const SPECIALITES_CATEGORIES: { title: string; options: string[] }[] = [
   { title: 'Électricité', options: ['Électricité bâtiment', 'Électricité industrielle'] },
   { title: 'Sécurité & Protection', options: ['Caméras de surveillance', 'Contrôle d\u2019accès', 'Système anti-incendie', 'Système anti-intrusion'] },
@@ -373,7 +379,12 @@ export default function RegisterPage() {
                 <Field label="Registre de commerce"><input value={form.registreCommerce} onChange={update('registreCommerce')} className={inputCls} /></Field>
               </div>
               <div className="grid sm:grid-cols-2 gap-4">
-                <Field label="Secteur d'activité"><input value={form.secteurActivite} onChange={update('secteurActivite')} className={inputCls} /></Field>
+                <Field label="Secteur d'activité" required>
+                  <select required value={form.secteurActivite} onChange={update('secteurActivite')} className={`${inputCls} bg-white`}>
+                    <option value="">Sélectionner...</option>
+                    {SECTEURS_ACTIVITE.map((s) => <option key={s} value={s}>{s}</option>)}
+                  </select>
+                </Field>
                 <Field label="Taille de l'entreprise"><input value={form.tailleEntreprise} onChange={update('tailleEntreprise')} placeholder="Ex: 10-50 employés" className={inputCls} /></Field>
               </div>
               <Field label="Année de création">
@@ -383,7 +394,12 @@ export default function RegisterPage() {
                 <textarea value={form.descriptionEntreprise} onChange={update('descriptionEntreprise')} rows={3} className={inputCls} />
               </Field>
               <SectionTitle>Coordonnées</SectionTitle>
-              <Field label="Adresse"><input value={form.entrepriseAdresse} onChange={update('entrepriseAdresse')} className={inputCls} /></Field>
+              <Field label="Adresse" required>
+                <select required value={form.entrepriseAdresse} onChange={update('entrepriseAdresse')} className={`${inputCls} bg-white`}>
+                  <option value="">Sélectionner...</option>
+                  {GOUVERNORATS.map((g) => <option key={g} value={g}>{g}</option>)}
+                </select>
+              </Field>
               <div className="grid sm:grid-cols-2 gap-4">
                 <Field label="Gouvernorat"><input value={form.gouvernorat} onChange={update('gouvernorat')} className={inputCls} /></Field>
                 <Field label="Ville"><input value={form.ville} onChange={update('ville')} className={inputCls} /></Field>

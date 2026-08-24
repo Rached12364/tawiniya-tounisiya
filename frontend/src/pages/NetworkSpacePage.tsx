@@ -30,6 +30,12 @@ const SPECIALITE_OPTIONS = [
   'Photovoltaïque', 'Pompage solaire', 'STEG Off-grid / On-grid / Installation',
   'Réseaux informatiques', 'Fibre optique',
 ];
+const SECTEURS_ACTIVITE = [
+  'Électricité & Énergie renouvelable', 'Bâtiment & Construction', 'Industrie & Manufacture',
+  'Climatisation & Froid', 'Sécurité & Surveillance', 'Technologies de l\u2019information',
+  'Automatisation & Robotique', 'Commerce & Distribution', 'Services & Conseil',
+  'Agriculture & Agroalimentaire', 'Transport & Logistique', 'Autre',
+];
 type Tab = 'browse' | 'connections' | 'invitations';
 function UserCardTile({ card, onAction }: { card: UserCard; onAction: (card: UserCard) => Promise<void> }) {
   const [busy, setBusy] = useState(false);
@@ -198,7 +204,7 @@ export default function NetworkSpacePage({ role }: { role: Role }) {
                 className="w-full rounded-full border border-navy/15 bg-white ps-9 pe-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal/40 focus:border-teal"
               />
             </div>
-            {role === 'TECHNICIEN' && (
+            {(role === 'TECHNICIEN' || role === 'ENTREPRISE') && (
               <>
                 <select
                   value={filterAdresse}
@@ -213,8 +219,8 @@ export default function NetworkSpacePage({ role }: { role: Role }) {
                   onChange={(e) => setFilterSpecialite(e.target.value)}
                   className="rounded-full border border-navy/15 bg-white px-3.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal/40 focus:border-teal"
                 >
-                  <option value="">Toutes les spécialités</option>
-                  {SPECIALITE_OPTIONS.map((s) => <option key={s} value={s}>{s}</option>)}
+                  <option value="">{role === 'TECHNICIEN' ? 'Toutes les spécialités' : 'Tous les secteurs'}</option>
+                  {(role === 'TECHNICIEN' ? SPECIALITE_OPTIONS : SECTEURS_ACTIVITE).map((s) => <option key={s} value={s}>{s}</option>)}
                 </select>
               </>
             )}
