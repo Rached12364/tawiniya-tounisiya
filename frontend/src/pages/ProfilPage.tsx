@@ -13,8 +13,6 @@ function imageUrl(path: string | null | undefined) {
   if (!path) return '';
   return path.startsWith('http') ? path : `${API_ORIGIN}${path}`;
 }
-const STAGE_TYPES = ['Initiation', 'Été', 'PFE', 'Stage obligatoire'];
-const STAGE_STATUTS = ['En attente', 'En cours', 'Terminé'];
 const GROUPES_SANGUINS = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
 type FieldType = 'text' | 'date' | 'number' | 'textarea' | 'select' | 'toggle';
 interface FieldDef {
@@ -115,32 +113,12 @@ const ENTREPRISE_SECTIONS: SectionDef[] = [
     { key: 'nombreEmployes', label: 'Nb employés', type: 'number' },
   ]},
 ];
-const STAGIAIRE_SECTIONS: SectionDef[] = [
-  { title: 'Informations personnelles', fields: [
-    { key: 'cin', label: 'CIN' },
-    { key: 'dateNaissance', label: 'Date de naissance', type: 'date' },
+const CENTRE_FORMATION_SECTIONS: SectionDef[] = [
+  { title: 'Informations du centre', fields: [
     { key: 'adresse', label: 'Adresse', type: 'textarea' },
-  ]},
-  { title: 'Informations académiques', fields: [
-    { key: 'etablissement', label: 'Établissement' },
-    { key: 'domaineFormation', label: 'Filière / Spécialité' },
-    { key: 'niveauFormation', label: 'Niveau / Année' },
-    { key: 'classeGroupe', label: 'Classe / groupe' },
-    { key: 'anneeUniversitaire', label: 'Année universitaire' },
-    { key: 'diplomePrepare', label: 'Diplôme préparé' },
-    { key: 'competencesStagiaire', label: 'Compétences', type: 'textarea' },
-  ]},
-  { title: 'Informations du stage', fields: [
-    { key: 'typeStage', label: 'Type de stage', type: 'select', options: STAGE_TYPES },
-    { key: 'statutStage', label: 'Statut', type: 'select', options: STAGE_STATUTS },
-    { key: 'dateDebutStage', label: 'Début de stage', type: 'date' },
-    { key: 'dateFinStage', label: 'Fin de stage', type: 'date' },
-    { key: 'dureeStage', label: 'Durée' },
-    { key: 'sujetStage', label: 'Sujet du stage' },
-    { key: 'encadrantEntreprise', label: 'Encadrant entreprise' },
-    { key: 'encadrantAcademique', label: 'Encadrant académique' },
-    { key: 'departementStage', label: 'Département' },
-    { key: 'descriptionProjet', label: 'Description du projet', type: 'textarea' },
+    { key: 'siteWeb', label: 'Site web' },
+    { key: 'horaires', label: 'Horaires' },
+    { key: 'formationsProposees', label: 'Formations proposées', type: 'textarea' },
   ]},
 ];
 function FieldEditor({ def, value, onChange }: { def: FieldDef; value: any; onChange: (v: any) => void }) {
@@ -438,14 +416,14 @@ export default function ProfilPage() {
     return <div className="min-h-[70vh] grid place-items-center"><p className="text-red-600">{error ?? 'Profil introuvable.'}</p></div>;
   }
   const ROLE_LABELS: Record<string, string> = {
-    TECHNICIEN: 'Technicien', ENTREPRISE: 'Entreprise', STAGIAIRE: 'Stagiaire',
+    TECHNICIEN: 'Technicien', ENTREPRISE: 'Entreprise', CENTRE_FORMATION: 'Centre de formation',
     BENEFICIEL: 'Bénéficiaire', ADMIN: 'Administrateur',
   };
   const fullName = `${form.prenom || ''} ${form.nom || ''}`.trim() || 'Mon profil';
   const roleSections =
     user.role === 'TECHNICIEN' ? TECHNICIEN_SECTIONS :
     user.role === 'ENTREPRISE' ? ENTREPRISE_SECTIONS :
-    user.role === 'STAGIAIRE' ? STAGIAIRE_SECTIONS : [];
+    user.role === 'CENTRE_FORMATION' ? CENTRE_FORMATION_SECTIONS : [];
   return (
     <div className="min-h-[70vh] bg-navy/[0.02] pb-16">
       {/* Bannière */}

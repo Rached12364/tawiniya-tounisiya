@@ -15,7 +15,7 @@ function imageUrl(path?: string) {
   return path.startsWith('http') ? path : `${API_ORIGIN}${path}`;
 }
 const ROLE_LABELS: Record<Role, string> = {
-  TECHNICIEN: 'Technicien', ENTREPRISE: 'Entreprise', STAGIAIRE: 'Stagiaire',
+  TECHNICIEN: 'Technicien', ENTREPRISE: 'Entreprise', CENTRE_FORMATION: 'Centre de formation',
   BENEFICIEL: 'Bénéficiaire', ADMIN: 'Administrateur',
 };
 type Tab = 'browse' | 'connections' | 'invitations';

@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Users, ShieldAlert, UserCog, Wrench, Building2, GraduationCap, HeartHandshake, Shield } from 'lucide-react';
 import { getStats } from '../../services/adminService';
 import type { AdminStats } from '../../types/admin';
@@ -6,7 +6,7 @@ const ROLE_META: Record<string, { label: string; icon: typeof Wrench; color: str
   ADMIN: { label: 'Admins', icon: Shield, color: 'text-navy', bg: 'bg-navy/10' },
   TECHNICIEN: { label: 'Techniciens', icon: Wrench, color: 'text-teal', bg: 'bg-teal/10' },
   ENTREPRISE: { label: 'Entreprises', icon: Building2, color: 'text-gold', bg: 'bg-gold/15' },
-  STAGIAIRE: { label: 'Stagiaires', icon: GraduationCap, color: 'text-purple-600', bg: 'bg-purple-100' },
+  CENTRE_FORMATION: { label: 'Centres de formation', icon: GraduationCap, color: 'text-purple-600', bg: 'bg-purple-100' },
   BENEFICIEL: { label: 'Bénéficiaires', icon: HeartHandshake, color: 'text-rose-600', bg: 'bg-rose-100' },
 };
 export default function StatsPanel() {

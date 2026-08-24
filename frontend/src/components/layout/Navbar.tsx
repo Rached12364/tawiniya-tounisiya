@@ -17,7 +17,7 @@ function imageUrl(path?: string) {
 const SPACE_LINKS = [
   { key: 'spaces_technicien', path: '/espace/technicien' },
   { key: 'spaces_entreprise', path: '/espace/entreprise' },
-  { key: 'spaces_stagiaire', path: '/espace/stagiaire' },
+  { key: 'spaces_centre_formation', path: '/espace/centre-formation' },
   { key: 'spaces_beneficiel', path: '/espace/beneficiel' },
 ];
 const NAV_LINKS = [

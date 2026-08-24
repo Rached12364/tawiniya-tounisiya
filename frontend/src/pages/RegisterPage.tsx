@@ -8,10 +8,8 @@ import type { ApiError, Role, RegisterPayload, ExperiencePro } from '../types/au
 const ROLE_OPTIONS: { value: Role; label: string; icon: typeof Wrench; description: string }[] = [
   { value: 'TECHNICIEN', label: 'Technicien', icon: Wrench, description: 'Électricité, énergie renouvelable' },
   { value: 'ENTREPRISE', label: 'Entreprise', icon: Building2, description: 'Structure ou société' },
-  { value: 'STAGIAIRE', label: 'Stagiaire', icon: GraduationCap, description: 'En formation ou apprentissage' },
+  { value: 'CENTRE_FORMATION', label: 'Centre de formation', icon: GraduationCap, description: 'Formations et apprentissage' },
 ];
-const STAGE_TYPES = ['Initiation', 'Été', 'PFE', 'Stage obligatoire'];
-const STAGE_STATUTS = ['En attente', 'En cours', 'Terminé'];
 const GROUPES_SANGUINS = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
 const initialForm: RegisterPayload = {
   nom: '', prenom: '', email: '', phone: '', password: '', role: 'TECHNICIEN',
@@ -31,12 +29,8 @@ const initialForm: RegisterPayload = {
   nomResponsable: '', fonctionResponsable: '', telephoneResponsable: '', emailResponsable: '',
   domainesActivite: '', technologiesUtilisees: '', servicesProposes: '',
   nombreTechniciens: '', nombreStagiaires: '', nombreEmployes: '',
-  // Stagiaire
-  etablissement: '', niveauFormation: '', domaineFormation: '', classeGroupe: '',
-  anneeUniversitaire: '', diplomePrepare: '', competencesStagiaire: '',
-  typeStage: '', dateDebutStage: '', dateFinStage: '', dureeStage: '', sujetStage: '',
-  descriptionProjet: '', encadrantEntreprise: '', encadrantAcademique: '',
-  departementStage: '', statutStage: '',
+  // Centre de formation
+  horaires: '', formationsProposees: '',
 };
 const inputCls = "w-full rounded-lg border border-navy/15 bg-white px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal/40 focus:border-teal";
 const labelCls = "block text-sm font-medium text-navy mb-1.5";
@@ -368,55 +362,17 @@ export default function RegisterPage() {
               </div>
             </div>
           )}
-          {form.role === 'STAGIAIRE' && (
+          {form.role === 'CENTRE_FORMATION' && (
             <div className="rounded-xl bg-teal/[0.04] border border-teal/15 p-4 flex flex-col gap-4">
-              <SectionTitle>Informations personnelles</SectionTitle>
-              <div className="grid sm:grid-cols-2 gap-4">
-                <Field label="CIN"><input value={form.cin} onChange={update('cin')} className={inputCls} /></Field>
-                <Field label="Date de naissance"><input type="date" value={form.dateNaissance} onChange={update('dateNaissance')} className={inputCls} /></Field>
-              </div>
+              <SectionTitle>Informations du centre</SectionTitle>
               <Field label="Adresse"><input value={form.adresse} onChange={update('adresse')} className={inputCls} /></Field>
-              <SectionTitle>Informations académiques</SectionTitle>
-              <Field label="Établissement">
-                <input required value={form.etablissement} onChange={update('etablissement')} placeholder="École, université..." className={inputCls} />
+              <div className="grid sm:grid-cols-2 gap-4">
+                <Field label="Site web"><input value={form.siteWeb} onChange={update('siteWeb')} placeholder="https://..." className={inputCls} /></Field>
+                <Field label="Horaires"><input value={form.horaires} onChange={update('horaires')} placeholder="Ex: Lun-Ven 9h-17h" className={inputCls} /></Field>
+              </div>
+              <Field label="Formations proposées">
+                <textarea value={form.formationsProposees} onChange={update('formationsProposees')} rows={4} placeholder="Une formation par ligne" className={inputCls} />
               </Field>
-              <div className="grid sm:grid-cols-2 gap-4">
-                <Field label="Filière / Spécialité"><input value={form.domaineFormation} onChange={update('domaineFormation')} className={inputCls} /></Field>
-                <Field label="Niveau / Année"><input value={form.niveauFormation} onChange={update('niveauFormation')} className={inputCls} /></Field>
-              </div>
-              <div className="grid sm:grid-cols-2 gap-4">
-                <Field label="Classe / groupe"><input value={form.classeGroupe} onChange={update('classeGroupe')} className={inputCls} /></Field>
-                <Field label="Année universitaire"><input value={form.anneeUniversitaire} onChange={update('anneeUniversitaire')} placeholder="2025/2026" className={inputCls} /></Field>
-              </div>
-              <Field label="Diplôme préparé"><input value={form.diplomePrepare} onChange={update('diplomePrepare')} className={inputCls} /></Field>
-              <Field label="Compétences"><textarea value={form.competencesStagiaire} onChange={update('competencesStagiaire')} rows={2} className={inputCls} /></Field>
-              <SectionTitle>Informations du stage</SectionTitle>
-              <div className="grid sm:grid-cols-2 gap-4">
-                <Field label="Type de stage">
-                  <select value={form.typeStage} onChange={update('typeStage')} className={`${inputCls} bg-white`}>
-                    <option value="">Sélectionner...</option>
-                    {STAGE_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
-                  </select>
-                </Field>
-                <Field label="Statut">
-                  <select value={form.statutStage} onChange={update('statutStage')} className={`${inputCls} bg-white`}>
-                    <option value="">Sélectionner...</option>
-                    {STAGE_STATUTS.map((s) => <option key={s} value={s}>{s}</option>)}
-                  </select>
-                </Field>
-              </div>
-              <div className="grid sm:grid-cols-2 gap-4">
-                <Field label="Début de stage"><input type="date" value={form.dateDebutStage} onChange={update('dateDebutStage')} className={inputCls} /></Field>
-                <Field label="Fin de stage"><input type="date" value={form.dateFinStage} onChange={update('dateFinStage')} className={inputCls} /></Field>
-              </div>
-              <Field label="Durée"><input value={form.dureeStage} onChange={update('dureeStage')} placeholder="Ex: 3 mois" className={inputCls} /></Field>
-              <Field label="Sujet du stage"><input value={form.sujetStage} onChange={update('sujetStage')} className={inputCls} /></Field>
-              <Field label="Description du projet"><textarea value={form.descriptionProjet} onChange={update('descriptionProjet')} rows={3} className={inputCls} /></Field>
-              <div className="grid sm:grid-cols-2 gap-4">
-                <Field label="Encadrant entreprise"><input value={form.encadrantEntreprise} onChange={update('encadrantEntreprise')} className={inputCls} /></Field>
-                <Field label="Encadrant académique"><input value={form.encadrantAcademique} onChange={update('encadrantAcademique')} className={inputCls} /></Field>
-              </div>
-              <Field label="Département"><input value={form.departementStage} onChange={update('departementStage')} className={inputCls} /></Field>
             </div>
           )}
           {error && <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{error}</p>}

@@ -43,9 +43,9 @@ export interface UserPublicProfile {
   linkedin?: string;
   entrepriseTelephone?: string;
   entrepriseEmail?: string;
-  etablissement?: string;
-  domaineFormation?: string;
-  niveauFormation?: string;
+  adresse?: string;
+  horaires?: string;
+  formationsProposees?: string;
   connectionStatus: ConnectionStatusValue | 'SELF';
   connectionId?: number;
 }

@@ -13,7 +13,7 @@ function imageUrl(path?: string) {
   return path.startsWith('http') ? path : `${API_ORIGIN}${path}`;
 }
 const ROLE_LABELS: Record<string, string> = {
-  TECHNICIEN: 'Technicien', ENTREPRISE: 'Entreprise', STAGIAIRE: 'Stagiaire',
+  TECHNICIEN: 'Technicien', ENTREPRISE: 'Entreprise', CENTRE_FORMATION: 'Centre de formation',
   BENEFICIEL: 'Bénéficiaire', ADMIN: 'Administrateur',
 };
 function InfoRow({ icon, label, value }: { icon: React.ReactNode; label: string; value?: string }) {
@@ -68,7 +68,7 @@ export default function PublicProfilePage() {
   const subtitle =
     profile.role === 'TECHNICIEN' ? profile.specialite :
     profile.role === 'ENTREPRISE' ? profile.secteurActivite :
-    profile.role === 'STAGIAIRE' ? profile.domaineFormation : null;
+    profile.role === 'CENTRE_FORMATION' ? profile.formationsProposees : null;
   return (
     <div className="min-h-[70vh] bg-navy/[0.02] pb-16">
       <div className="relative h-48 md:h-60 w-full bg-gradient-to-br from-navy via-navy-dark to-teal overflow-hidden">
@@ -153,14 +153,17 @@ export default function PublicProfilePage() {
             )}
           </div>
         )}
-        {profile.role === 'STAGIAIRE' && (
+        {profile.role === 'CENTRE_FORMATION' && (
           <div className="bg-white rounded-xl shadow-sm p-5 mb-5">
-            <h2 className="text-sm font-bold text-teal uppercase tracking-wide mb-4">Formation</h2>
+            <h2 className="text-sm font-bold text-teal uppercase tracking-wide mb-4">Centre de formation</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <InfoRow icon={<GraduationCap size={16} />} label="Établissement" value={profile.etablissement} />
-              <InfoRow icon={<GraduationCap size={16} />} label="Filière" value={profile.domaineFormation} />
-              <InfoRow icon={<GraduationCap size={16} />} label="Niveau" value={profile.niveauFormation} />
+              <InfoRow icon={<MapPin size={16} />} label="Adresse" value={profile.adresse} />
+              <InfoRow icon={<Globe size={16} />} label="Site web" value={profile.siteWeb} />
+              <InfoRow icon={<GraduationCap size={16} />} label="Horaires" value={profile.horaires} />
             </div>
+            {profile.formationsProposees && (
+              <p className="mt-4 text-sm text-navy/70 whitespace-pre-line">{profile.formationsProposees}</p>
+            )}
           </div>
         )}
         <div className="bg-white rounded-xl shadow-sm p-5">

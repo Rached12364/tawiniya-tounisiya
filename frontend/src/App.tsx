@@ -67,10 +67,10 @@ function App() {
           }
         />
         <Route
-          path="espace/stagiaire"
+          path="espace/centre-formation"
           element={
             <ProtectedRoute>
-              <NetworkSpacePage role="STAGIAIRE" />
+              <NetworkSpacePage role="CENTRE_FORMATION" />
             </ProtectedRoute>
           }
         />

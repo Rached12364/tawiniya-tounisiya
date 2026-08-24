@@ -1,4 +1,4 @@
-export type Role = 'ADMIN' | 'TECHNICIEN' | 'ENTREPRISE' | 'STAGIAIRE' | 'BENEFICIEL';
+export type Role = 'ADMIN' | 'TECHNICIEN' | 'ENTREPRISE' | 'CENTRE_FORMATION' | 'BENEFICIEL';
 export interface ExperiencePro {
   societe: string;
   periode: string;
@@ -63,29 +63,11 @@ export interface EntrepriseProfil {
   nombreStagiaires?: number | string;
   nombreEmployes?: number | string;
 }
-export interface StagiaireProfil {
-  cin?: string;
-  dateNaissance?: string;
-  adresse?: string;
-  etablissement?: string;
-  niveauFormation?: string;
-  domaineFormation?: string;
-  classeGroupe?: string;
-  anneeUniversitaire?: string;
-  diplomePrepare?: string;
-  competencesStagiaire?: string;
-  typeStage?: string;
-  dateDebutStage?: string;
-  dateFinStage?: string;
-  dureeStage?: string;
-  sujetStage?: string;
-  descriptionProjet?: string;
-  encadrantEntreprise?: string;
-  encadrantAcademique?: string;
-  departementStage?: string;
-  statutStage?: string;
+export interface CentreFormationProfil {
+  horaires?: string;
+  formationsProposees?: string;
 }
-export interface User extends TechnicienProfil, EntrepriseProfil, StagiaireProfil {
+export interface User extends TechnicienProfil, EntrepriseProfil, CentreFormationProfil {
   id: number;
   nom: string;
   prenom: string;
@@ -106,7 +88,7 @@ export interface LoginPayload {
   email: string;
   password: string;
 }
-export interface RegisterPayload extends TechnicienProfil, EntrepriseProfil, StagiaireProfil {
+export interface RegisterPayload extends TechnicienProfil, EntrepriseProfil, CentreFormationProfil {
   nom: string;
   prenom: string;
   email: string;

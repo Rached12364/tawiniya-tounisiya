@@ -1,4 +1,4 @@
-﻿import { Fragment, useEffect, useState, useCallback } from 'react';
+import { Fragment, useEffect, useState, useCallback } from 'react';
 import { ChevronLeft, ChevronRight, Ban, CheckCircle2, ChevronDown } from 'lucide-react';
 import { getUsers, enableUser, disableUser } from '../../services/adminService';
 import type { PagedUsers } from '../../types/admin';
@@ -7,7 +7,7 @@ const ROLE_LABELS: Record<string, string> = {
   ADMIN: 'Admin',
   TECHNICIEN: 'Technicien',
   ENTREPRISE: 'Entreprise',
-  STAGIAIRE: 'Stagiaire',
+  CENTRE_FORMATION: 'Centre de formation',
   BENEFICIEL: 'Bénéficiaire',
 };
 function Field({ label, value }: { label: string; value: string | number | null | undefined }) {
@@ -139,43 +139,18 @@ function EntrepriseDetail({ u }: { u: User }) {
     </div>
   );
 }
-function StagiaireDetail({ u }: { u: User }) {
+function CentreFormationDetail({ u }: { u: User }) {
   return (
     <div className="flex flex-col gap-3 p-4">
-      <DetailSection title="Informations personnelles">
-        <Field label="CIN" value={u.cin} />
-        <Field label="Date de naissance" value={u.dateNaissance} />
+      <DetailSection title="Informations du centre">
         <Field label="Adresse" value={u.adresse} />
+        <Field label="Site web" value={u.siteWeb} />
+        <Field label="Horaires" value={u.horaires} />
       </DetailSection>
-      <DetailSection title="Informations académiques">
-        <Field label="Établissement" value={u.etablissement} />
-        <Field label="Filière / Spécialité" value={u.domaineFormation} />
-        <Field label="Niveau / Année" value={u.niveauFormation} />
-        <Field label="Classe / groupe" value={u.classeGroupe} />
-        <Field label="Année universitaire" value={u.anneeUniversitaire} />
-        <Field label="Diplôme préparé" value={u.diplomePrepare} />
-      </DetailSection>
-      {u.competencesStagiaire && (
+      {u.formationsProposees && (
         <div className="rounded-lg border border-navy/10 bg-navy/[0.02] p-3">
-          <p className="text-xs font-bold text-teal mb-2">Compétences</p>
-          <p className="text-sm text-navy whitespace-pre-line">{u.competencesStagiaire}</p>
-        </div>
-      )}
-      <DetailSection title="Informations du stage">
-        <Field label="Type de stage" value={u.typeStage} />
-        <Field label="Statut" value={u.statutStage} />
-        <Field label="Début" value={u.dateDebutStage} />
-        <Field label="Fin" value={u.dateFinStage} />
-        <Field label="Durée" value={u.dureeStage} />
-        <Field label="Sujet" value={u.sujetStage} />
-        <Field label="Encadrant entreprise" value={u.encadrantEntreprise} />
-        <Field label="Encadrant académique" value={u.encadrantAcademique} />
-        <Field label="Département" value={u.departementStage} />
-      </DetailSection>
-      {u.descriptionProjet && (
-        <div className="rounded-lg border border-navy/10 bg-navy/[0.02] p-3">
-          <p className="text-xs font-bold text-teal mb-2">Description du projet</p>
-          <p className="text-sm text-navy whitespace-pre-line">{u.descriptionProjet}</p>
+          <p className="text-xs font-bold text-teal mb-2">Formations proposées</p>
+          <p className="text-sm text-navy whitespace-pre-line">{u.formationsProposees}</p>
         </div>
       )}
     </div>
@@ -238,7 +213,7 @@ export default function UsersPanel() {
           <tbody>
             {pageData.content.map((u) => {
               const isExpanded = expandedId === u.id;
-              const hasDetail = u.role === 'TECHNICIEN' || u.role === 'ENTREPRISE' || u.role === 'STAGIAIRE';
+              const hasDetail = u.role === 'TECHNICIEN' || u.role === 'ENTREPRISE' || u.role === 'CENTRE_FORMATION';
               return (
                 <Fragment key={u.id}>
                   <tr
@@ -293,7 +268,7 @@ export default function UsersPanel() {
                       <td colSpan={7}>
                         {u.role === 'TECHNICIEN' && <TechnicienDetail u={u} />}
                         {u.role === 'ENTREPRISE' && <EntrepriseDetail u={u} />}
-                        {u.role === 'STAGIAIRE' && <StagiaireDetail u={u} />}
+                        {u.role === 'CENTRE_FORMATION' && <CentreFormationDetail u={u} />}
                       </td>
                     </tr>
                   )}
