@@ -50,7 +50,6 @@ public class User implements UserDetails {
     @Column(columnDefinition = "TEXT")
     private String bio;
     // ================== Profil Technicien ==================
-    // Certains champs (cin, dateNaissance, adresse) sont partagés avec le profil Stagiaire.
     // Tous ces champs restent null pour les rôles qui ne les utilisent pas.
     // ----- Identité -----
     @Column(name = "date_naissance")
@@ -165,44 +164,13 @@ public class User implements UserDetails {
     private Integer nombreStagiaires;
     @Column(name = "nombre_employes")
     private Integer nombreEmployes;
-    // ================== Profil Stagiaire ==================
-    // Rempli uniquement quand role == STAGIAIRE ; null sinon.
-    // (cin, dateNaissance, adresse ci-dessus sont réutilisés pour l'identité du stagiaire)
-    // ----- Informations académiques -----
-    private String etablissement;
-    @Column(name = "niveau_formation")
-    private String niveauFormation;
-    @Column(name = "domaine_formation")
-    private String domaineFormation;
-    @Column(name = "classe_groupe")
-    private String classeGroupe;
-    @Column(name = "annee_universitaire")
-    private String anneeUniversitaire;
-    @Column(name = "diplome_prepare")
-    private String diplomePrepare;
-    @Column(name = "competences_stagiaire", columnDefinition = "TEXT")
-    private String competencesStagiaire;
-    // ----- Informations du stage -----
-    @Column(name = "type_stage")
-    private String typeStage;
-    @Column(name = "date_debut_stage")
-    private LocalDate dateDebutStage;
-    @Column(name = "date_fin_stage")
-    private LocalDate dateFinStage;
-    @Column(name = "duree_stage")
-    private String dureeStage;
-    @Column(name = "sujet_stage")
-    private String sujetStage;
-    @Column(name = "description_projet", columnDefinition = "TEXT")
-    private String descriptionProjet;
-    @Column(name = "encadrant_entreprise")
-    private String encadrantEntreprise;
-    @Column(name = "encadrant_academique")
-    private String encadrantAcademique;
-    @Column(name = "departement_stage")
-    private String departementStage;
-    @Column(name = "statut_stage")
-    private String statutStage;
+    // ================== Profil Centre de formation ==================
+    // Rempli uniquement quand role == CENTRE_FORMATION ; null sinon.
+    // (nom = nom du centre, prenom = nom du contact/responsable,
+    //  adresse/siteWeb/photoProfilPath ci-dessus sont réutilisés : adresse du centre, site web, logo)
+    private String horaires;
+    @Column(name = "formations_proposees", columnDefinition = "TEXT")
+    private String formationsProposees;
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();

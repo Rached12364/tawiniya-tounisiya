@@ -27,7 +27,7 @@ public class ConnectionService {
         return switch (u.getRole()) {
             case TECHNICIEN -> u.getSpecialite();
             case ENTREPRISE -> u.getSecteurActivite();
-            case STAGIAIRE -> u.getDomaineFormation();
+            case CENTRE_FORMATION -> u.getFormationsProposees();
             default -> null;
         };
     }
@@ -105,9 +105,9 @@ public class ConnectionService {
                 .linkedin(u.getLinkedin())
                 .entrepriseTelephone(u.getEntrepriseTelephone())
                 .entrepriseEmail(u.getEntrepriseEmail())
-                .etablissement(u.getEtablissement())
-                .domaineFormation(u.getDomaineFormation())
-                .niveauFormation(u.getNiveauFormation())
+                .adresse(u.getAdresse())
+                .horaires(u.getHoraires())
+                .formationsProposees(u.getFormationsProposees())
                 .connectionStatus(connectionStatus)
                 .connectionId(connectionId)
                 .build();

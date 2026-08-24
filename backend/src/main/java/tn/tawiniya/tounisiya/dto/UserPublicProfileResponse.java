@@ -38,10 +38,10 @@ public class UserPublicProfileResponse {
     private String linkedin;
     private String entrepriseTelephone;
     private String entrepriseEmail;
-    // ----- Stagiaire -----
-    private String etablissement;
-    private String domaineFormation;
-    private String niveauFormation;
+    // ----- Centre de formation -----
+    private String adresse;
+    private String horaires;
+    private String formationsProposees;
     // ----- Relation avec l'utilisateur courant -----
     private String connectionStatus;
     private Long connectionId;

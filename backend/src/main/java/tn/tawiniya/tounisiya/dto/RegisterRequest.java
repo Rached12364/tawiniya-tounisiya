@@ -80,22 +80,7 @@ public class RegisterRequest {
     private Integer nombreTechniciens;
     private Integer nombreStagiaires;
     private Integer nombreEmployes;
-    // ================== Profil Stagiaire (optionnel) ==================
-    private String etablissement;
-    private String niveauFormation;
-    private String domaineFormation;
-    private String classeGroupe;
-    private String anneeUniversitaire;
-    private String diplomePrepare;
-    private String competencesStagiaire;
-    private String typeStage;
-    private LocalDate dateDebutStage;
-    private LocalDate dateFinStage;
-    private String dureeStage;
-    private String sujetStage;
-    private String descriptionProjet;
-    private String encadrantEntreprise;
-    private String encadrantAcademique;
-    private String departementStage;
-    private String statutStage;
+    // ================== Profil Centre de formation (optionnel) ==================
+    private String horaires;
+    private String formationsProposees;
 }

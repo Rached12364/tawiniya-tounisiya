@@ -96,27 +96,11 @@ public class UserProfileService {
             user.setNombreTechniciens(request.getNombreTechniciens());
             user.setNombreStagiaires(request.getNombreStagiaires());
             user.setNombreEmployes(request.getNombreEmployes());
-        } else if (user.getRole() == Role.STAGIAIRE) {
-            user.setCin(request.getCin());
-            user.setDateNaissance(request.getDateNaissance());
+        } else if (user.getRole() == Role.CENTRE_FORMATION) {
             user.setAdresse(request.getAdresse());
-            user.setEtablissement(request.getEtablissement());
-            user.setNiveauFormation(request.getNiveauFormation());
-            user.setDomaineFormation(request.getDomaineFormation());
-            user.setClasseGroupe(request.getClasseGroupe());
-            user.setAnneeUniversitaire(request.getAnneeUniversitaire());
-            user.setDiplomePrepare(request.getDiplomePrepare());
-            user.setCompetencesStagiaire(request.getCompetencesStagiaire());
-            user.setTypeStage(request.getTypeStage());
-            user.setDateDebutStage(request.getDateDebutStage());
-            user.setDateFinStage(request.getDateFinStage());
-            user.setDureeStage(request.getDureeStage());
-            user.setSujetStage(request.getSujetStage());
-            user.setDescriptionProjet(request.getDescriptionProjet());
-            user.setEncadrantEntreprise(request.getEncadrantEntreprise());
-            user.setEncadrantAcademique(request.getEncadrantAcademique());
-            user.setDepartementStage(request.getDepartementStage());
-            user.setStatutStage(request.getStatutStage());
+            user.setSiteWeb(request.getSiteWeb());
+            user.setHoraires(request.getHoraires());
+            user.setFormationsProposees(request.getFormationsProposees());
         }
         userRepository.save(user);
         return userMapper.toResponse(user);

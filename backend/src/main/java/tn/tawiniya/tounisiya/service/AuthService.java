@@ -105,28 +105,12 @@ public class AuthService {
                     .nombreTechniciens(request.getNombreTechniciens())
                     .nombreStagiaires(request.getNombreStagiaires())
                     .nombreEmployes(request.getNombreEmployes());
-        } else if (request.getRole() == Role.STAGIAIRE) {
+        } else if (request.getRole() == Role.CENTRE_FORMATION) {
             builder
-                    .cin(request.getCin())
-                    .dateNaissance(request.getDateNaissance())
                     .adresse(request.getAdresse())
-                    .etablissement(request.getEtablissement())
-                    .niveauFormation(request.getNiveauFormation())
-                    .domaineFormation(request.getDomaineFormation())
-                    .classeGroupe(request.getClasseGroupe())
-                    .anneeUniversitaire(request.getAnneeUniversitaire())
-                    .diplomePrepare(request.getDiplomePrepare())
-                    .competencesStagiaire(request.getCompetencesStagiaire())
-                    .typeStage(request.getTypeStage())
-                    .dateDebutStage(request.getDateDebutStage())
-                    .dateFinStage(request.getDateFinStage())
-                    .dureeStage(request.getDureeStage())
-                    .sujetStage(request.getSujetStage())
-                    .descriptionProjet(request.getDescriptionProjet())
-                    .encadrantEntreprise(request.getEncadrantEntreprise())
-                    .encadrantAcademique(request.getEncadrantAcademique())
-                    .departementStage(request.getDepartementStage())
-                    .statutStage(request.getStatutStage());
+                    .siteWeb(request.getSiteWeb())
+                    .horaires(request.getHoraires())
+                    .formationsProposees(request.getFormationsProposees());
         }
         User user = builder.build();
         userRepository.save(user);
@@ -151,4 +135,3 @@ public class AuthService {
         return new AuthResponse(token, userMapper.toResponse(user));
     }
 }
-

@@ -1,5 +1,4 @@
 package tn.tawiniya.tounisiya.entity;
-
 /**
  * Rôles disponibles sur la plateforme Tawiniya Tounisiya.
  */
@@ -7,6 +6,6 @@ public enum Role {
     ADMIN,
     TECHNICIEN,
     ENTREPRISE,
-    STAGIAIRE,
+    CENTRE_FORMATION,
     BENEFICIEL
 }
