@@ -8,6 +8,7 @@ export interface UserCard {
   bio?: string;
   photoProfilPath?: string;
   photoCouverturePath?: string;
+  adresse?: string;
   subtitle?: string;
   connectionStatus: ConnectionStatusValue;
   connectionId?: number;

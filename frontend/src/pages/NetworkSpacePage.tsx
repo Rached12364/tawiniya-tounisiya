@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  User as UserIcon, Loader2, UserPlus, Clock, Check, Users, Inbox, Search,
+  User as UserIcon, Loader2, UserPlus, Clock, Check, Users, Inbox, Search, MapPin,
 } from 'lucide-react';
 import {
   browseByRole, sendConnectionRequest, acceptConnection, rejectConnection,
@@ -18,6 +18,18 @@ const ROLE_LABELS: Record<Role, string> = {
   TECHNICIEN: 'Technicien', ENTREPRISE: 'Entreprise', CENTRE_FORMATION: 'Centre de formation',
   BENEFICIEL: 'Bénéficiaire', ADMIN: 'Administrateur',
 };
+const GOUVERNORATS = [
+  'Ariana', 'Béja', 'Ben Arous', 'Bizerte', 'Gabès', 'Gafsa', 'Jendouba', 'Kairouan',
+  'Kasserine', 'Kébili', 'Le Kef', 'Mahdia', 'La Manouba', 'Médenine', 'Monastir',
+  'Nabeul', 'Sfax', 'Sidi Bouzid', 'Siliana', 'Sousse', 'Tataouine', 'Tozeur', 'Tunis', 'Zaghouan',
+];
+const SPECIALITE_OPTIONS = [
+  'Électricité bâtiment', 'Électricité industrielle',
+  'Caméras de surveillance', 'Contrôle d\u2019accès', 'Système anti-incendie', 'Système anti-intrusion',
+  'Smart Home / Domotique', 'Automatisation',
+  'Photovoltaïque', 'Pompage solaire', 'STEG Off-grid / On-grid / Installation',
+  'Réseaux informatiques', 'Fibre optique',
+];
 type Tab = 'browse' | 'connections' | 'invitations';
 function UserCardTile({ card, onAction }: { card: UserCard; onAction: (card: UserCard) => Promise<void> }) {
   const [busy, setBusy] = useState(false);
@@ -51,6 +63,11 @@ function UserCardTile({ card, onAction }: { card: UserCard; onAction: (card: Use
         </div>
         <h3 className="mt-2 text-sm font-bold text-navy truncate max-w-full">{fullName}</h3>
         <p className="text-xs text-navy/50 truncate max-w-full">{card.subtitle || ROLE_LABELS[card.role]}</p>
+        {card.adresse && (
+          <p className="mt-0.5 flex items-center justify-center gap-1 text-[11px] text-navy/40 truncate max-w-full">
+            <MapPin size={11} /> {card.adresse}
+          </p>
+        )}
         {card.bio && <p className="mt-1.5 text-[11px] text-navy/60 italic line-clamp-2">{card.bio}</p>}
         <button
           onClick={(e) => { e.stopPropagation(); handleClick(); }}
@@ -89,11 +106,17 @@ export default function NetworkSpacePage({ role }: { role: Role }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
+  const [filterAdresse, setFilterAdresse] = useState('');
+  const [filterSpecialite, setFilterSpecialite] = useState('');
   const filteredCards = cards.filter((c) => {
     const q = search.trim().toLowerCase();
-    if (!q) return true;
-    const fullName = `${c.prenom} ${c.nom}`.toLowerCase();
-    return fullName.includes(q) || (c.subtitle ?? '').toLowerCase().includes(q);
+    const matchesSearch = !q
+      || `${c.prenom} ${c.nom}`.toLowerCase().includes(q)
+      || (c.subtitle ?? '').toLowerCase().includes(q)
+      || (c.adresse ?? '').toLowerCase().includes(q);
+    const matchesAdresse = !filterAdresse || c.adresse === filterAdresse;
+    const matchesSpecialite = !filterSpecialite || (c.subtitle ?? '').includes(filterSpecialite);
+    return matchesSearch && matchesAdresse && matchesSpecialite;
   });
   function loadBrowse() {
     setLoading(true);
@@ -165,14 +188,36 @@ export default function NetworkSpacePage({ role }: { role: Role }) {
         </div>
         {error && <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2 mb-4">{error}</p>}
         {tab === 'browse' && (
-          <div className="relative mb-5 max-w-sm">
-            <Search size={16} className="absolute start-3 top-1/2 -translate-y-1/2 text-navy/30" />
-            <input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder={`Rechercher un ${ROLE_LABELS[role].toLowerCase()}...`}
-              className="w-full rounded-full border border-navy/15 bg-white ps-9 pe-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal/40 focus:border-teal"
-            />
+          <div className="flex flex-wrap items-center gap-3 mb-5">
+            <div className="relative max-w-sm flex-1 min-w-[220px]">
+              <Search size={16} className="absolute start-3 top-1/2 -translate-y-1/2 text-navy/30" />
+              <input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder={`Rechercher un ${ROLE_LABELS[role].toLowerCase()}...`}
+                className="w-full rounded-full border border-navy/15 bg-white ps-9 pe-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal/40 focus:border-teal"
+              />
+            </div>
+            {role === 'TECHNICIEN' && (
+              <>
+                <select
+                  value={filterAdresse}
+                  onChange={(e) => setFilterAdresse(e.target.value)}
+                  className="rounded-full border border-navy/15 bg-white px-3.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal/40 focus:border-teal"
+                >
+                  <option value="">Tous les gouvernorats</option>
+                  {GOUVERNORATS.map((g) => <option key={g} value={g}>{g}</option>)}
+                </select>
+                <select
+                  value={filterSpecialite}
+                  onChange={(e) => setFilterSpecialite(e.target.value)}
+                  className="rounded-full border border-navy/15 bg-white px-3.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal/40 focus:border-teal"
+                >
+                  <option value="">Toutes les spécialités</option>
+                  {SPECIALITE_OPTIONS.map((s) => <option key={s} value={s}>{s}</option>)}
+                </select>
+              </>
+            )}
           </div>
         )}
         {loading ? (
