@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { User, Mail, Phone, Lock, UserPlus, Loader2, Wrench, Building2, GraduationCap, Check, Plus, Trash2 } from 'lucide-react';
+import { User, Mail, Phone, Lock, UserPlus, Loader2, Wrench, Building2, GraduationCap, HeartHandshake, Check, Plus, Trash2 } from 'lucide-react';
 import { register } from '../services/authService';
 import { useAuthStore, redirectPathForRole } from '../store/authStore';
 import type { ApiError, Role, RegisterPayload, ExperiencePro } from '../types/auth';
@@ -9,6 +9,7 @@ const ROLE_OPTIONS: { value: Role; label: string; icon: typeof Wrench; descripti
   { value: 'TECHNICIEN', label: 'Technicien', icon: Wrench, description: 'Électricité, énergie renouvelable' },
   { value: 'ENTREPRISE', label: 'Entreprise', icon: Building2, description: 'Structure ou société' },
   { value: 'CENTRE_FORMATION', label: 'Centre de formation', icon: GraduationCap, description: 'Formations et apprentissage' },
+  { value: 'BENEFICIEL', label: 'Bénéficiaire', icon: HeartHandshake, description: 'Beneficiaire des services' },
 ];
 const GROUPES_SANGUINS = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
 const initialForm: RegisterPayload = {
@@ -127,7 +128,7 @@ export default function RegisterPage() {
         <form onSubmit={handleSubmit} className="mt-8 flex flex-col gap-4">
           <div>
             <label className={labelCls}>Vous êtes...</label>
-            <div className="grid grid-cols-3 gap-2.5">
+            <div className="grid grid-cols-2 gap-2.5">
               {ROLE_OPTIONS.map((opt) => {
                 const Icon = opt.icon;
                 const isSelected = form.role === opt.value;
