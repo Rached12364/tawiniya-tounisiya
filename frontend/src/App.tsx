@@ -3,7 +3,6 @@ import Layout from './components/layout/Layout';
 import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
-import ComingSoonPage from './pages/ComingSoonPage';
 import JuridiquePage from './pages/JuridiquePage';
 import ReclamationPage from './pages/ReclamationPage';
 import EvenementsPage from './pages/EvenementsPage';
@@ -74,7 +73,14 @@ function App() {
             </ProtectedRoute>
           }
         />
-        <Route path="espace/beneficiel" element={<ComingSoonPage />} />
+        <Route
+          path="espace/beneficiel"
+          element={
+            <ProtectedRoute>
+              <NetworkSpacePage role="BENEFICIEL" />
+            </ProtectedRoute>
+          }
+        />
         <Route
           path="profil/:id"
           element={
