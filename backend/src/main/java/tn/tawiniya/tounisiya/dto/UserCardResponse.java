@@ -19,6 +19,7 @@ public class UserCardResponse {
     private String bio;
     private String photoProfilPath;
     private String photoCouverturePath;
+    private String adresse;
     // Champ "sous-titre" contextuel selon le rôle (spécialité, secteur d'activité, filière...)
     private String subtitle;
     // Statut de connexion avec l'utilisateur courant : NONE, PENDING_SENT, PENDING_RECEIVED, ACCEPTED

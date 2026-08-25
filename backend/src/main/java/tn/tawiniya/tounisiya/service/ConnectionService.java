@@ -55,6 +55,11 @@ public class ConnectionService {
                 .bio(u.getBio())
                 .photoProfilPath(u.getPhotoProfilPath())
                 .photoCouverturePath(u.getPhotoCouverturePath())
+                .adresse(switch (u.getRole()) {
+                    case CENTRE_FORMATION, TECHNICIEN -> u.getAdresse();
+                    case ENTREPRISE -> u.getEntrepriseAdresse();
+                    default -> null;
+                })
                 .subtitle(subtitleFor(u))
                 .connectionStatus(connectionStatus)
                 .connectionId(connectionId)
