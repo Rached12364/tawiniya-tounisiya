@@ -142,6 +142,10 @@ export default function RegisterPage() {
       setError('Veuillez sélectionner au moins une spécialité.');
       return;
     }
+    if (form.role === 'CENTRE_FORMATION' && !form.formationsProposees?.trim()) {
+      setError('Veuillez sélectionner au moins une formation proposée.');
+      return;
+    }
     setIsLoading(true);
     try {
       const payload: RegisterPayload = {
@@ -435,13 +439,21 @@ export default function RegisterPage() {
           {form.role === 'CENTRE_FORMATION' && (
             <div className="rounded-xl bg-teal/[0.04] border border-teal/15 p-4 flex flex-col gap-4">
               <SectionTitle>Informations du centre</SectionTitle>
-              <Field label="Adresse"><input value={form.adresse} onChange={update('adresse')} className={inputCls} /></Field>
+              <Field label="Adresse" required>
+                <select required value={form.adresse} onChange={update('adresse')} className={`${inputCls} bg-white`}>
+                  <option value="">Sélectionner...</option>
+                  {GOUVERNORATS.map((g) => <option key={g} value={g}>{g}</option>)}
+                </select>
+              </Field>
               <div className="grid sm:grid-cols-2 gap-4">
                 <Field label="Site web"><input value={form.siteWeb} onChange={update('siteWeb')} placeholder="https://..." className={inputCls} /></Field>
                 <Field label="Horaires"><input value={form.horaires} onChange={update('horaires')} placeholder="Ex: Lun-Ven 9h-17h" className={inputCls} /></Field>
               </div>
-              <Field label="Formations proposées">
-                <textarea value={form.formationsProposees} onChange={update('formationsProposees')} rows={4} placeholder="Une formation par ligne" className={inputCls} />
+              <Field label="Formations proposées" required>
+                <SpecialiteMultiSelect
+                  value={form.formationsProposees}
+                  onChange={(v) => setForm((f) => ({ ...f, formationsProposees: v }))}
+                />
               </Field>
             </div>
           )}

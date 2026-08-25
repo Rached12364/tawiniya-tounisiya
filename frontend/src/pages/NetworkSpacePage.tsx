@@ -204,7 +204,7 @@ export default function NetworkSpacePage({ role }: { role: Role }) {
                 className="w-full rounded-full border border-navy/15 bg-white ps-9 pe-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal/40 focus:border-teal"
               />
             </div>
-            {(role === 'TECHNICIEN' || role === 'ENTREPRISE') && (
+            {(role === 'TECHNICIEN' || role === 'ENTREPRISE' || role === 'CENTRE_FORMATION') && (
               <>
                 <select
                   value={filterAdresse}
@@ -219,8 +219,10 @@ export default function NetworkSpacePage({ role }: { role: Role }) {
                   onChange={(e) => setFilterSpecialite(e.target.value)}
                   className="rounded-full border border-navy/15 bg-white px-3.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal/40 focus:border-teal"
                 >
-                  <option value="">{role === 'TECHNICIEN' ? 'Toutes les spécialités' : 'Tous les secteurs'}</option>
-                  {(role === 'TECHNICIEN' ? SPECIALITE_OPTIONS : SECTEURS_ACTIVITE).map((s) => <option key={s} value={s}>{s}</option>)}
+                  <option value="">
+                    {role === 'TECHNICIEN' ? 'Toutes les spécialités' : role === 'ENTREPRISE' ? 'Tous les secteurs' : 'Toutes les formations'}
+                  </option>
+                  {(role === 'ENTREPRISE' ? SECTEURS_ACTIVITE : SPECIALITE_OPTIONS).map((s) => <option key={s} value={s}>{s}</option>)}
                 </select>
               </>
             )}

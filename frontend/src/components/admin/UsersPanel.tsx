@@ -1,6 +1,6 @@
 import { Fragment, useEffect, useState, useCallback } from 'react';
-import { ChevronLeft, ChevronRight, Ban, CheckCircle2, ChevronDown } from 'lucide-react';
-import { getUsers, enableUser, disableUser } from '../../services/adminService';
+import { ChevronLeft, ChevronRight, Ban, CheckCircle2, ChevronDown, Trash2 } from 'lucide-react';
+import { getUsers, enableUser, disableUser, deleteUser } from '../../services/adminService';
 import type { PagedUsers } from '../../types/admin';
 import type { User } from '../../types/auth';
 const ROLE_LABELS: Record<string, string> = {
@@ -188,6 +188,18 @@ export default function UsersPanel() {
       setBusyId(null);
     }
   }
+  async function handleDelete(id: number, fullName: string) {
+    if (!window.confirm(`Supprimer definitivement le compte de ${fullName} ? Cette action est irreversible et supprimera aussi ses publications, commentaires et connexions.`)) return;
+    setBusyId(id);
+    try {
+      await deleteUser(id);
+      load(page);
+    } catch {
+      setError("Impossible de supprimer cet utilisateur.");
+    } finally {
+      setBusyId(null);
+    }
+  }
   if (loading && !pageData) {
     return <p className="text-navy/60">Chargement des utilisateurs…</p>;
   }
@@ -246,21 +258,34 @@ export default function UsersPanel() {
                       </span>
                     </td>
                     <td className="px-4 py-3 text-right">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          toggleEnabled(u.id, u.enabled);
-                        }}
-                        disabled={busyId === u.id}
-                        className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-colors disabled:opacity-50 ${
-                          u.enabled
-                            ? 'bg-red-50 text-red-600 hover:bg-red-100'
-                            : 'bg-green-50 text-green-700 hover:bg-green-100'
-                        }`}
-                      >
-                        {u.enabled ? <Ban size={14} /> : <CheckCircle2 size={14} />}
-                        {u.enabled ? 'Désactiver' : 'Activer'}
-                      </button>
+                      <div className="flex items-center justify-end gap-2">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleEnabled(u.id, u.enabled);
+                          }}
+                          disabled={busyId === u.id}
+                          className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-colors disabled:opacity-50 ${
+                            u.enabled
+                              ? 'bg-red-50 text-red-600 hover:bg-red-100'
+                              : 'bg-green-50 text-green-700 hover:bg-green-100'
+                          }`}
+                        >
+                          {u.enabled ? <Ban size={14} /> : <CheckCircle2 size={14} />}
+                          {u.enabled ? 'Désactiver' : 'Activer'}
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDelete(u.id, `${u.prenom} ${u.nom}`.trim());
+                          }}
+                          disabled={busyId === u.id}
+                          title="Supprimer definitivement"
+                          className="inline-flex items-center gap-1.5 rounded-full bg-navy/5 px-3 py-1.5 text-xs font-semibold text-navy/50 hover:bg-red-100 hover:text-red-700 transition-colors disabled:opacity-50"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                   {hasDetail && isExpanded && (

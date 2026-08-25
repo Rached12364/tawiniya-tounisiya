@@ -1,4 +1,4 @@
-﻿import api from './api';
+import api from './api';
 import type { User } from '../types/auth';
 import type { AdminStats, PagedUsers, ContentImage, ContentSection } from '../types/admin';
 export async function getStats(): Promise<AdminStats> {
@@ -16,6 +16,9 @@ export async function enableUser(id: number): Promise<User> {
 export async function disableUser(id: number): Promise<User> {
   const { data } = await api.put<User>(`/admin/users/${id}/disable`);
   return data;
+}
+export async function deleteUser(id: number): Promise<void> {
+  await api.delete(`/admin/users/${id}`);
 }
 export async function getContentImages(section: ContentSection): Promise<ContentImage[]> {
   const { data } = await api.get<ContentImage[]>(`/admin/content/images/${section}`);
