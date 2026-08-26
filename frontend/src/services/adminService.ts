@@ -1,6 +1,6 @@
 import api from './api';
 import type { User } from '../types/auth';
-import type { AdminStats, PagedUsers, ContentImage, ContentSection } from '../types/admin';
+import type { AdminStats, PagedUsers, ContentImage, ContentSection, SiteVideo } from '../types/admin';
 export async function getStats(): Promise<AdminStats> {
   const { data } = await api.get<AdminStats>('/admin/stats');
   return data;
@@ -52,4 +52,16 @@ export async function disableContentImage(id: number): Promise<ContentImage> {
 }
 export async function deleteContentImage(id: number): Promise<void> {
   await api.delete(`/admin/content/images/${id}`);
+}
+export async function getSiteVideo(): Promise<SiteVideo | null> {
+  const { data } = await api.get<SiteVideo | null>('/admin/content/video');
+  return data;
+}
+export async function uploadSiteVideo(file: File): Promise<SiteVideo> {
+  const formData = new FormData();
+  formData.append('file', file);
+  const { data } = await api.post<SiteVideo>('/admin/content/video', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  return data;
 }

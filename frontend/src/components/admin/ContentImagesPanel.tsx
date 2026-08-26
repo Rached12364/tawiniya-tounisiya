@@ -1,20 +1,89 @@
 import { useEffect, useState, useCallback } from 'react';
-import { Trash2, Ban, CheckCircle2, UploadCloud } from 'lucide-react';
+import { Trash2, Ban, CheckCircle2, UploadCloud, Video } from 'lucide-react';
 import {
   getContentImages,
   uploadContentImage,
   enableContentImage,
   disableContentImage,
   deleteContentImage,
+  getSiteVideo,
+  uploadSiteVideo,
 } from '../../services/adminService';
-import type { ContentImage, ContentSection } from '../../types/admin';
+import type { ContentImage, ContentSection, SiteVideo } from '../../types/admin';
 const API_ORIGIN = (import.meta.env.VITE_API_URL || 'http://localhost:8080/api').replace(/\/api\/?$/, '');
 function imageUrl(path: string) {
   if (!path) return '';
   return path.startsWith('http') ? path : `${API_ORIGIN}${path.startsWith('/') ? '' : '/'}${path}`;
 }
+function VideoPanel() {
+  const [video, setVideo] = useState<SiteVideo | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [file, setFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  function load() {
+    setLoading(true);
+    getSiteVideo()
+      .then(setVideo)
+      .catch(() => setVideo(null))
+      .finally(() => setLoading(false));
+  }
+  useEffect(load, []);
+  async function handleUpload(e: React.FormEvent) {
+    e.preventDefault();
+    if (!file) return;
+    setUploading(true);
+    setError(null);
+    try {
+      const updated = await uploadSiteVideo(file);
+      setVideo(updated);
+      setFile(null);
+    } catch {
+      setError("Échec de l'upload. Vérifiez le format (MP4/WEBM/OGG) et la taille (max 100 Mo).");
+    } finally {
+      setUploading(false);
+    }
+  }
+  return (
+    <div className="space-y-6">
+      <form onSubmit={handleUpload} className="rounded-xl border border-navy/10 bg-white p-5 flex flex-wrap items-end gap-3">
+        <div className="flex-1 min-w-[220px]">
+          <label className="block text-xs font-medium text-navy/60 mb-1">Fichier video (MP4, WEBM ou OGG, max 100 Mo)</label>
+          <input
+            type="file"
+            accept="video/mp4,video/webm,video/ogg"
+            onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+            className="w-full text-sm text-navy file:mr-3 file:rounded-full file:border-0 file:bg-navy/10 file:px-3 file:py-1.5 file:text-navy file:text-xs file:font-semibold"
+          />
+        </div>
+        <button
+          type="submit"
+          disabled={!file || uploading}
+          className="inline-flex items-center gap-2 rounded-full bg-gold px-5 py-2 text-sm font-semibold text-navy-dark hover:bg-gold-light transition-colors disabled:opacity-50"
+        >
+          <UploadCloud size={16} />
+          {uploading ? 'Envoi en cours…' : 'Uploader la vidéo'}
+        </button>
+      </form>
+      {error && <p className="text-red-600 text-sm">{error}</p>}
+      {loading ? (
+        <p className="text-navy/60">Chargement…</p>
+      ) : !video ? (
+        <p className="text-navy/60">Aucune vidéo de présentation pour le moment.</p>
+      ) : (
+        <div className="rounded-xl border border-navy/10 bg-white p-4 max-w-2xl">
+          <p className="text-xs text-navy/50 mb-2">
+            Vidéo actuelle (mise à jour le {new Date(video.updatedAt).toLocaleDateString('fr-FR')})
+          </p>
+          <video src={imageUrl(video.videoPath)} controls className="w-full rounded-lg aspect-video bg-black" />
+        </div>
+      )}
+    </div>
+  );
+}
 export default function ContentImagesPanel() {
-  const [section, setSection] = useState<ContentSection>('HERO');
+  const [tab, setTab] = useState<ContentSection | 'VIDEO'>('HERO');
+  const section = (tab === 'VIDEO' ? 'HERO' : tab) as ContentSection;
   const [images, setImages] = useState<ContentImage[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -87,18 +156,22 @@ export default function ContentImagesPanel() {
   return (
     <div className="space-y-6">
       <div className="flex gap-2">
-        {(['HERO', 'SPONSOR'] as ContentSection[]).map((s) => (
+        {(['HERO', 'SPONSOR', 'VIDEO'] as (ContentSection | 'VIDEO')[]).map((s) => (
           <button
             key={s}
-            onClick={() => setSection(s)}
-            className={`rounded-full px-4 py-1.5 text-sm font-semibold transition-colors ${
-              section === s ? 'bg-navy text-white' : 'bg-navy/5 text-navy hover:bg-navy/10'
+            onClick={() => setTab(s)}
+            className={`inline-flex items-center gap-1.5 rounded-full px-4 py-1.5 text-sm font-semibold transition-colors ${
+              tab === s ? 'bg-navy text-white' : 'bg-navy/5 text-navy hover:bg-navy/10'
             }`}
           >
-            {s === 'HERO' ? 'Images du hero' : 'Sponsors'}
+            {s === 'VIDEO' && <Video size={14} />}
+            {s === 'HERO' ? 'Images du hero' : s === 'SPONSOR' ? 'Sponsors' : 'Vidéo'}
           </button>
         ))}
       </div>
+      {tab === 'VIDEO' && <VideoPanel />}
+      {tab !== 'VIDEO' && (
+      <>
       <form
         onSubmit={handleUpload}
         className="rounded-xl border border-navy/10 bg-white p-5 grid grid-cols-1 sm:grid-cols-4 gap-3 items-end"
@@ -196,6 +269,8 @@ export default function ContentImagesPanel() {
             </div>
           ))}
         </div>
+      )}
+      </>
       )}
     </div>
   );

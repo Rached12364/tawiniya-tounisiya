@@ -1,10 +1,19 @@
+import { useEffect, useState } from 'react';
 import { Play } from 'lucide-react';
 import { BRAND } from '../../config/brand';
-
-// ⚠️ Remplacez par le véritable ID de la vidéo YouTube institutionnelle une fois disponible.
-const YOUTUBE_VIDEO_ID = '';
-
+import api from '../../services/api';
+const API_ORIGIN = (import.meta.env.VITE_API_URL || 'http://localhost:8080/api').replace(/\/api\/?$/, '');
+function videoUrl(path: string) {
+  return path.startsWith('http') ? path : `${API_ORIGIN}${path}`;
+}
 export default function AboutSection() {
+  const [videoPath, setVideoPath] = useState<string | null>(null);
+  const [playing, setPlaying] = useState(false);
+  useEffect(() => {
+    api.get('/content/video')
+      .then((res) => setVideoPath(res.data?.videoPath ?? null))
+      .catch(() => setVideoPath(null));
+  }, []);
   return (
     <section className="mx-auto max-w-7xl px-4 py-20 grid md:grid-cols-2 gap-12 items-center">
       <div dir="rtl" className="text-end">
@@ -18,16 +27,30 @@ export default function AboutSection() {
           والمتابعة المهنية، من أجل قطاع كهربائي وطاقي أقوى وأكثر تضامنا في تونس.
         </p>
       </div>
-
       <div className="relative aspect-video rounded-2xl overflow-hidden bg-navy shadow-xl">
-        {YOUTUBE_VIDEO_ID ? (
-          <iframe
-            className="absolute inset-0 h-full w-full"
-            src={`https://www.youtube.com/embed/${YOUTUBE_VIDEO_ID}`}
-            title="CTTEERA - Présentation"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
+        {videoPath && playing ? (
+          <video
+            className="absolute inset-0 h-full w-full object-cover"
+            src={videoUrl(videoPath)}
+            controls
+            autoPlay
           />
+        ) : videoPath ? (
+          <button
+            type="button"
+            aria-label="Lire la vidéo de présentation"
+            onClick={() => setPlaying(true)}
+            className="absolute inset-0 flex items-center justify-center bg-black group"
+          >
+            <video
+              className="absolute inset-0 h-full w-full object-cover opacity-70"
+              src={videoUrl(videoPath)}
+              muted
+            />
+            <span className="relative grid place-items-center h-16 w-16 rounded-full bg-gold text-navy-dark group-hover:bg-gold-light transition-colors">
+              <Play size={26} fill="currentColor" />
+            </span>
+          </button>
         ) : (
           <button
             type="button"

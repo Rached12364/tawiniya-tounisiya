@@ -1,4 +1,4 @@
-﻿import type { Role, User } from './auth';
+import type { Role, User } from './auth';
 export interface AdminStats {
   totalUsers: number;
   usersByRole: Record<Role, number>;
@@ -12,6 +12,10 @@ export interface PagedUsers {
   size: number;
 }
 export type ContentSection = 'HERO' | 'SPONSOR';
+export interface SiteVideo {
+  videoPath: string;
+  updatedAt: string;
+}
 export interface ContentImage {
   id: number;
   section: ContentSection;
