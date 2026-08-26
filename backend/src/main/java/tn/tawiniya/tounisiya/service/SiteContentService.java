@@ -17,6 +17,7 @@ import java.util.List;
 public class SiteContentService {
 
     private final SiteImageRepository siteImageRepository;
+    private final tn.tawiniya.tounisiya.repository.SiteVideoRepository siteVideoRepository;
     private final FileStorageService fileStorageService;
 
     /** Utilisé côté public (page d'accueil) : uniquement les images actives. */
@@ -70,6 +71,23 @@ public class SiteContentService {
         siteImageRepository.delete(image);
     }
 
+    /** Video de presentation actuelle, si une a ete uploadee. */
+    public tn.tawiniya.tounisiya.dto.SiteVideoResponse getVideo() {
+        return siteVideoRepository.findAll().stream()
+                .findFirst()
+                .map(tn.tawiniya.tounisiya.dto.SiteVideoResponse::from)
+                .orElse(null);
+    }
+    @Transactional
+    public tn.tawiniya.tounisiya.dto.SiteVideoResponse uploadVideo(MultipartFile file) {
+        String path = fileStorageService.storeVideo(file);
+        tn.tawiniya.tounisiya.entity.SiteVideo video = siteVideoRepository.findAll().stream()
+                .findFirst()
+                .orElse(tn.tawiniya.tounisiya.entity.SiteVideo.builder().build());
+        video.setVideoPath(path);
+        siteVideoRepository.save(video);
+        return tn.tawiniya.tounisiya.dto.SiteVideoResponse.from(video);
+    }
     private SiteImage getOrThrow(Long id) {
         return siteImageRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Image introuvable : " + id));

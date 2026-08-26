@@ -26,4 +26,8 @@ public class ContentController {
     public List<SiteImageResponse> getActiveImages(@PathVariable ImageSection section) {
         return siteContentService.getActiveImages(section);
     }
+    @GetMapping("/video")
+    public tn.tawiniya.tounisiya.dto.SiteVideoResponse getVideo() {
+        return siteContentService.getVideo();
+    }
 }

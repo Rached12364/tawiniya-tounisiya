@@ -58,4 +58,12 @@ public class AdminContentController {
         siteContentService.deleteImage(id);
         return ResponseEntity.noContent().build();
     }
+    @GetMapping("/video")
+    public tn.tawiniya.tounisiya.dto.SiteVideoResponse getVideo() {
+        return siteContentService.getVideo();
+    }
+    @PostMapping(value = "/video", consumes = "multipart/form-data")
+    public tn.tawiniya.tounisiya.dto.SiteVideoResponse uploadVideo(@RequestParam("file") MultipartFile file) {
+        return siteContentService.uploadVideo(file);
+    }
 }

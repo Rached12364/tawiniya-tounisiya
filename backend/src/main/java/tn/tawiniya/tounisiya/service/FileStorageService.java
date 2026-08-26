@@ -17,6 +17,8 @@ public class FileStorageService {
     private static final Set<String> ALLOWED_ATTACHMENT_TYPES = Set.of(
             "image/jpeg", "image/png", "image/webp", "application/pdf");
     private static final long MAX_SIZE_BYTES = 5L * 1024 * 1024; // 5 Mo
+    private static final Set<String> ALLOWED_VIDEO_TYPES = Set.of("video/mp4", "video/webm", "video/ogg");
+    private static final long MAX_VIDEO_SIZE_BYTES = 100L * 1024 * 1024; // 100 Mo
     @Value("${app.upload-dir:uploads}")
     private String uploadDir;
     public String storeImage(MultipartFile file) {
@@ -114,6 +116,29 @@ public class FileStorageService {
             Path targetPath = targetDir.resolve(filename);
             Files.copy(file.getInputStream(), targetPath, StandardCopyOption.REPLACE_EXISTING);
             return "/uploads/techniciens/documents/" + filename;
+        } catch (IOException e) {
+            throw new InvalidFileException("Erreur lors de l'enregistrement du fichier.");
+        }
+    }
+    /** Video de presentation institutionnelle (page d'accueil). */
+    public String storeVideo(MultipartFile file) {
+        if (file == null || file.isEmpty()) {
+            throw new InvalidFileException("Le fichier est vide.");
+        }
+        if (!ALLOWED_VIDEO_TYPES.contains(file.getContentType())) {
+            throw new InvalidFileException("Format non autorise. Formats acceptes : MP4, WEBM, OGG.");
+        }
+        if (file.getSize() > MAX_VIDEO_SIZE_BYTES) {
+            throw new InvalidFileException("Le fichier depasse la taille maximale de 100 Mo.");
+        }
+        try {
+            Path targetDir = Paths.get(uploadDir, "videos");
+            Files.createDirectories(targetDir);
+            String extension = getExtension(file.getOriginalFilename());
+            String filename = UUID.randomUUID() + extension;
+            Path targetPath = targetDir.resolve(filename);
+            Files.copy(file.getInputStream(), targetPath, StandardCopyOption.REPLACE_EXISTING);
+            return "/uploads/videos/" + filename;
         } catch (IOException e) {
             throw new InvalidFileException("Erreur lors de l'enregistrement du fichier.");
         }
