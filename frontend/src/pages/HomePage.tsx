@@ -3,8 +3,6 @@ import AboutSection from '../components/home/AboutSection';
 import SponsorsSection from '../components/home/SponsorsSection';
 import StatsSection from '../components/home/StatsSection';
 import ServicesSection from '../components/home/ServicesSection';
-import FeaturedTechniciensSection from '../components/home/FeaturedTechniciensSection';
-
 export default function HomePage() {
   return (
     <>
@@ -13,7 +11,6 @@ export default function HomePage() {
       <SponsorsSection />
       <StatsSection />
       <ServicesSection />
-      <FeaturedTechniciensSection />
     </>
   );
 }
