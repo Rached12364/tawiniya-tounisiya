@@ -1,8 +1,8 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  Paperclip, Loader2, Send, MessageSquareWarning, Wrench, FileText, Receipt,
-  HelpCircle, Clock, RefreshCw, CheckCircle2, XCircle, X, Inbox,
+  Paperclip, Loader2, Send, MessageSquareWarning, FileText, Scale,
+  Clock, RefreshCw, CheckCircle2, XCircle, X, Inbox,
 } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import { createReclamation, getMyReclamations } from '../services/reclamationService';
@@ -13,11 +13,9 @@ import {
   type ReclamationType,
   type ReclamationStatus,
 } from '../types/reclamation';
-const TYPE_OPTIONS: { value: ReclamationType; icon: typeof Wrench }[] = [
-  { value: 'TECHNIQUE', icon: Wrench },
+const TYPE_OPTIONS: { value: ReclamationType; icon: typeof FileText }[] = [
   { value: 'ADMINISTRATIVE', icon: FileText },
-  { value: 'FACTURATION', icon: Receipt },
-  { value: 'AUTRE', icon: HelpCircle },
+  { value: 'JURIDIQUE', icon: Scale },
 ];
 const STATUS_META: Record<ReclamationStatus, { icon: typeof Clock; dot: string; badge: string }> = {
   OUVERTE: { icon: Clock, dot: 'bg-amber-500', badge: 'bg-amber-50 text-amber-700 border-amber-200' },
@@ -28,7 +26,7 @@ const STATUS_META: Record<ReclamationStatus, { icon: typeof Clock; dot: string; 
 export default function ReclamationPage() {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuthStore();
-  const [type, setType] = useState<ReclamationType>('TECHNIQUE');
+  const [type, setType] = useState<ReclamationType>('ADMINISTRATIVE');
   const [subject, setSubject] = useState('');
   const [description, setDescription] = useState('');
   const [attachment, setAttachment] = useState<File | null>(null);
@@ -97,7 +95,7 @@ export default function ReclamationPage() {
           <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-sm p-6 flex flex-col gap-5">
             <div>
               <label className="block text-sm font-semibold text-navy mb-2.5">Type de réclamation</label>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              <div className="grid grid-cols-2 gap-2 max-w-xs">
                 {TYPE_OPTIONS.map(({ value, icon: Icon }) => {
                   const isSelected = type === value;
                   return (

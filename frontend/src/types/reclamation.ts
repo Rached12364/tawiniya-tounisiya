@@ -1,4 +1,4 @@
-﻿export type ReclamationType = 'TECHNIQUE' | 'ADMINISTRATIVE' | 'FACTURATION' | 'AUTRE';
+export type ReclamationType = 'ADMINISTRATIVE' | 'JURIDIQUE';
 export type ReclamationStatus = 'OUVERTE' | 'EN_COURS' | 'RESOLUE' | 'REJETEE';
 export interface Reclamation {
   id: number;
@@ -24,10 +24,8 @@ export interface PagedResponse<T> {
   totalPages: number;
 }
 export const RECLAMATION_TYPE_LABELS: Record<ReclamationType, string> = {
-  TECHNIQUE: 'Technique',
   ADMINISTRATIVE: 'Administrative',
-  FACTURATION: 'Facturation',
-  AUTRE: 'Autre',
+  JURIDIQUE: 'Juridique',
 };
 export const RECLAMATION_STATUS_LABELS: Record<ReclamationStatus, string> = {
   OUVERTE: 'Ouverte',
