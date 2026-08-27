@@ -25,3 +25,11 @@ export async function uploadMyPhotoCouverture(file: File): Promise<User> {
   });
   return data;
 }
+export async function uploadAvocatDocuments(files: File[]): Promise<User> {
+  const formData = new FormData();
+  files.forEach((f) => formData.append('files', f));
+  const { data } = await api.post<User>('/users/me/avocat-documents', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  return data;
+}

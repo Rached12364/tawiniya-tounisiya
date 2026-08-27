@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Users, ShieldAlert, UserCog, Wrench, Building2, GraduationCap, HeartHandshake, Shield } from 'lucide-react';
+import { Users, ShieldAlert, UserCog, Wrench, Building2, GraduationCap, HeartHandshake, Shield, Scale } from 'lucide-react';
 import { getStats } from '../../services/adminService';
 import type { AdminStats } from '../../types/admin';
 const ROLE_META: Record<string, { label: string; icon: typeof Wrench; color: string; bg: string }> = {
@@ -8,6 +8,7 @@ const ROLE_META: Record<string, { label: string; icon: typeof Wrench; color: str
   ENTREPRISE: { label: 'Entreprises', icon: Building2, color: 'text-gold', bg: 'bg-gold/15' },
   CENTRE_FORMATION: { label: 'Centres de formation', icon: GraduationCap, color: 'text-purple-600', bg: 'bg-purple-100' },
   BENEFICIEL: { label: 'Bénéficiaires', icon: HeartHandshake, color: 'text-rose-600', bg: 'bg-rose-100' },
+  AVOCAT: { label: 'Avocats', icon: Scale, color: 'text-indigo-600', bg: 'bg-indigo-100' },
 };
 export default function StatsPanel() {
   const [stats, setStats] = useState<AdminStats | null>(null);

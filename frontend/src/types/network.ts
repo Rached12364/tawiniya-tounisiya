@@ -10,6 +10,7 @@ export interface UserCard {
   photoCouverturePath?: string;
   adresse?: string;
   subtitle?: string;
+  verified?: boolean;
   connectionStatus: ConnectionStatusValue;
   connectionId?: number;
 }
@@ -47,6 +48,8 @@ export interface UserPublicProfile {
   adresse?: string;
   horaires?: string;
   formationsProposees?: string;
+  numeroBarreau?: string;
+  verified?: boolean;
   connectionStatus: ConnectionStatusValue | 'SELF';
   connectionId?: number;
 }

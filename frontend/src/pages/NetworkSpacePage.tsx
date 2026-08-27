@@ -16,7 +16,7 @@ function imageUrl(path?: string) {
 }
 const ROLE_LABELS: Record<Role, string> = {
   TECHNICIEN: 'Technicien', ENTREPRISE: 'Entreprise', CENTRE_FORMATION: 'Centre de formation',
-  BENEFICIEL: 'Bénéficiaire', ADMIN: 'Administrateur',
+  BENEFICIEL: 'Bénéficiaire', ADMIN: 'Administrateur', AVOCAT: 'Avocat',
 };
 const GOUVERNORATS = [
   'Ariana', 'Béja', 'Ben Arous', 'Bizerte', 'Gabès', 'Gafsa', 'Jendouba', 'Kairouan',
