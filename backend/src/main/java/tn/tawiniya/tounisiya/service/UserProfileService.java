@@ -101,6 +101,20 @@ public class UserProfileService {
             user.setSiteWeb(request.getSiteWeb());
             user.setHoraires(request.getHoraires());
             user.setFormationsProposees(request.getFormationsProposees());
+        } else if (user.getRole() == Role.AVOCAT) {
+            user.setAdresse(request.getAdresse());
+            user.setNumeroBarreau(request.getNumeroBarreau());
+        }
+        userRepository.save(user);
+        return userMapper.toResponse(user);
+    }
+    @Transactional
+    public UserResponse addAvocatDocuments(User currentUser, java.util.List<MultipartFile> files) {
+        User user = userRepository.findById(currentUser.getId())
+                .orElseThrow(() -> new IllegalStateException("Utilisateur introuvable"));
+        for (MultipartFile file : files) {
+            String path = fileStorageService.storeAvocatDocument(file);
+            user.getAvocatDocuments().add(path);
         }
         userRepository.save(user);
         return userMapper.toResponse(user);

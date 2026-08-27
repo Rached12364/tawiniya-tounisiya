@@ -69,4 +69,6 @@ public class UpdateProfileRequest {
     // ================== Profil Centre de formation ==================
     private String horaires;
     private String formationsProposees;
+    // ================== Profil Avocat ==================
+    private String numeroBarreau;
 }

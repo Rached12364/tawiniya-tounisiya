@@ -3,6 +3,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import java.util.List;
 import tn.tawiniya.tounisiya.dto.UpdateProfileRequest;
 import tn.tawiniya.tounisiya.dto.UserResponse;
 import tn.tawiniya.tounisiya.entity.User;
@@ -36,5 +37,12 @@ public class UserProfileController {
             @RequestParam("file") MultipartFile file
     ) {
         return profileService.updatePhotoCouverture(currentUser, file);
+    }
+    @PostMapping(value = "/me/avocat-documents", consumes = "multipart/form-data")
+    public UserResponse addAvocatDocuments(
+            @AuthenticationPrincipal User currentUser,
+            @RequestParam("files") List<MultipartFile> files
+    ) {
+        return profileService.addAvocatDocuments(currentUser, files);
     }
 }

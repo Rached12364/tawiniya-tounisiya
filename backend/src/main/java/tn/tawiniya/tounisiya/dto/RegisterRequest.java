@@ -83,4 +83,6 @@ public class RegisterRequest {
     // ================== Profil Centre de formation (optionnel) ==================
     private String horaires;
     private String formationsProposees;
+    // ================== Profil Avocat (optionnel) ==================
+    private String numeroBarreau;
 }
