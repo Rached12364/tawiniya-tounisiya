@@ -143,29 +143,6 @@ public class FileStorageService {
             throw new InvalidFileException("Erreur lors de l'enregistrement du fichier.");
         }
     }
-    /** Document justificatif d'un avocat (diplome, carte du barreau...) : image ou PDF. */
-    public String storeAvocatDocument(MultipartFile file) {
-        if (file == null || file.isEmpty()) {
-            throw new InvalidFileException("Le fichier est vide.");
-        }
-        if (!ALLOWED_ATTACHMENT_TYPES.contains(file.getContentType())) {
-            throw new InvalidFileException("Format non autorise. Formats acceptes : JPG, PNG, WEBP, PDF.");
-        }
-        if (file.getSize() > MAX_SIZE_BYTES) {
-            throw new InvalidFileException("Le fichier depasse la taille maximale de 5 Mo.");
-        }
-        try {
-            Path targetDir = Paths.get(uploadDir, "avocats", "documents");
-            Files.createDirectories(targetDir);
-            String extension = getExtension(file.getOriginalFilename());
-            String filename = UUID.randomUUID() + extension;
-            Path targetPath = targetDir.resolve(filename);
-            Files.copy(file.getInputStream(), targetPath, StandardCopyOption.REPLACE_EXISTING);
-            return "/uploads/avocats/documents/" + filename;
-        } catch (IOException e) {
-            throw new InvalidFileException("Erreur lors de l'enregistrement du fichier.");
-        }
-    }
     private String getExtension(String originalFilename) {
         if (originalFilename == null || !originalFilename.contains(".")) {
             return "";

@@ -39,12 +39,4 @@ public class AdminController {
         adminService.deleteUser(id, currentAdmin.getId());
         return Map.of("deleted", true);
     }
-    @PutMapping("/users/{id}/verify")
-    public UserResponse verifyUser(@PathVariable Long id) {
-        return adminService.setVerified(id, true);
-    }
-    @PutMapping("/users/{id}/unverify")
-    public UserResponse unverifyUser(@PathVariable Long id) {
-        return adminService.setVerified(id, false);
-    }
 }

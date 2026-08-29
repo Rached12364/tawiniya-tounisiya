@@ -111,11 +111,6 @@ public class AuthService {
                     .siteWeb(request.getSiteWeb())
                     .horaires(request.getHoraires())
                     .formationsProposees(request.getFormationsProposees());
-        } else if (request.getRole() == Role.AVOCAT) {
-            builder
-                    .adresse(request.getAdresse())
-                    .numeroBarreau(request.getNumeroBarreau())
-                    .verified(false);
         }
         User user = builder.build();
         userRepository.save(user);

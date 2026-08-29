@@ -28,7 +28,6 @@ public class ConnectionService {
             case TECHNICIEN -> u.getSpecialite();
             case ENTREPRISE -> u.getSecteurActivite();
             case CENTRE_FORMATION -> u.getFormationsProposees();
-            case AVOCAT -> u.getNumeroBarreau();
             default -> null;
         };
     }
@@ -57,7 +56,7 @@ public class ConnectionService {
                 .photoProfilPath(u.getPhotoProfilPath())
                 .photoCouverturePath(u.getPhotoCouverturePath())
                 .adresse(switch (u.getRole()) {
-                    case CENTRE_FORMATION, TECHNICIEN, AVOCAT -> u.getAdresse();
+                    case CENTRE_FORMATION, TECHNICIEN -> u.getAdresse();
                     case ENTREPRISE -> u.getEntrepriseAdresse();
                     default -> null;
                 })
@@ -114,8 +113,6 @@ public class ConnectionService {
                 .adresse(u.getAdresse())
                 .horaires(u.getHoraires())
                 .formationsProposees(u.getFormationsProposees())
-                .numeroBarreau(u.getNumeroBarreau())
-                .verified(u.isVerified())
                 .connectionStatus(connectionStatus)
                 .connectionId(connectionId)
                 .build();

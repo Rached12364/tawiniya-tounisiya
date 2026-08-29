@@ -84,8 +84,4 @@ public class UserResponse {
     // ================== Profil Centre de formation ==================
     private String horaires;
     private String formationsProposees;
-    // ================== Profil Avocat ==================
-    private String numeroBarreau;
-    private boolean verified;
-    private java.util.List<String> avocatDocuments;
 }

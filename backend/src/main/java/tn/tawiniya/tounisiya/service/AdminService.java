@@ -51,14 +51,6 @@ public class AdminService {
         userRepository.save(user);
         return userMapper.toResponse(user);
     }
-    @Transactional
-    public UserResponse setVerified(Long userId, boolean verified) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("Utilisateur introuvable : " + userId));
-        user.setVerified(verified);
-        userRepository.save(user);
-        return userMapper.toResponse(user);
-    }
     /**
      * Supprime definitivement un compte et toutes les donnees qui lui sont liees.
      * Aucune contrainte FK n'a de ON DELETE CASCADE en base, donc le nettoyage

@@ -164,19 +164,6 @@ public class User implements UserDetails {
     private Integer nombreStagiaires;
     @Column(name = "nombre_employes")
     private Integer nombreEmployes;
-    // ================== Profil Avocat ==================
-    // Rempli uniquement quand role == AVOCAT ; null sinon.
-    // (adresse ci-dessus est reutilisee pour l'adresse du cabinet)
-    @Column(name = "numero_barreau")
-    private String numeroBarreau;
-    @Builder.Default
-    @Column(nullable = false)
-    private boolean verified = false;
-    @ElementCollection
-    @CollectionTable(name = "avocat_documents", joinColumns = @JoinColumn(name = "user_id"))
-    @Column(name = "document_path")
-    @Builder.Default
-    private List<String> avocatDocuments = new ArrayList<>();
     // ================== Profil Centre de formation ==================
     // Rempli uniquement quand role == CENTRE_FORMATION ; null sinon.
     // (nom = nom du centre, prenom = nom du contact/responsable,

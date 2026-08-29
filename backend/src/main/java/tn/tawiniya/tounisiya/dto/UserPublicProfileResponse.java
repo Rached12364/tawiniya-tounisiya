@@ -42,9 +42,6 @@ public class UserPublicProfileResponse {
     private String adresse;
     private String horaires;
     private String formationsProposees;
-    // ----- Avocat -----
-    private String numeroBarreau;
-    private boolean verified;
     // ----- Relation avec l'utilisateur courant -----
     private String connectionStatus;
     private Long connectionId;

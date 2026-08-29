@@ -7,6 +7,5 @@ public enum Role {
     TECHNICIEN,
     ENTREPRISE,
     CENTRE_FORMATION,
-    BENEFICIEL,
-    AVOCAT
+    BENEFICIEL
 }
