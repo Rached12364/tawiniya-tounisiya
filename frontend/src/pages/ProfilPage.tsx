@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import {
   Camera, Image as ImageIcon, Loader2, Pencil, Check, X,
-  User as UserIcon, Plus, Trash2,
+  User as UserIcon, Plus, Trash2, Scale,
 } from 'lucide-react';
 import {
   getMyUserProfile, updateMyUserProfile, uploadMyPhotoProfil, uploadMyPhotoCouverture,
@@ -120,6 +121,9 @@ const CENTRE_FORMATION_SECTIONS: SectionDef[] = [
     { key: 'horaires', label: 'Horaires' },
     { key: 'formationsProposees', label: 'Formations proposées', type: 'textarea' },
   ]},
+];
+const SERVICES = [
+  { label: 'Service Juridique', icon: Scale, path: '/services/juridique' },
 ];
 function FieldEditor({ def, value, onChange }: { def: FieldDef; value: any; onChange: (v: any) => void }) {
   if (def.type === 'toggle') {
@@ -441,42 +445,69 @@ export default function ProfilPage() {
             onChange={(e) => handlePhotoCouverture(e.target.files?.[0] ?? null)} />
         </label>
       </div>
-      <div className="mx-auto max-w-4xl px-4">
-        {/* Header profil */}
-        <div className="relative -mt-16 mb-6 bg-white rounded-xl shadow-sm px-6 pt-4 pb-5">
-          <div className="relative h-28 w-28 rounded-full border-4 border-white bg-navy/10 overflow-hidden shrink-0 -mt-16 mb-3">
-            {user.photoProfilPath ? (
-              <img src={imageUrl(user.photoProfilPath)} alt="Profil" className="w-full h-full object-cover" />
-            ) : (
-              <div className="w-full h-full grid place-items-center text-navy/30"><UserIcon size={36} /></div>
-            )}
-            <label className="absolute inset-0 grid place-items-center bg-black/0 hover:bg-black/30 transition-colors cursor-pointer group">
-              {uploadingKey === 'photoProfil' ? (
-                <Loader2 size={16} className="animate-spin text-white" />
-              ) : (
-                <Camera size={16} className="text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+      <div className="mx-auto max-w-6xl px-4">
+        <div className="grid grid-cols-1 lg:grid-cols-[260px_1fr] gap-6 items-start">
+          <aside className="order-2 lg:order-1 lg:sticky lg:top-24">
+            <div className="bg-white rounded-xl shadow-sm p-4">
+              <h2 className="text-sm font-bold text-teal uppercase tracking-wide mb-3">Services</h2>
+              <ul className="flex flex-col gap-1">
+                {SERVICES.map((s) => {
+                  const Icon = s.icon;
+                  return (
+                    <li key={s.path}>
+                      <Link
+                        to={s.path}
+                        className="flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm font-medium text-navy hover:bg-teal/5 hover:text-teal transition-colors"
+                      >
+                        <span className="grid place-items-center h-8 w-8 rounded-lg bg-teal/10 text-teal shrink-0">
+                          <Icon size={16} />
+                        </span>
+                        {s.label}
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          </aside>
+          <div className="order-1 lg:order-2 min-w-0">
+            {/* Header profil */}
+            <div className="relative -mt-16 mb-6 bg-white rounded-xl shadow-sm px-6 pt-4 pb-5">
+              <div className="relative h-28 w-28 rounded-full border-4 border-white bg-navy/10 overflow-hidden shrink-0 -mt-16 mb-3">
+                {user.photoProfilPath ? (
+                  <img src={imageUrl(user.photoProfilPath)} alt="Profil" className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full grid place-items-center text-navy/30"><UserIcon size={36} /></div>
+                )}
+                <label className="absolute inset-0 grid place-items-center bg-black/0 hover:bg-black/30 transition-colors cursor-pointer group">
+                  {uploadingKey === 'photoProfil' ? (
+                    <Loader2 size={16} className="animate-spin text-white" />
+                  ) : (
+                    <Camera size={16} className="text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                  )}
+                  <input type="file" accept="image/jpeg,image/png,image/webp" className="hidden"
+                    onChange={(e) => handlePhotoProfil(e.target.files?.[0] ?? null)} />
+                </label>
+              </div>
+              <h1 className="text-xl font-black text-navy">{fullName}</h1>
+              <p className="text-sm text-navy/50 mt-0.5 mb-3">{ROLE_LABELS[user.role] ?? user.role} — CTTEERA</p>
+              <BioEditor bio={form.bio} onChange={(v) => fieldChange('bio', v)} onSave={persist} saving={saving} />
+            </div>
+            {error && <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2 mb-4">{error}</p>}
+            <div className="flex flex-col gap-5">
+              <EditableSection section={ACCOUNT_SECTION} form={form} onFieldChange={fieldChange} onSave={persist} saving={saving} />
+              {roleSections.map((section) => (
+                <EditableSection key={section.title} section={section} form={form} onFieldChange={fieldChange} onSave={persist} saving={saving} />
+              ))}
+              {user.role === 'TECHNICIEN' && (
+                <ExperiencesSection experiences={experiences} setExperiences={setExperiences} onSave={persist} saving={saving} />
               )}
-              <input type="file" accept="image/jpeg,image/png,image/webp" className="hidden"
-                onChange={(e) => handlePhotoProfil(e.target.files?.[0] ?? null)} />
-            </label>
+            </div>
+            <div className="mt-6">
+              <h2 className="text-sm font-bold text-teal uppercase tracking-wide mb-3">Publications</h2>
+              <UserPostsList authorId={user.id} />
+            </div>
           </div>
-          <h1 className="text-xl font-black text-navy">{fullName}</h1>
-          <p className="text-sm text-navy/50 mt-0.5 mb-3">{ROLE_LABELS[user.role] ?? user.role} — CTTEERA</p>
-          <BioEditor bio={form.bio} onChange={(v) => fieldChange('bio', v)} onSave={persist} saving={saving} />
-        </div>
-        {error && <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2 mb-4">{error}</p>}
-        <div className="flex flex-col gap-5">
-          <EditableSection section={ACCOUNT_SECTION} form={form} onFieldChange={fieldChange} onSave={persist} saving={saving} />
-          {roleSections.map((section) => (
-            <EditableSection key={section.title} section={section} form={form} onFieldChange={fieldChange} onSave={persist} saving={saving} />
-          ))}
-          {user.role === 'TECHNICIEN' && (
-            <ExperiencesSection experiences={experiences} setExperiences={setExperiences} onSave={persist} saving={saving} />
-          )}
-        </div>
-        <div className="mt-6">
-          <h2 className="text-sm font-bold text-teal uppercase tracking-wide mb-3">Publications</h2>
-          <UserPostsList authorId={user.id} />
         </div>
       </div>
     </div>

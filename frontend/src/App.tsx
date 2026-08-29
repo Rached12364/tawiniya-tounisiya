@@ -13,6 +13,7 @@ import PublicProfilePage from './pages/PublicProfilePage';
 import ActualitesPage from './pages/ActualitesPage';
 import AdminDashboardPage from './pages/admin/AdminDashboardPage';
 import ProtectedRoute from './components/admin/ProtectedRoute';
+import ServiceJuridiquePage from './pages/ServiceJuridiquePage';
 function App() {
   return (
     <Routes>
@@ -90,6 +91,7 @@ function App() {
           }
         />
         <Route path="juridique" element={<JuridiquePage />} />
+        <Route path="services/juridique" element={<ServiceJuridiquePage />} />
         <Route path="reclamation" element={<ReclamationPage />} />
         <Route path="evenements" element={<EvenementsPage />} />
         <Route path="*" element={<NotFoundPage />} />
