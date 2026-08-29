@@ -1,4 +1,4 @@
-export type Role = 'ADMIN' | 'TECHNICIEN' | 'ENTREPRISE' | 'CENTRE_FORMATION' | 'BENEFICIEL' | 'AVOCAT';
+export type Role = 'ADMIN' | 'TECHNICIEN' | 'ENTREPRISE' | 'CENTRE_FORMATION' | 'BENEFICIEL';
 export interface ExperiencePro {
   societe: string;
   periode: string;
@@ -67,12 +67,7 @@ export interface CentreFormationProfil {
   horaires?: string;
   formationsProposees?: string;
 }
-export interface AvocatProfil {
-  numeroBarreau?: string;
-  verified?: boolean;
-  avocatDocuments?: string[];
-}
-export interface User extends TechnicienProfil, EntrepriseProfil, CentreFormationProfil, AvocatProfil {
+export interface User extends TechnicienProfil, EntrepriseProfil, CentreFormationProfil {
   id: number;
   nom: string;
   prenom: string;
@@ -93,7 +88,7 @@ export interface LoginPayload {
   email: string;
   password: string;
 }
-export interface RegisterPayload extends TechnicienProfil, EntrepriseProfil, CentreFormationProfil, AvocatProfil {
+export interface RegisterPayload extends TechnicienProfil, EntrepriseProfil, CentreFormationProfil {
   nom: string;
   prenom: string;
   email: string;

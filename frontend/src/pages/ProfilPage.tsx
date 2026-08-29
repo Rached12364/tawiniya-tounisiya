@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 import {
   Camera, Image as ImageIcon, Loader2, Pencil, Check, X,
-  User as UserIcon, Plus, Trash2, ShieldCheck, ShieldAlert, Paperclip,
+  User as UserIcon, Plus, Trash2,
 } from 'lucide-react';
 import {
-  getMyUserProfile, updateMyUserProfile, uploadMyPhotoProfil, uploadMyPhotoCouverture, uploadAvocatDocuments,
+  getMyUserProfile, updateMyUserProfile, uploadMyPhotoProfil, uploadMyPhotoCouverture,
 } from '../services/userProfileService';
 import UserPostsList from '../components/post/UserPostsList';
 import type { User, ExperiencePro } from '../types/auth';
@@ -119,12 +119,6 @@ const CENTRE_FORMATION_SECTIONS: SectionDef[] = [
     { key: 'siteWeb', label: 'Site web' },
     { key: 'horaires', label: 'Horaires' },
     { key: 'formationsProposees', label: 'Formations proposées', type: 'textarea' },
-  ]},
-];
-const AVOCAT_SECTIONS: SectionDef[] = [
-  { title: 'Informations professionnelles', fields: [
-    { key: 'adresse', label: 'Adresse (cabinet)', type: 'textarea' },
-    { key: 'numeroBarreau', label: "N° d'inscription au barreau" },
   ]},
 ];
 function FieldEditor({ def, value, onChange }: { def: FieldDef; value: any; onChange: (v: any) => void }) {
@@ -359,7 +353,6 @@ export default function ProfilPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [uploadingKey, setUploadingKey] = useState<string | null>(null);
-  const [avocatUploadMsg, setAvocatUploadMsg] = useState<string | null>(null);
   useEffect(() => {
     getMyUserProfile()
       .then((u) => {
@@ -403,19 +396,6 @@ export default function ProfilPage() {
       setUploadingKey(null);
     }
   }
-  async function handleAvocatDocuments(files: FileList | null) {
-    if (!files || files.length === 0) return;
-    setUploadingKey('avocatDocuments');
-    setAvocatUploadMsg(null);
-    try {
-      await uploadAvocatDocuments(Array.from(files));
-      setAvocatUploadMsg('Documents envoyés. En attente de vérification par un administrateur.');
-    } catch {
-      setAvocatUploadMsg("Échec de l'envoi des documents. Réessayez.");
-    } finally {
-      setUploadingKey(null);
-    }
-  }
   async function handlePhotoCouverture(file: File | null) {
     if (!file) return;
     setUploadingKey('photoCouverture');
@@ -437,14 +417,13 @@ export default function ProfilPage() {
   }
   const ROLE_LABELS: Record<string, string> = {
     TECHNICIEN: 'Technicien', ENTREPRISE: 'Entreprise', CENTRE_FORMATION: 'Centre de formation',
-    BENEFICIEL: 'Bénéficiaire', ADMIN: 'Administrateur', AVOCAT: 'Avocat',
+    BENEFICIEL: 'Bénéficiaire', ADMIN: 'Administrateur',
   };
   const fullName = `${form.prenom || ''} ${form.nom || ''}`.trim() || 'Mon profil';
   const roleSections =
     user.role === 'TECHNICIEN' ? TECHNICIEN_SECTIONS :
     user.role === 'ENTREPRISE' ? ENTREPRISE_SECTIONS :
-    user.role === 'CENTRE_FORMATION' ? CENTRE_FORMATION_SECTIONS :
-    user.role === 'AVOCAT' ? AVOCAT_SECTIONS : [];
+    user.role === 'CENTRE_FORMATION' ? CENTRE_FORMATION_SECTIONS : [];
   return (
     <div className="min-h-[70vh] bg-navy/[0.02] pb-16">
       {/* Bannière */}
@@ -482,36 +461,7 @@ export default function ProfilPage() {
             </label>
           </div>
           <h1 className="text-xl font-black text-navy">{fullName}</h1>
-          <p className="text-sm text-navy/50 mt-0.5 mb-1 flex items-center gap-2 flex-wrap">
-            <span>{ROLE_LABELS[user.role] ?? user.role} — CTTEERA</span>
-            {user.role === 'AVOCAT' && (
-              user.verified ? (
-                <span className="inline-flex items-center gap-1 rounded-full bg-teal/10 text-teal text-[11px] font-semibold px-2 py-0.5">
-                  <ShieldCheck size={12} /> Vérifié
-                </span>
-              ) : (
-                <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 text-amber-600 text-[11px] font-semibold px-2 py-0.5">
-                  <ShieldAlert size={12} /> Non vérifié
-                </span>
-              )
-            )}
-          </p>
-          {user.role === 'AVOCAT' && !user.verified && (
-            <div className="mb-3">
-              <label className="inline-flex items-center gap-1.5 text-xs font-semibold text-teal hover:text-teal/80 cursor-pointer transition-colors">
-                {uploadingKey === 'avocatDocuments' ? <Loader2 size={13} className="animate-spin" /> : <Paperclip size={13} />}
-                Ajouter des documents justificatifs
-                <input
-                  type="file"
-                  multiple
-                  accept="image/jpeg,image/png,image/webp,application/pdf"
-                  className="hidden"
-                  onChange={(e) => handleAvocatDocuments(e.target.files)}
-                />
-              </label>
-              {avocatUploadMsg && <p className="text-xs text-navy/50 mt-1">{avocatUploadMsg}</p>}
-            </div>
-          )}
+          <p className="text-sm text-navy/50 mt-0.5 mb-3">{ROLE_LABELS[user.role] ?? user.role} — CTTEERA</p>
           <BioEditor bio={form.bio} onChange={(v) => fieldChange('bio', v)} onSave={persist} saving={saving} />
         </div>
         {error && <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2 mb-4">{error}</p>}

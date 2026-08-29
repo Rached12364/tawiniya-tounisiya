@@ -19,7 +19,6 @@ const SPACE_LINKS = [
   { key: 'spaces_entreprise', path: '/espace/entreprise' },
   { key: 'spaces_centre_formation', path: '/espace/centre-formation' },
   { key: 'spaces_beneficiel', path: '/espace/beneficiel' },
-  { key: 'spaces_avocat', path: '/espace/avocat' },
 ];
 const NAV_LINKS = [
   { key: 'juridique', path: '/juridique', icon: '/icons/juridique.png' },

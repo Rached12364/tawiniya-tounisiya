@@ -1,9 +1,8 @@
 import { useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { User, Mail, Phone, Lock, UserPlus, Loader2, Wrench, Building2, GraduationCap, HeartHandshake, Scale, Check, Plus, Trash2, Paperclip, X } from 'lucide-react';
+import { User, Mail, Phone, Lock, UserPlus, Loader2, Wrench, Building2, GraduationCap, HeartHandshake, Check, Plus, Trash2 } from 'lucide-react';
 import { register } from '../services/authService';
-import { uploadAvocatDocuments } from '../services/userProfileService';
 import { useAuthStore, redirectPathForRole } from '../store/authStore';
 import type { ApiError, Role, RegisterPayload, ExperiencePro } from '../types/auth';
 const ROLE_OPTIONS: { value: Role; label: string; icon: typeof Wrench; description: string }[] = [
@@ -11,7 +10,6 @@ const ROLE_OPTIONS: { value: Role; label: string; icon: typeof Wrench; descripti
   { value: 'ENTREPRISE', label: 'Entreprise', icon: Building2, description: 'Structure ou société' },
   { value: 'CENTRE_FORMATION', label: 'Centre de formation', icon: GraduationCap, description: 'Formations et apprentissage' },
   { value: 'BENEFICIEL', label: 'Bénéficiaire', icon: HeartHandshake, description: 'Beneficiaire des services' },
-  { value: 'AVOCAT', label: 'Avocat', icon: Scale, description: 'Assistance et conseil juridique' },
 ];
 const GROUPES_SANGUINS = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
 const GOUVERNORATS = [
@@ -52,8 +50,6 @@ const initialForm: RegisterPayload = {
   nombreTechniciens: '', nombreStagiaires: '', nombreEmployes: '',
   // Centre de formation
   horaires: '', formationsProposees: '',
-  // Avocat
-  numeroBarreau: '',
 };
 const inputCls = "w-full rounded-lg border border-navy/15 bg-white px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal/40 focus:border-teal";
 const labelCls = "block text-sm font-medium text-navy mb-1.5";
@@ -127,7 +123,6 @@ export default function RegisterPage() {
   const [error, setError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [avocatFiles, setAvocatFiles] = useState<File[]>([]);
   const update = (key: keyof RegisterPayload) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
     setForm((f) => ({ ...f, [key]: e.target.value }));
   const selectRole = (role: Role) => setForm((f) => ({ ...f, role }));
@@ -151,10 +146,6 @@ export default function RegisterPage() {
       setError('Veuillez sélectionner au moins une formation proposée.');
       return;
     }
-    if (form.role === 'AVOCAT' && avocatFiles.length === 0) {
-      setError('Veuillez joindre au moins un document justificatif.');
-      return;
-    }
     setIsLoading(true);
     try {
       const payload: RegisterPayload = {
@@ -172,13 +163,6 @@ export default function RegisterPage() {
       };
       const { token, user } = await register(payload);
       setAuth(token, user);
-      if (form.role === 'AVOCAT' && avocatFiles.length > 0) {
-        try {
-          await uploadAvocatDocuments(avocatFiles);
-        } catch {
-          // L'inscription reste valide meme si l'upload echoue ; l'avocat pourra reessayer depuis son profil.
-        }
-      }
       navigate(redirectPathForRole(user.role));
     } catch (err) {
       if (axios.isAxiosError<ApiError>(err) && err.response) {
@@ -450,54 +434,6 @@ export default function RegisterPage() {
                 <Field label="Nb stagiaires"><input type="number" value={form.nombreStagiaires} onChange={update('nombreStagiaires')} className={inputCls} /></Field>
                 <Field label="Nb employés"><input type="number" value={form.nombreEmployes} onChange={update('nombreEmployes')} className={inputCls} /></Field>
               </div>
-            </div>
-          )}
-          {form.role === 'AVOCAT' && (
-            <div className="rounded-xl bg-teal/[0.04] border border-teal/15 p-4 flex flex-col gap-4">
-              <SectionTitle>Informations professionnelles</SectionTitle>
-              <div className="grid sm:grid-cols-2 gap-4">
-                <Field label="Adresse (cabinet)" required>
-                  <select required value={form.adresse} onChange={update('adresse')} className={`${inputCls} bg-white`}>
-                    <option value="">Sélectionner...</option>
-                    {GOUVERNORATS.map((g) => <option key={g} value={g}>{g}</option>)}
-                  </select>
-                </Field>
-                <Field label="N° d'inscription au barreau" required>
-                  <input required value={form.numeroBarreau} onChange={update('numeroBarreau')} className={inputCls} />
-                </Field>
-              </div>
-              <Field label="Documents justificatifs (diplôme, carte du barreau...)" required>
-                <label className="flex items-center justify-center gap-2 rounded-lg border-2 border-dashed border-navy/15 px-4 py-5 text-sm text-navy/50 hover:border-teal/40 hover:bg-teal/[0.03] cursor-pointer transition-colors">
-                  <Paperclip size={16} />
-                  Choisir un ou plusieurs fichiers (JPG, PNG, WEBP ou PDF)
-                  <input
-                    type="file"
-                    multiple
-                    accept="image/jpeg,image/png,image/webp,application/pdf"
-                    onChange={(e) => setAvocatFiles(Array.from(e.target.files ?? []))}
-                    className="hidden"
-                  />
-                </label>
-                {avocatFiles.length > 0 && (
-                  <ul className="mt-2 flex flex-col gap-1.5">
-                    {avocatFiles.map((f, i) => (
-                      <li key={i} className="flex items-center justify-between gap-2 rounded-lg border border-navy/15 bg-navy/[0.02] px-3 py-2 text-sm text-navy">
-                        <span className="flex items-center gap-2 truncate">
-                          <Paperclip size={14} className="shrink-0 text-navy/40" />
-                          <span className="truncate">{f.name}</span>
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => setAvocatFiles((files) => files.filter((_, idx) => idx !== i))}
-                          className="shrink-0 grid place-items-center h-6 w-6 rounded-full text-navy/40 hover:bg-red-50 hover:text-red-500 transition-colors"
-                        >
-                          <X size={13} />
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </Field>
             </div>
           )}
           {form.role === 'CENTRE_FORMATION' && (

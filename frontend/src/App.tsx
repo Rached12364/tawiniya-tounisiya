@@ -74,14 +74,6 @@ function App() {
           }
         />
         <Route
-          path="espace/avocat"
-          element={
-            <ProtectedRoute>
-              <NetworkSpacePage role="AVOCAT" />
-            </ProtectedRoute>
-          }
-        />
-        <Route
           path="espace/beneficiel"
           element={
             <ProtectedRoute>

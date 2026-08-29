@@ -1,19 +1,14 @@
 import { Fragment, useEffect, useState, useCallback } from 'react';
-import { ChevronLeft, ChevronRight, Ban, CheckCircle2, ChevronDown, Trash2, ShieldCheck, ShieldAlert, FileText } from 'lucide-react';
-import { getUsers, enableUser, disableUser, deleteUser, verifyUser, unverifyUser } from '../../services/adminService';
+import { ChevronLeft, ChevronRight, Ban, CheckCircle2, ChevronDown, Trash2 } from 'lucide-react';
+import { getUsers, enableUser, disableUser, deleteUser } from '../../services/adminService';
 import type { PagedUsers } from '../../types/admin';
 import type { User } from '../../types/auth';
-const API_ORIGIN = (import.meta.env.VITE_API_URL || 'http://localhost:8080/api').replace(/\/api\/?$/, '');
-function docUrl(path: string) {
-  return path.startsWith('http') ? path : `${API_ORIGIN}${path}`;
-}
 const ROLE_LABELS: Record<string, string> = {
   ADMIN: 'Admin',
   TECHNICIEN: 'Technicien',
   ENTREPRISE: 'Entreprise',
   CENTRE_FORMATION: 'Centre de formation',
   BENEFICIEL: 'Bénéficiaire',
-  AVOCAT: 'Avocat',
 };
 function Field({ label, value }: { label: string; value: string | number | null | undefined }) {
   return (
@@ -161,57 +156,6 @@ function CentreFormationDetail({ u }: { u: User }) {
     </div>
   );
 }
-function AvocatDetail({ u, onVerify, onUnverify, busy }: { u: User; onVerify: () => void; onUnverify: () => void; busy: boolean }) {
-  return (
-    <div className="flex flex-col gap-3 p-4">
-      <DetailSection title="Informations professionnelles">
-        <Field label="Adresse (cabinet)" value={u.adresse} />
-        <Field label="N° d'inscription au barreau" value={u.numeroBarreau} />
-        <Field label="Statut de vérification" value={u.verified ? 'Vérifié' : 'Non vérifié'} />
-      </DetailSection>
-      <div className="rounded-lg border border-navy/10 bg-navy/[0.02] p-3">
-        <p className="text-xs font-bold text-teal mb-2">Documents justificatifs</p>
-        {!u.avocatDocuments || u.avocatDocuments.length === 0 ? (
-          <p className="text-sm text-navy/40">Aucun document envoyé.</p>
-        ) : (
-          <ul className="flex flex-col gap-1.5">
-            {u.avocatDocuments.map((doc, i) => (
-              <li key={i}>
-                <a
-                  href={docUrl(doc)}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex items-center gap-1.5 text-sm text-teal hover:underline"
-                >
-                  <FileText size={14} /> Document {i + 1}
-                </a>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
-      <div>
-        {u.verified ? (
-          <button
-            onClick={onUnverify}
-            disabled={busy}
-            className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 text-amber-600 px-3 py-1.5 text-xs font-semibold hover:bg-amber-100 transition-colors disabled:opacity-50"
-          >
-            <ShieldAlert size={14} /> Annuler la vérification
-          </button>
-        ) : (
-          <button
-            onClick={onVerify}
-            disabled={busy}
-            className="inline-flex items-center gap-1.5 rounded-full bg-teal/10 text-teal px-3 py-1.5 text-xs font-semibold hover:bg-teal/20 transition-colors disabled:opacity-50"
-          >
-            <ShieldCheck size={14} /> Vérifier ce compte
-          </button>
-        )}
-      </div>
-    </div>
-  );
-}
 export default function UsersPanel() {
   const [pageData, setPageData] = useState<PagedUsers | null>(null);
   const [page, setPage] = useState(0);
@@ -240,21 +184,6 @@ export default function UsersPanel() {
       load(page);
     } catch {
       setError("Impossible de modifier le statut de l'utilisateur.");
-    } finally {
-      setBusyId(null);
-    }
-  }
-  async function toggleVerified(id: number, verified: boolean) {
-    setBusyId(id);
-    try {
-      if (verified) {
-        await unverifyUser(id);
-      } else {
-        await verifyUser(id);
-      }
-      load(page);
-    } catch {
-      setError("Impossible de modifier le statut de verification.");
     } finally {
       setBusyId(null);
     }
@@ -296,7 +225,7 @@ export default function UsersPanel() {
           <tbody>
             {pageData.content.map((u) => {
               const isExpanded = expandedId === u.id;
-              const hasDetail = u.role === 'TECHNICIEN' || u.role === 'ENTREPRISE' || u.role === 'CENTRE_FORMATION' || u.role === 'AVOCAT';
+              const hasDetail = u.role === 'TECHNICIEN' || u.role === 'ENTREPRISE' || u.role === 'CENTRE_FORMATION';
               return (
                 <Fragment key={u.id}>
                   <tr
@@ -365,14 +294,6 @@ export default function UsersPanel() {
                         {u.role === 'TECHNICIEN' && <TechnicienDetail u={u} />}
                         {u.role === 'ENTREPRISE' && <EntrepriseDetail u={u} />}
                         {u.role === 'CENTRE_FORMATION' && <CentreFormationDetail u={u} />}
-                        {u.role === 'AVOCAT' && (
-                          <AvocatDetail
-                            u={u}
-                            busy={busyId === u.id}
-                            onVerify={() => toggleVerified(u.id, false)}
-                            onUnverify={() => toggleVerified(u.id, true)}
-                          />
-                        )}
                       </td>
                     </tr>
                   )}

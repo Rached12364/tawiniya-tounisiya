@@ -20,14 +20,6 @@ export async function disableUser(id: number): Promise<User> {
 export async function deleteUser(id: number): Promise<void> {
   await api.delete(`/admin/users/${id}`);
 }
-export async function verifyUser(id: number): Promise<User> {
-  const { data } = await api.put<User>(`/admin/users/${id}/verify`);
-  return data;
-}
-export async function unverifyUser(id: number): Promise<User> {
-  const { data } = await api.put<User>(`/admin/users/${id}/unverify`);
-  return data;
-}
 export async function getContentImages(section: ContentSection): Promise<ContentImage[]> {
   const { data } = await api.get<ContentImage[]>(`/admin/content/images/${section}`);
   return data;

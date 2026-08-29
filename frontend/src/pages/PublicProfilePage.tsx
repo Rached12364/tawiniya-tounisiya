@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   User as UserIcon, Loader2, UserPlus, Clock, Check, ArrowLeft,
-  Phone, Mail, Globe, MapPin, GraduationCap, Building2, Link as LinkIcon, ShieldCheck, Scale,
+  Phone, Mail, Globe, MapPin, GraduationCap, Building2, Link as LinkIcon,
 } from 'lucide-react';
 import { getPublicProfile, sendConnectionRequest, acceptConnection } from '../services/networkService';
 import UserPostsList from '../components/post/UserPostsList';
@@ -14,7 +14,7 @@ function imageUrl(path?: string) {
 }
 const ROLE_LABELS: Record<string, string> = {
   TECHNICIEN: 'Technicien', ENTREPRISE: 'Entreprise', CENTRE_FORMATION: 'Centre de formation',
-  BENEFICIEL: 'Bénéficiaire', ADMIN: 'Administrateur', AVOCAT: 'Avocat',
+  BENEFICIEL: 'Bénéficiaire', ADMIN: 'Administrateur',
 };
 function InfoRow({ icon, label, value }: { icon: React.ReactNode; label: string; value?: string }) {
   if (!value) return null;
@@ -68,8 +68,7 @@ export default function PublicProfilePage() {
   const subtitle =
     profile.role === 'TECHNICIEN' ? profile.specialite :
     profile.role === 'ENTREPRISE' ? profile.secteurActivite :
-    profile.role === 'CENTRE_FORMATION' ? profile.formationsProposees :
-    profile.role === 'AVOCAT' ? 'Avocat' : null;
+    profile.role === 'CENTRE_FORMATION' ? profile.formationsProposees : null;
   return (
     <div className="min-h-[70vh] bg-navy/[0.02] pb-16">
       <div className="relative h-48 md:h-60 w-full bg-gradient-to-br from-navy via-navy-dark to-teal overflow-hidden">
@@ -95,14 +94,7 @@ export default function PublicProfilePage() {
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
             <div>
               <h1 className="text-xl font-black text-navy">{fullName}</h1>
-              <p className="text-sm text-navy/50 mt-0.5 flex items-center gap-2 flex-wrap">
-                <span>{subtitle || ROLE_LABELS[profile.role]} — CTTEERA</span>
-                {profile.role === 'AVOCAT' && profile.verified && (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-teal/10 text-teal text-[11px] font-semibold px-2 py-0.5">
-                    <ShieldCheck size={12} /> Vérifié
-                  </span>
-                )}
-              </p>
+              <p className="text-sm text-navy/50 mt-0.5">{subtitle || ROLE_LABELS[profile.role]} — CTTEERA</p>
               {profile.bio && <p className="mt-2 text-sm text-navy/70 italic">"{profile.bio}"</p>}
             </div>
             {profile.connectionStatus !== 'SELF' && (
@@ -172,15 +164,6 @@ export default function PublicProfilePage() {
             {profile.formationsProposees && (
               <p className="mt-4 text-sm text-navy/70 whitespace-pre-line">{profile.formationsProposees}</p>
             )}
-          </div>
-        )}
-        {profile.role === 'AVOCAT' && (
-          <div className="bg-white rounded-xl shadow-sm p-5 mb-5">
-            <h2 className="text-sm font-bold text-teal uppercase tracking-wide mb-4">Avocat</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <InfoRow icon={<MapPin size={16} />} label="Adresse (cabinet)" value={profile.adresse} />
-              <InfoRow icon={<Scale size={16} />} label="N° d'inscription au barreau" value={profile.numeroBarreau} />
-            </div>
           </div>
         )}
         <div className="bg-white rounded-xl shadow-sm p-5">
