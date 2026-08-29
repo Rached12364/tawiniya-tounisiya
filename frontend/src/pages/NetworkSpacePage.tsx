@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  User as UserIcon, Loader2, UserPlus, Clock, Check, Users, Inbox, Search, MapPin, Gavel,
+  User as UserIcon, Loader2, UserPlus, Clock, Check, Users, Inbox, Search, MapPin,
 } from 'lucide-react';
 import {
   browseByRole, sendConnectionRequest, acceptConnection, rejectConnection,
@@ -60,16 +60,11 @@ function UserCardTile({ card, onAction }: { card: UserCard; onAction: (card: Use
         )}
       </div>
       <div className="px-4 pb-4 -mt-8 flex flex-col items-center text-center">
-        <div className="relative h-16 w-16 rounded-full border-4 border-white bg-navy/10 overflow-hidden shrink-0">
+        <div className="h-16 w-16 rounded-full border-4 border-white bg-navy/10 overflow-hidden shrink-0">
           {card.photoProfilPath ? (
             <img src={imageUrl(card.photoProfilPath)} alt={fullName} className="w-full h-full object-cover" />
           ) : (
             <div className="w-full h-full grid place-items-center text-navy/30"><UserIcon size={24} /></div>
-          )}
-          {card.role === 'AVOCAT' && card.verified && (
-            <span className="absolute -bottom-0.5 -end-0.5 grid place-items-center h-5 w-5 rounded-full bg-teal border-2 border-white text-white">
-              <Gavel size={11} />
-            </span>
           )}
         </div>
         <h3 className="mt-2 text-sm font-bold text-navy truncate max-w-full">{fullName}</h3>

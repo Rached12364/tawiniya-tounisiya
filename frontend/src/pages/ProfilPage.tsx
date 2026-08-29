@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import {
   Camera, Image as ImageIcon, Loader2, Pencil, Check, X,
-  User as UserIcon, Plus, Trash2, Gavel, ShieldAlert, Paperclip,
+  User as UserIcon, Plus, Trash2, ShieldCheck, ShieldAlert, Paperclip,
 } from 'lucide-react';
 import {
   getMyUserProfile, updateMyUserProfile, uploadMyPhotoProfil, uploadMyPhotoCouverture, uploadAvocatDocuments,
@@ -487,7 +487,7 @@ export default function ProfilPage() {
             {user.role === 'AVOCAT' && (
               user.verified ? (
                 <span className="inline-flex items-center gap-1 rounded-full bg-teal/10 text-teal text-[11px] font-semibold px-2 py-0.5">
-                  <Gavel size={12} /> Vérifié
+                  <ShieldCheck size={12} /> Vérifié
                 </span>
               ) : (
                 <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 text-amber-600 text-[11px] font-semibold px-2 py-0.5">

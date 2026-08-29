@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   User as UserIcon, Loader2, UserPlus, Clock, Check, ArrowLeft,
-  Phone, Mail, Globe, MapPin, GraduationCap, Building2, Link as LinkIcon, Gavel, Scale,
+  Phone, Mail, Globe, MapPin, GraduationCap, Building2, Link as LinkIcon, ShieldCheck, Scale,
 } from 'lucide-react';
 import { getPublicProfile, sendConnectionRequest, acceptConnection } from '../services/networkService';
 import UserPostsList from '../components/post/UserPostsList';
@@ -99,7 +99,7 @@ export default function PublicProfilePage() {
                 <span>{subtitle || ROLE_LABELS[profile.role]} — CTTEERA</span>
                 {profile.role === 'AVOCAT' && profile.verified && (
                   <span className="inline-flex items-center gap-1 rounded-full bg-teal/10 text-teal text-[11px] font-semibold px-2 py-0.5">
-                    <Gavel size={12} /> Vérifié
+                    <ShieldCheck size={12} /> Vérifié
                   </span>
                 )}
               </p>
