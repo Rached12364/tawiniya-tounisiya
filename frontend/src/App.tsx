@@ -13,6 +13,7 @@ import PublicProfilePage from './pages/PublicProfilePage';
 import ActualitesPage from './pages/ActualitesPage';
 import AdminDashboardPage from './pages/admin/AdminDashboardPage';
 import ProtectedRoute from './components/admin/ProtectedRoute';
+import ExpertJuridiqueDashboardPage from './pages/ExpertJuridiqueDashboardPage';
 import ServiceJuridiquePage from './pages/ServiceJuridiquePage';
 function App() {
   return (
@@ -28,6 +29,14 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={['ADMIN']}>
               <AdminDashboardPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="expert-juridique"
+          element={
+            <ProtectedRoute allowedRoles={['EXPERT_JURIDIQUE']}>
+              <ExpertJuridiqueDashboardPage />
             </ProtectedRoute>
           }
         />

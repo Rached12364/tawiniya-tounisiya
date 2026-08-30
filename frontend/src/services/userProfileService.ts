@@ -25,3 +25,11 @@ export async function uploadMyPhotoCouverture(file: File): Promise<User> {
   });
   return data;
 }
+export async function uploadDiplomeDocument(file: File): Promise<User> {
+  const formData = new FormData();
+  formData.append('file', file);
+  const { data } = await api.post<User>('/users/me/diplome-document', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  return data;
+}

@@ -1,4 +1,4 @@
-export type Role = 'ADMIN' | 'TECHNICIEN' | 'ENTREPRISE' | 'CENTRE_FORMATION' | 'BENEFICIEL';
+export type Role = 'ADMIN' | 'TECHNICIEN' | 'ENTREPRISE' | 'CENTRE_FORMATION' | 'BENEFICIEL' | 'EXPERT_JURIDIQUE';
 export interface ExperiencePro {
   societe: string;
   periode: string;
@@ -14,6 +14,7 @@ export interface TechnicienProfil {
   tiktok?: string;
   instagram?: string;
   diplome?: string;
+  diplomeDocumentPath?: string;
   specialite?: string;
   niveauScolaire?: string;
   permisConduire?: 'OUI' | 'NON' | null;

@@ -1,4 +1,4 @@
-﻿import { create } from 'zustand';
+import { create } from 'zustand';
 import type { User } from '../types/auth';
 const TOKEN_KEY = 'tawiniya-token';
 const USER_KEY = 'tawiniya-user';
@@ -36,6 +36,9 @@ export const useAuthStore = create<AuthState>((set) => ({
 export function redirectPathForRole(role: User['role']): string {
   if (role === 'ADMIN') {
     return '/admin';
+  }
+  if (role === 'EXPERT_JURIDIQUE') {
+    return '/expert-juridique';
   }
   return '/';
 }
