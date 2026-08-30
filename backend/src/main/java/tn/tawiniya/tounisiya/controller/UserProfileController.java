@@ -37,4 +37,11 @@ public class UserProfileController {
     ) {
         return profileService.updatePhotoCouverture(currentUser, file);
     }
+    @PostMapping(value = "/me/diplome-document", consumes = "multipart/form-data")
+    public UserResponse updateDiplomeDocument(
+            @AuthenticationPrincipal User currentUser,
+            @RequestParam("file") MultipartFile file
+    ) {
+        return profileService.updateDiplomeDocument(currentUser, file);
+    }
 }

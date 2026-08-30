@@ -68,6 +68,7 @@ public class User implements UserDetails {
     private String instagram;
     // ----- Formation -----
     private String diplome;
+    private String diplomeDocumentPath;
     private String specialite;
     @Column(name = "niveau_scolaire")
     private String niveauScolaire;

@@ -101,6 +101,9 @@ public class UserProfileService {
             user.setSiteWeb(request.getSiteWeb());
             user.setHoraires(request.getHoraires());
             user.setFormationsProposees(request.getFormationsProposees());
+        } else if (user.getRole() == Role.EXPERT_JURIDIQUE) {
+            user.setAdresse(request.getAdresse());
+            user.setDiplome(request.getDiplome());
         }
         userRepository.save(user);
         return userMapper.toResponse(user);
@@ -124,6 +127,17 @@ public class UserProfileService {
             fileStorageService.deleteImage(user.getPhotoCouverturePath());
         }
         user.setPhotoCouverturePath(fileStorageService.storeImage(file));
+        userRepository.save(user);
+        return userMapper.toResponse(user);
+    }
+    @Transactional
+    public UserResponse updateDiplomeDocument(User currentUser, MultipartFile file) {
+        User user = userRepository.findById(currentUser.getId())
+                .orElseThrow(() -> new IllegalStateException("Utilisateur introuvable"));
+        if (user.getDiplomeDocumentPath() != null) {
+            fileStorageService.deleteImage(user.getDiplomeDocumentPath());
+        }
+        user.setDiplomeDocumentPath(fileStorageService.storeImage(file));
         userRepository.save(user);
         return userMapper.toResponse(user);
     }

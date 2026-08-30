@@ -34,6 +34,7 @@ public class UserResponse {
     private String tiktok;
     private String instagram;
     private String diplome;
+    private String diplomeDocumentPath;
     private String specialite;
     private String niveauScolaire;
     private String permisConduire;
