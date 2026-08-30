@@ -248,7 +248,13 @@ export default function ExpertJuridiqueDashboardPage() {
               tab === 'profil' ? 'bg-yellow-400 text-blue-900 font-semibold' : 'text-white/70 hover:bg-white/10 hover:text-white'
             }`}
           >
-            <UserCog size={18} className="shrink-0" />
+            {user?.photoProfilPath ? (
+              <span className="h-[18px] w-[18px] rounded-full overflow-hidden shrink-0 ring-1 ring-white/30">
+                <img src={imageUrl(user.photoProfilPath)} alt="" className="w-full h-full object-cover" />
+              </span>
+            ) : (
+              <UserCog size={18} className="shrink-0" />
+            )}
             <span>Profil</span>
           </button>
           <button

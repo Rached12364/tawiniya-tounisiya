@@ -56,7 +56,7 @@ public class ConnectionService {
                 .photoProfilPath(u.getPhotoProfilPath())
                 .photoCouverturePath(u.getPhotoCouverturePath())
                 .adresse(switch (u.getRole()) {
-                    case CENTRE_FORMATION, TECHNICIEN -> u.getAdresse();
+                    case CENTRE_FORMATION, TECHNICIEN, EXPERT_JURIDIQUE -> u.getAdresse();
                     case ENTREPRISE -> u.getEntrepriseAdresse();
                     default -> null;
                 })

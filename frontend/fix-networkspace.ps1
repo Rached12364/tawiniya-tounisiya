@@ -1,3 +1,5 @@
+$path = Join-Path (Get-Location) "src\pages\NetworkSpacePage.tsx"
+$content = @"
 import { useEffect, useState } from 'react';
 import {
   User as UserIcon, Loader2, Check, Users, Inbox, Search,
@@ -16,14 +18,14 @@ const GOUVERNORATS = [
 ];
 const SPECIALITE_OPTIONS = [
   'Électricité bâtiment', 'Électricité industrielle',
-  'Caméras de surveillance', 'Contrôle d\u2019accès', 'Système anti-incendie', 'Système anti-intrusion',
+  'Caméras de surveillance', 'Contrôle d'accès', 'Système anti-incendie', 'Système anti-intrusion',
   'Smart Home / Domotique', 'Automatisation',
   'Photovoltaïque', 'Pompage solaire', 'STEG Off-grid / On-grid / Installation',
   'Réseaux informatiques', 'Fibre optique',
 ];
 const SECTEURS_ACTIVITE = [
   'Électricité & Énergie renouvelable', 'Bâtiment & Construction', 'Industrie & Manufacture',
-  'Climatisation & Froid', 'Sécurité & Surveillance', 'Technologies de l\u2019information',
+  'Climatisation & Froid', 'Sécurité & Surveillance', 'Technologies de l'information',
   'Automatisation & Robotique', 'Commerce & Distribution', 'Services & Conseil',
   'Agriculture & Agroalimentaire', 'Transport & Logistique', 'Autre',
 ];
@@ -209,3 +211,7 @@ export default function NetworkSpacePage({ role }: { role: Role }) {
     </div>
   );
 }
+"@
+$utf8NoBom = New-Object System.Text.UTF8Encoding($false)
+[System.IO.File]::WriteAllText($path, $content, $utf8NoBom)
+Write-Host "NetworkSpacePage.tsx entierement reecrit et corrige."
