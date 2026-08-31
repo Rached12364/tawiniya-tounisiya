@@ -194,7 +194,7 @@ export default function PublicProfilePage() {
         </div>
       </div>
       {chatOpen && profile.role === 'EXPERT_JURIDIQUE' && (
-        <div className="fixed bottom-4 end-4 z-50 w-[340px] max-w-[90vw] shadow-2xl rounded-xl overflow-hidden">
+        <div className="fixed bottom-4 end-4 z-50 w-[400px] max-w-[92vw] shadow-2xl rounded-xl overflow-hidden">
           <div className="relative">
             <button
               onClick={() => setChatOpen(false)}

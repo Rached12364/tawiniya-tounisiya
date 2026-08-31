@@ -14,6 +14,7 @@ public class ExpertMessageResponse {
     private String senderNom;
     private String senderPrenom;
     private String content;
+    private String attachmentPath;
     private LocalDateTime createdAt;
     private boolean mine;
 }

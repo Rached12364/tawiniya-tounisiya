@@ -9,6 +9,7 @@ import tn.tawiniya.tounisiya.exception.ResourceNotFoundException;
 import tn.tawiniya.tounisiya.repository.ExpertConversationRepository;
 import tn.tawiniya.tounisiya.repository.ExpertMessageRepository;
 import tn.tawiniya.tounisiya.repository.UserRepository;
+import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 import java.util.stream.Collectors;
 @Service
@@ -101,7 +102,7 @@ public class ExpertConversationService {
                 .build();
     }
     @Transactional
-    public ExpertConversationDetailResponse sendToExpert(User currentUser, Long expertId, String subject, String content) {
+    public ExpertConversationDetailResponse sendToExpert(User currentUser, Long expertId, String subject, String content, MultipartFile file) {
         if (currentUser.getId().equals(expertId)) {
             throw new ForbiddenOperationException("Vous ne pouvez pas vous contacter vous-meme.");
         }
@@ -116,16 +117,16 @@ public class ExpertConversationService {
                         .expert(expert)
                         .subject((subject == null || subject.isBlank()) ? "Question a " + expert.getPrenom() + " " + expert.getNom() : subject)
                         .build()));
-        return appendMessage(c, currentUser, content);
+        return appendMessage(c, currentUser, content, file);
     }
     @Transactional
-    public ExpertConversationDetailResponse reply(User currentUser, Long conversationId, String content) {
+    public ExpertConversationDetailResponse reply(User currentUser, Long conversationId, String content, MultipartFile file) {
         ExpertConversation c = conversationRepository.findById(conversationId)
                 .orElseThrow(() -> new ResourceNotFoundException("Conversation introuvable : " + conversationId));
         checkParticipant(c, currentUser.getId());
-        return appendMessage(c, currentUser, content);
+        return appendMessage(c, currentUser, content, file);
     }
-    private ExpertConversationDetailResponse appendMessage(ExpertConversation c, User sender, String content) {
+    private ExpertConversationDetailResponse appendMessage(ExpertConversation c, User sender, String content, MultipartFile file) {
         ExpertMessage message = ExpertMessage.builder()
                 .conversation(c)
                 .sender(sender)

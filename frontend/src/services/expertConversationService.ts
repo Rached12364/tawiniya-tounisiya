@@ -12,12 +12,23 @@ export async function getConversationById(id: number): Promise<ExpertConversatio
   const { data } = await api.get<ExpertConversationDetail>(`/expert-conversations/${id}`);
   return data;
 }
-export async function sendToExpert(expertId: number, subject: string, content: string): Promise<ExpertConversationDetail> {
-  const { data } = await api.post<ExpertConversationDetail>(`/expert-conversations/with/${expertId}`, { subject, content });
+export async function sendToExpert(expertId: number, subject: string, content: string, attachment?: File): Promise<ExpertConversationDetail> {
+  const form = new FormData();
+  if (subject) form.append('subject', subject);
+  form.append('content', content);
+  if (attachment) form.append('attachment', attachment);
+  const { data } = await api.post<ExpertConversationDetail>(`/expert-conversations/with/${expertId}`, form, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
   return data;
 }
-export async function replyToConversation(id: number, content: string): Promise<ExpertConversationDetail> {
-  const { data } = await api.post<ExpertConversationDetail>(`/expert-conversations/${id}/messages`, { content });
+export async function replyToConversation(id: number, content: string, attachment?: File): Promise<ExpertConversationDetail> {
+  const form = new FormData();
+  form.append('content', content);
+  if (attachment) form.append('attachment', attachment);
+  const { data } = await api.post<ExpertConversationDetail>(`/expert-conversations/${id}/messages`, form, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
   return data;
 }
 export async function updateConversationStatus(id: number, status: ConversationStatus): Promise<ExpertConversationDetail> {

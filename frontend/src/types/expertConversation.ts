@@ -11,6 +11,7 @@ export interface ExpertMessageItem {
   senderNom: string;
   senderPrenom: string;
   content: string;
+  attachmentPath?: string;
   createdAt: string;
   mine: boolean;
 }

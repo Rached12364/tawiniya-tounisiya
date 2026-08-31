@@ -19,6 +19,11 @@ public class FileStorageService {
     private static final long MAX_SIZE_BYTES = 5L * 1024 * 1024; // 5 Mo
     private static final Set<String> ALLOWED_VIDEO_TYPES = Set.of("video/mp4", "video/webm", "video/ogg");
     private static final long MAX_VIDEO_SIZE_BYTES = 100L * 1024 * 1024; // 100 Mo
+    private static final Set<String> ALLOWED_AUDIO_TYPES = Set.of("audio/webm", "audio/ogg", "audio/mpeg", "audio/mp4", "audio/wav");
+    private static final Set<String> ALLOWED_MESSAGE_ATTACHMENT_TYPES = Set.of(
+            "image/jpeg", "image/png", "image/webp", "application/pdf",
+            "video/mp4", "video/webm", "video/ogg",
+            "audio/webm", "audio/ogg", "audio/mpeg", "audio/mp4", "audio/wav");
     @Value("${app.upload-dir:uploads}")
     private String uploadDir;
     public String storeImage(MultipartFile file) {
@@ -139,6 +144,30 @@ public class FileStorageService {
             Path targetPath = targetDir.resolve(filename);
             Files.copy(file.getInputStream(), targetPath, StandardCopyOption.REPLACE_EXISTING);
             return "/uploads/videos/" + filename;
+        } catch (IOException e) {
+            throw new InvalidFileException("Erreur lors de l'enregistrement du fichier.");
+        }
+    }
+    /** Piece jointe dans une conversation avec un expert juridique : image, PDF, video ou audio (vocal). */
+    public String storeMessageAttachment(MultipartFile file) {
+        if (file == null || file.isEmpty()) {
+            return null;
+        }
+        if (!ALLOWED_MESSAGE_ATTACHMENT_TYPES.contains(file.getContentType())) {
+            throw new InvalidFileException("Format non autorise. Formats acceptes : images, PDF, video (MP4/WEBM/OGG), audio.");
+        }
+        long maxSize = file.getContentType() != null && file.getContentType().startsWith("video/") ? MAX_VIDEO_SIZE_BYTES : MAX_SIZE_BYTES;
+        if (file.getSize() > maxSize) {
+            throw new InvalidFileException("Le fichier depasse la taille maximale autorisee.");
+        }
+        try {
+            Path targetDir = Paths.get(uploadDir, "expert-messages");
+            Files.createDirectories(targetDir);
+            String extension = getExtension(file.getOriginalFilename());
+            String filename = UUID.randomUUID() + extension;
+            Path targetPath = targetDir.resolve(filename);
+            Files.copy(file.getInputStream(), targetPath, StandardCopyOption.REPLACE_EXISTING);
+            return "/uploads/expert-messages/" + filename;
         } catch (IOException e) {
             throw new InvalidFileException("Erreur lors de l'enregistrement du fichier.");
         }
