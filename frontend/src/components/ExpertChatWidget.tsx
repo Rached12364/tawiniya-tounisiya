@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { Loader2, Send, MessageCircle, Paperclip, Mic, Square, FileText, X } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Loader2, Send, Paperclip, Mic, Square, FileText, X, User as UserIcon } from 'lucide-react';
 import { getConversationWithExpert, sendToExpert, replyToConversation } from '../services/expertConversationService';
 import type { ExpertConversationDetail, ExpertMessageItem } from '../types/expertConversation';
 const API_ORIGIN = (import.meta.env.VITE_API_URL || 'http://localhost:8080/api').replace(/\/api\/?$/, '');
@@ -35,6 +36,7 @@ const STATUS_LABELS: Record<string, string> = {
   RESOLUE: 'Résolue',
 };
 export default function ExpertChatWidget({ expertId }: { expertId: number }) {
+  const navigate = useNavigate();
   const [conversation, setConversation] = useState<ExpertConversationDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [subject, setSubject] = useState('');
@@ -116,12 +118,24 @@ export default function ExpertChatWidget({ expertId }: { expertId: number }) {
   const hasStarted = !!conversation?.id;
   return (
     <div className="bg-white rounded-xl shadow-sm overflow-hidden flex flex-col" style={{ maxHeight: '640px' }}>
-      <div className="px-5 py-3 border-b border-navy/10 flex items-center justify-between shrink-0">
-        <h2 className="flex items-center gap-2 text-sm font-bold text-teal uppercase tracking-wide">
-          <MessageCircle size={16} /> Contacter l'expert
-        </h2>
+      <div className="px-5 py-3 border-b border-navy/10 flex items-center justify-between gap-2 shrink-0">
+        <div
+          onClick={() => navigate(`/profil/${expertId}`)}
+          className="flex items-center gap-2.5 min-w-0 cursor-pointer group"
+        >
+          <div className="h-8 w-8 rounded-full bg-navy/10 overflow-hidden shrink-0">
+            {conversation?.otherUser.photoProfilPath ? (
+              <img src={fileUrl(conversation.otherUser.photoProfilPath)} alt="" className="w-full h-full object-cover" />
+            ) : (
+              <div className="w-full h-full grid place-items-center text-navy/30"><UserIcon size={14} /></div>
+            )}
+          </div>
+          <h2 className="text-sm font-bold text-navy truncate group-hover:text-teal transition-colors">
+            {conversation?.otherUser ? `${conversation.otherUser.prenom} ${conversation.otherUser.nom}` : "Contacter l'expert"}
+          </h2>
+        </div>
         {conversation?.status && (
-          <span className="text-[11px] font-semibold text-navy/50 bg-navy/5 rounded-full px-2.5 py-1">
+          <span className="shrink-0 text-[11px] font-semibold text-navy/50 bg-navy/5 rounded-full px-2.5 py-1">
             {STATUS_LABELS[conversation.status] || conversation.status}
           </span>
         )}
