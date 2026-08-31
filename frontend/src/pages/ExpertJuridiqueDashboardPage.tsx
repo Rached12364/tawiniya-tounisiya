@@ -4,6 +4,9 @@ import {
   UserCog, Check, X, Pencil, FileText, Paperclip,
 } from 'lucide-react';
 import { getMyUserProfile, updateMyUserProfile, uploadMyPhotoProfil, uploadMyPhotoCouverture, uploadDiplomeDocument } from '../services/userProfileService';
+import { getMyConversations } from '../services/expertConversationService';
+import ExpertConversationThread from '../components/ExpertConversationThread';
+import type { ExpertConversationSummary } from '../types/expertConversation';
 import { useAuthStore } from '../store/authStore';
 import { BRAND } from '../config/brand';
 import type { User } from '../types/auth';
@@ -184,10 +187,29 @@ export default function ExpertJuridiqueDashboardPage() {
   const [tab, setTab] = useState<Tab>('dashboard');
   const [user, setUser] = useState<User | null>(null);
   const [uploadingKey, setUploadingKey] = useState<string | null>(null);
+  const [conversations, setConversations] = useState<ExpertConversationSummary[]>([]);
+  const [conversationsLoading, setConversationsLoading] = useState(true);
+  const [selectedConversationId, setSelectedConversationId] = useState<number | null>(null);
   const { logout } = useAuthStore();
   useEffect(() => {
     getMyUserProfile().then(setUser).catch(() => {});
   }, []);
+  function loadConversations() {
+    setConversationsLoading(true);
+    getMyConversations()
+      .then((list) => {
+        setConversations(list);
+        if (list.length > 0 && selectedConversationId === null) {
+          setSelectedConversationId(list[0].id);
+        }
+      })
+      .catch(() => {})
+      .finally(() => setConversationsLoading(false));
+  }
+  useEffect(() => {
+    if (tab === 'reclamation') loadConversations();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tab]);
   async function handlePhotoProfil(file: File | null) {
     if (!file) return;
     setUploadingKey('photoProfil');
@@ -310,6 +332,45 @@ export default function ExpertJuridiqueDashboardPage() {
           <h2 className="text-lg font-bold text-blue-900 mb-4">{TAB_TITLES[tab]}</h2>
           {tab === 'profil' && user ? (
             <ProfilTab user={user} onSaved={setUser} />
+          ) : tab === 'reclamation' ? (
+            conversationsLoading ? (
+              <div className="bg-white rounded-xl shadow-sm p-10 grid place-items-center">
+                <Loader2 className="animate-spin text-blue-400" size={22} />
+              </div>
+            ) : conversations.length === 0 ? (
+              <div className="bg-white rounded-xl shadow-sm p-10 text-center text-blue-900/40 text-sm">
+                Aucun message pour le moment.
+              </div>
+            ) : (
+              <div className="flex gap-4" style={{ height: '600px' }}>
+                <div className="w-72 shrink-0 bg-white rounded-xl shadow-sm overflow-y-auto flex flex-col">
+                  {conversations.map((conv) => (
+                    <button
+                      key={conv.id}
+                      onClick={() => setSelectedConversationId(conv.id)}
+                      className={`text-left px-4 py-3 border-b border-blue-900/5 transition-colors ${
+                        selectedConversationId === conv.id ? 'bg-blue-50' : 'hover:bg-blue-50/50'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <p className="text-sm font-semibold text-blue-900 truncate">{conv.otherUser.prenom} {conv.otherUser.nom}</p>
+                        <span className={`shrink-0 text-[9px] font-semibold rounded-full px-1.5 py-0.5 ${
+                          conv.status === 'RESOLUE' ? 'bg-teal-100 text-teal-700' : conv.status === 'EN_COURS' ? 'bg-yellow-100 text-yellow-700' : 'bg-blue-100 text-blue-700'
+                        }`}>
+                          {conv.status === 'RESOLUE' ? 'Résolue' : conv.status === 'EN_COURS' ? 'En cours' : 'Ouverte'}
+                        </span>
+                      </div>
+                      <p className="text-xs text-blue-900/50 truncate mt-0.5">{conv.lastMessagePreview || conv.subject}</p>
+                    </button>
+                  ))}
+                </div>
+                <div className="flex-1 min-w-0">
+                  {selectedConversationId && (
+                    <ExpertConversationThread conversationId={selectedConversationId} onStatusChanged={loadConversations} />
+                  )}
+                </div>
+              </div>
+            )
           ) : (
             <div className="bg-white rounded-xl shadow-sm p-10 text-center text-blue-900/40 text-sm">
               Cette page est en cours de construction.

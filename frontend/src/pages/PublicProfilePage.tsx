@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { getPublicProfile, sendConnectionRequest, acceptConnection } from '../services/networkService';
 import UserPostsList from '../components/post/UserPostsList';
+import ExpertChatWidget from '../components/ExpertChatWidget';
 import type { UserPublicProfile } from '../types/network';
 const API_ORIGIN = (import.meta.env.VITE_API_URL || 'http://localhost:8080/api').replace(/\/api\/?$/, '');
 function imageUrl(path?: string) {
@@ -97,7 +98,7 @@ export default function PublicProfilePage() {
               <p className="text-sm text-navy/50 mt-0.5">{subtitle || ROLE_LABELS[profile.role]} — CTTEERA</p>
               {profile.bio && <p className="mt-2 text-sm text-navy/70 italic">"{profile.bio}"</p>}
             </div>
-            {profile.connectionStatus !== 'SELF' && (
+            {profile.connectionStatus !== 'SELF' && profile.role !== 'EXPERT_JURIDIQUE' && (
               <button
                 onClick={handleConnect}
                 disabled={busy || profile.connectionStatus === 'ACCEPTED' || profile.connectionStatus === 'PENDING_SENT'}
@@ -126,6 +127,11 @@ export default function PublicProfilePage() {
             )}
           </div>
         </div>
+        {profile.role === 'EXPERT_JURIDIQUE' && profile.connectionStatus !== 'SELF' && (
+          <div className="mb-6">
+            <ExpertChatWidget expertId={profile.id} />
+          </div>
+        )}
         {profile.role === 'TECHNICIEN' && (
           <div className="bg-white rounded-xl shadow-sm p-5 mb-5">
             <h2 className="text-sm font-bold text-teal uppercase tracking-wide mb-4">Formation</h2>

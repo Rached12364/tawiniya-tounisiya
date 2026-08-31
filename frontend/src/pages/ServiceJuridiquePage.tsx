@@ -2,8 +2,11 @@ import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Loader2, Search, MapPin, User as UserIcon, UserPlus, Clock, Check } from 'lucide-react';
 import { browseByRole, sendConnectionRequest, acceptConnection } from '../services/networkService';
+import { getMyConversations } from '../services/expertConversationService';
 import { imageUrl } from '../components/UserCardTile';
+import ExpertChatWidget from '../components/ExpertChatWidget';
 import type { UserCard } from '../types/network';
+import type { ExpertConversationSummary } from '../types/expertConversation';
 function ExpertRow({ card, onAction }: { card: UserCard; onAction: (card: UserCard) => Promise<void> }) {
   const [busy, setBusy] = useState(false);
   const navigate = useNavigate();
@@ -74,6 +77,9 @@ export default function ServiceJuridiquePage() {
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [filterAdresse, setFilterAdresse] = useState('');
+  const [conversations, setConversations] = useState<ExpertConversationSummary[]>([]);
+  const [conversationsLoading, setConversationsLoading] = useState(true);
+  const [openExpertId, setOpenExpertId] = useState<number | null>(null);
   useEffect(() => {
     setLoading(true);
     setError(null);
@@ -81,6 +87,13 @@ export default function ServiceJuridiquePage() {
       .then((res) => setCards(res.content))
       .catch(() => setError('Impossible de charger les experts juridiques.'))
       .finally(() => setLoading(false));
+  }, []);
+  useEffect(() => {
+    setConversationsLoading(true);
+    getMyConversations()
+      .then(setConversations)
+      .catch(() => {})
+      .finally(() => setConversationsLoading(false));
   }, []);
   async function handleCardAction(card: UserCard) {
     if (card.connectionStatus === 'PENDING_RECEIVED' && card.connectionId) {
@@ -111,6 +124,43 @@ export default function ServiceJuridiquePage() {
   return (
     <div className="min-h-[70vh] bg-navy/[0.02] pt-28 pb-16 px-4">
       <div className="mx-auto max-w-3xl">
+        {!conversationsLoading && conversations.length > 0 && (
+          <div className="mb-8">
+            <h2 className="text-sm font-bold text-teal uppercase tracking-wide mb-3">Mes conversations</h2>
+            <div className="flex flex-col gap-2">
+              {conversations.map((conv) => (
+                <div key={conv.id}>
+                  <div
+                    onClick={() => setOpenExpertId(openExpertId === conv.otherUser.id ? null : conv.otherUser.id)}
+                    className="bg-white rounded-xl border border-navy/10 px-4 py-3 flex items-center gap-3 hover:shadow-sm hover:border-teal/30 transition-all cursor-pointer"
+                  >
+                    <div className="h-9 w-9 rounded-full bg-navy/10 overflow-hidden shrink-0">
+                      {conv.otherUser.photoProfilPath ? (
+                        <img src={imageUrl(conv.otherUser.photoProfilPath)} alt="" className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full grid place-items-center text-navy/30"><UserIcon size={14} /></div>
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-navy truncate">{conv.otherUser.prenom} {conv.otherUser.nom}</p>
+                      <p className="text-xs text-navy/50 truncate">{conv.lastMessagePreview || conv.subject}</p>
+                    </div>
+                    <span className={`shrink-0 text-[10px] font-semibold rounded-full px-2 py-1 ${
+                      conv.status === 'RESOLUE' ? 'bg-teal/10 text-teal' : conv.status === 'EN_COURS' ? 'bg-gold/20 text-navy-dark' : 'bg-navy/5 text-navy/50'
+                    }`}>
+                      {conv.status === 'RESOLUE' ? 'Résolue' : conv.status === 'EN_COURS' ? 'En cours' : 'Ouverte'}
+                    </span>
+                  </div>
+                  {openExpertId === conv.otherUser.id && (
+                    <div className="mt-2">
+                      <ExpertChatWidget expertId={conv.otherUser.id} />
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
         <h1 className="text-2xl font-black text-navy mb-1">Service Juridique</h1>
         <p className="text-sm text-navy/50 mb-6">
           Retrouvez nos experts juridiques.
