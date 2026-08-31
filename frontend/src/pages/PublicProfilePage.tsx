@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import {
   User as UserIcon, Loader2, UserPlus, Clock, Check, ArrowLeft,
   Phone, Mail, Globe, MapPin, GraduationCap, Building2, Link as LinkIcon,
+  MessageCircle, X,
 } from 'lucide-react';
 import { getPublicProfile, sendConnectionRequest, acceptConnection } from '../services/networkService';
 import UserPostsList from '../components/post/UserPostsList';
@@ -36,6 +37,7 @@ export default function PublicProfilePage() {
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [chatOpen, setChatOpen] = useState(false);
   function load() {
     if (!id) return;
     setLoading(true);
@@ -98,6 +100,15 @@ export default function PublicProfilePage() {
               <p className="text-sm text-navy/50 mt-0.5">{subtitle || ROLE_LABELS[profile.role]} — CTTEERA</p>
               {profile.bio && <p className="mt-2 text-sm text-navy/70 italic">"{profile.bio}"</p>}
             </div>
+            {profile.role === 'EXPERT_JURIDIQUE' && profile.connectionStatus !== 'SELF' && (
+              <button
+                onClick={() => setChatOpen(true)}
+                className="shrink-0 grid place-items-center h-11 w-11 rounded-full bg-teal text-white hover:bg-teal/90 transition-colors shadow"
+                title="Contacter l'expert"
+              >
+                <MessageCircle size={20} />
+              </button>
+            )}
             {profile.connectionStatus !== 'SELF' && profile.role !== 'EXPERT_JURIDIQUE' && (
               <button
                 onClick={handleConnect}
@@ -127,11 +138,6 @@ export default function PublicProfilePage() {
             )}
           </div>
         </div>
-        {profile.role === 'EXPERT_JURIDIQUE' && profile.connectionStatus !== 'SELF' && (
-          <div className="mb-6">
-            <ExpertChatWidget expertId={profile.id} />
-          </div>
-        )}
         {profile.role === 'TECHNICIEN' && (
           <div className="bg-white rounded-xl shadow-sm p-5 mb-5">
             <h2 className="text-sm font-bold text-teal uppercase tracking-wide mb-4">Formation</h2>
@@ -187,6 +193,19 @@ export default function PublicProfilePage() {
           <UserPostsList authorId={profile.id} />
         </div>
       </div>
+      {chatOpen && profile.role === 'EXPERT_JURIDIQUE' && (
+        <div className="fixed bottom-4 end-4 z-50 w-[340px] max-w-[90vw] shadow-2xl rounded-xl overflow-hidden">
+          <div className="relative">
+            <button
+              onClick={() => setChatOpen(false)}
+              className="absolute top-3 end-3 z-10 grid place-items-center h-6 w-6 rounded-full bg-navy/10 hover:bg-navy/20 text-navy transition-colors"
+            >
+              <X size={13} />
+            </button>
+            <ExpertChatWidget expertId={profile.id} />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
