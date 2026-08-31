@@ -21,10 +21,10 @@ const ROLE_LABELS: Record<string, string> = {
 };
 const REACTIONS: { type: ReactionType; emoji: string; label: string }[] = [
   { type: 'LIKE', emoji: '👍', label: "J'aime" },
-  { type: 'BRAVO', emoji: '👏', label: 'Bravo' },
-  { type: 'SOUTIEN', emoji: '🤝', label: 'Soutien' },
   { type: 'COUP_DE_COEUR', emoji: '❤️', label: 'Coup de cœur' },
-  { type: 'INSTRUCTIF', emoji: '💡', label: 'Instructif' },
+  { type: 'INSTRUCTIF', emoji: '⚡', label: 'Instructif' },
+  { type: 'SOUTIEN', emoji: '🔧', label: 'Soutien' },
+  { type: 'BRAVO', emoji: '🙌', label: 'Bravo' },
 ];
 function timeAgo(dateStr: string): string {
   const diffMs = Date.now() - new Date(dateStr).getTime();
