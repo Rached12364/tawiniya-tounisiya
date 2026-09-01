@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import {
   LayoutDashboard, MessageSquareWarning, LogOut, Camera, Image as ImageIcon, Loader2, User as UserIcon,
-  UserCog, Check, X, Pencil, FileText, Paperclip,
+  UserCog, Check, X, Pencil, FileText, Paperclip, Inbox, Clock, CheckCircle2, MessagesSquare,
 } from 'lucide-react';
 import { getMyUserProfile, updateMyUserProfile, uploadMyPhotoProfil, uploadMyPhotoCouverture, uploadDiplomeDocument } from '../services/userProfileService';
 import { getMyConversations } from '../services/expertConversationService';
@@ -207,6 +207,10 @@ export default function ExpertJuridiqueDashboardPage() {
       .finally(() => setConversationsLoading(false));
   }
   useEffect(() => {
+    loadConversations();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  useEffect(() => {
     if (tab === 'reclamation') loadConversations();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tab]);
@@ -330,7 +334,85 @@ export default function ExpertJuridiqueDashboardPage() {
         {/* Contenu */}
         <div className="px-8 pb-16">
           <h2 className="text-lg font-bold text-blue-900 mb-4">{TAB_TITLES[tab]}</h2>
-          {tab === 'profil' && user ? (
+          {tab === 'dashboard' ? (
+            <div className="flex flex-col gap-6">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                <div className="bg-white rounded-xl shadow-sm p-4 flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-lg bg-blue-100 grid place-items-center shrink-0">
+                    <Inbox size={18} className="text-blue-700" />
+                  </div>
+                  <div>
+                    <p className="text-lg font-black text-blue-900">{conversations.length}</p>
+                    <p className="text-[11px] text-blue-900/50">Total</p>
+                  </div>
+                </div>
+                <div className="bg-white rounded-xl shadow-sm p-4 flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-lg bg-blue-100 grid place-items-center shrink-0">
+                    <MessagesSquare size={18} className="text-blue-700" />
+                  </div>
+                  <div>
+                    <p className="text-lg font-black text-blue-900">{conversations.filter((c) => c.status === 'OUVERTE').length}</p>
+                    <p className="text-[11px] text-blue-900/50">Ouvertes</p>
+                  </div>
+                </div>
+                <div className="bg-white rounded-xl shadow-sm p-4 flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-lg bg-yellow-100 grid place-items-center shrink-0">
+                    <Clock size={18} className="text-yellow-700" />
+                  </div>
+                  <div>
+                    <p className="text-lg font-black text-blue-900">{conversations.filter((c) => c.status === 'EN_COURS').length}</p>
+                    <p className="text-[11px] text-blue-900/50">En cours</p>
+                  </div>
+                </div>
+                <div className="bg-white rounded-xl shadow-sm p-4 flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-lg bg-teal-100 grid place-items-center shrink-0">
+                    <CheckCircle2 size={18} className="text-teal-700" />
+                  </div>
+                  <div>
+                    <p className="text-lg font-black text-blue-900">{conversations.filter((c) => c.status === 'RESOLUE').length}</p>
+                    <p className="text-[11px] text-blue-900/50">Résolues</p>
+                  </div>
+                </div>
+              </div>
+              <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+                <h3 className="px-5 py-3 border-b border-blue-900/10 text-sm font-bold text-blue-700 uppercase tracking-wide">
+                  Dernières conversations
+                </h3>
+                {conversationsLoading ? (
+                  <div className="p-10 grid place-items-center"><Loader2 className="animate-spin text-blue-400" size={20} /></div>
+                ) : conversations.length === 0 ? (
+                  <p className="p-6 text-center text-sm text-blue-900/40">Aucune conversation pour le moment.</p>
+                ) : (
+                  <div className="flex flex-col">
+                    {conversations.slice(0, 5).map((conv) => (
+                      <button
+                        key={conv.id}
+                        onClick={() => { setSelectedConversationId(conv.id); setTab('reclamation'); }}
+                        className="text-left px-5 py-3 border-b border-blue-900/5 last:border-b-0 flex items-center gap-3 hover:bg-blue-50/50 transition-colors"
+                      >
+                        <div className="h-10 w-10 rounded-full bg-blue-100 overflow-hidden shrink-0">
+                          {conv.otherUser.photoProfilPath ? (
+                            <img src={imageUrl(conv.otherUser.photoProfilPath)} alt="" className="w-full h-full object-cover" />
+                          ) : (
+                            <div className="w-full h-full grid place-items-center text-blue-300"><UserIcon size={16} /></div>
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-semibold text-blue-900 truncate">{conv.otherUser.prenom} {conv.otherUser.nom}</p>
+                          <p className="text-xs text-blue-900/50 truncate">{conv.lastMessagePreview || conv.subject}</p>
+                        </div>
+                        <span className={`shrink-0 text-[9px] font-semibold rounded-full px-1.5 py-0.5 ${
+                          conv.status === 'RESOLUE' ? 'bg-teal-100 text-teal-700' : conv.status === 'EN_COURS' ? 'bg-yellow-100 text-yellow-700' : 'bg-blue-100 text-blue-700'
+                        }`}>
+                          {conv.status === 'RESOLUE' ? 'Résolue' : conv.status === 'EN_COURS' ? 'En cours' : 'Ouverte'}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          ) : tab === 'profil' && user ? (
             <ProfilTab user={user} onSaved={setUser} />
           ) : tab === 'reclamation' ? (
             conversationsLoading ? (
