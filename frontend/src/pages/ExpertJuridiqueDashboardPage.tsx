@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
 import {
   LayoutDashboard, MessageSquareWarning, LogOut, Camera, Image as ImageIcon, Loader2, User as UserIcon,
-  UserCog, Check, X, Pencil, FileText, Paperclip, Inbox, Clock, CheckCircle2, MessagesSquare,
+  UserCog, Check, X, Pencil, FileText, Paperclip, Inbox, Clock, CheckCircle2, MessagesSquare, Newspaper,
 } from 'lucide-react';
 import { getMyUserProfile, updateMyUserProfile, uploadMyPhotoProfil, uploadMyPhotoCouverture, uploadDiplomeDocument } from '../services/userProfileService';
 import { getMyConversations } from '../services/expertConversationService';
 import ExpertConversationThread from '../components/ExpertConversationThread';
+import ActualitesPage from './ActualitesPage';
 import type { ExpertConversationSummary } from '../types/expertConversation';
 import { useAuthStore } from '../store/authStore';
 import { BRAND } from '../config/brand';
@@ -15,7 +16,7 @@ function imageUrl(path?: string | null) {
   if (!path) return '';
   return path.startsWith('http') ? path : `${API_ORIGIN}${path}`;
 }
-type Tab = 'dashboard' | 'reclamation' | 'profil';
+type Tab = 'dashboard' | 'reclamation' | 'profil' | 'actualites';
 const TABS: { key: Tab; label: string; icon: typeof LayoutDashboard }[] = [
   { key: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { key: 'reclamation', label: 'Réclamation', icon: MessageSquareWarning },
@@ -239,6 +240,7 @@ export default function ExpertJuridiqueDashboardPage() {
     dashboard: 'Dashboard',
     reclamation: 'Réclamation',
     profil: 'Profil',
+    actualites: 'Actualités',
   };
   return (
     <div className="min-h-screen bg-blue-50/40 flex">
@@ -266,6 +268,15 @@ export default function ExpertJuridiqueDashboardPage() {
               <span className="truncate">{label}</span>
             </button>
           ))}
+          <button
+            onClick={() => setTab('actualites')}
+            className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
+              tab === 'actualites' ? 'bg-yellow-400 text-blue-900 font-semibold' : 'text-white/70 hover:bg-white/10 hover:text-white'
+            }`}
+          >
+            <Newspaper size={18} className="shrink-0" />
+            <span className="truncate">Actualités</span>
+          </button>
         </nav>
         <div className="border-t border-white/10 p-2 flex flex-col gap-1">
           <button
@@ -294,6 +305,10 @@ export default function ExpertJuridiqueDashboardPage() {
       </aside>
       {/* Main content */}
       <main className="flex-1 min-h-screen ml-64">
+        {tab === 'actualites' ? (
+          <ActualitesPage />
+        ) : (
+        <>
         {/* Profil header */}
         <div className="relative h-40 w-full bg-gradient-to-br from-blue-950 to-blue-800 overflow-hidden">
           {user?.photoCouverturePath && (
@@ -473,6 +488,8 @@ export default function ExpertJuridiqueDashboardPage() {
             </div>
           )}
         </div>
+        </>
+        )}
       </main>
     </div>
   );
