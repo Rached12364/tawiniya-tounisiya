@@ -52,8 +52,17 @@ export function Avatar({ path, size = 40 }: { path?: string; size?: number }) {
 }
 function ReactionPicker({ onPick }: { onPick: (t: ReactionType) => void }) {
   const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!open) return;
+    const onClick = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener('mousedown', onClick);
+    return () => document.removeEventListener('mousedown', onClick);
+  }, [open]);
   return (
-    <div className="relative" onMouseEnter={() => setOpen(true)} onMouseLeave={() => setOpen(false)}>
+    <div className="relative" ref={ref}>
       {open && (
         <div className="absolute bottom-full mb-1 start-0 flex gap-1 bg-white rounded-full shadow-lg border border-navy/10 px-2 py-1.5 z-10">
           {REACTIONS.map((r) => (
@@ -69,7 +78,7 @@ function ReactionPicker({ onPick }: { onPick: (t: ReactionType) => void }) {
         </div>
       )}
       <button
-        onClick={() => onPick('LIKE')}
+        onClick={() => setOpen((v) => !v)}
         className="flex items-center gap-1.5 text-sm font-medium text-navy/60 hover:text-teal transition-colors"
       >
         <ThumbsUp size={16} /> J'aime
@@ -79,8 +88,17 @@ function ReactionPicker({ onPick }: { onPick: (t: ReactionType) => void }) {
 }
 function CommentReactionPicker({ onPick }: { onPick: (t: ReactionType) => void }) {
   const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!open) return;
+    const onClick = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener('mousedown', onClick);
+    return () => document.removeEventListener('mousedown', onClick);
+  }, [open]);
   return (
-    <div className="relative inline-block" onMouseEnter={() => setOpen(true)} onMouseLeave={() => setOpen(false)}>
+    <div className="relative inline-block" ref={ref}>
       {open && (
         <div className="absolute bottom-full mb-1 start-0 flex gap-1 bg-white rounded-full shadow-lg border border-navy/10 px-2 py-1 z-10">
           {REACTIONS.map((r) => (
@@ -95,7 +113,7 @@ function CommentReactionPicker({ onPick }: { onPick: (t: ReactionType) => void }
           ))}
         </div>
       )}
-      <button onClick={() => onPick('LIKE')} className="text-xs font-semibold text-navy/50 hover:text-teal transition-colors">
+      <button onClick={() => setOpen((v) => !v)} className="text-xs font-semibold text-navy/50 hover:text-teal transition-colors">
         J'aime
       </button>
     </div>

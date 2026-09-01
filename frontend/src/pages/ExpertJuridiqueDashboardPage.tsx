@@ -343,24 +343,38 @@ export default function ExpertJuridiqueDashboardPage() {
               </div>
             ) : (
               <div className="flex gap-4" style={{ height: '600px' }}>
-                <div className="w-72 shrink-0 bg-white rounded-xl shadow-sm overflow-y-auto flex flex-col">
+                <div className="w-80 shrink-0 bg-white rounded-xl shadow-sm overflow-y-auto flex flex-col">
                   {conversations.map((conv) => (
                     <button
                       key={conv.id}
                       onClick={() => setSelectedConversationId(conv.id)}
-                      className={`text-left px-4 py-3 border-b border-blue-900/5 transition-colors ${
+                      className={`text-left px-3 py-3 border-b border-blue-900/5 flex items-center gap-3 transition-colors ${
                         selectedConversationId === conv.id ? 'bg-blue-50' : 'hover:bg-blue-50/50'
                       }`}
                     >
-                      <div className="flex items-center justify-between gap-2">
-                        <p className="text-sm font-semibold text-blue-900 truncate">{conv.otherUser.prenom} {conv.otherUser.nom}</p>
-                        <span className={`shrink-0 text-[9px] font-semibold rounded-full px-1.5 py-0.5 ${
-                          conv.status === 'RESOLUE' ? 'bg-teal-100 text-teal-700' : conv.status === 'EN_COURS' ? 'bg-yellow-100 text-yellow-700' : 'bg-blue-100 text-blue-700'
-                        }`}>
-                          {conv.status === 'RESOLUE' ? 'Résolue' : conv.status === 'EN_COURS' ? 'En cours' : 'Ouverte'}
-                        </span>
+                      <div className="h-12 w-12 rounded-full bg-blue-100 overflow-hidden shrink-0">
+                        {conv.otherUser.photoProfilPath ? (
+                          <img src={imageUrl(conv.otherUser.photoProfilPath)} alt="" className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full grid place-items-center text-blue-300"><UserIcon size={20} /></div>
+                        )}
                       </div>
-                      <p className="text-xs text-blue-900/50 truncate mt-0.5">{conv.lastMessagePreview || conv.subject}</p>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between gap-2">
+                          <p className="text-sm font-bold text-blue-900 truncate">{conv.otherUser.prenom} {conv.otherUser.nom}</p>
+                          <span className="shrink-0 text-[10px] text-blue-900/40">
+                            {new Date(conv.updatedAt).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between gap-2 mt-0.5">
+                          <p className="text-xs text-blue-900/50 truncate">{conv.lastMessagePreview || conv.subject}</p>
+                          <span className={`shrink-0 text-[9px] font-semibold rounded-full px-1.5 py-0.5 ${
+                            conv.status === 'RESOLUE' ? 'bg-teal-100 text-teal-700' : conv.status === 'EN_COURS' ? 'bg-yellow-100 text-yellow-700' : 'bg-blue-100 text-blue-700'
+                          }`}>
+                            {conv.status === 'RESOLUE' ? 'Résolue' : conv.status === 'EN_COURS' ? 'En cours' : 'Ouverte'}
+                          </span>
+                        </div>
+                      </div>
                     </button>
                   ))}
                 </div>
