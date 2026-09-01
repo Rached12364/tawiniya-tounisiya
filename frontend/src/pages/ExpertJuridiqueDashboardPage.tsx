@@ -21,7 +21,7 @@ const TABS: { key: Tab; label: string; icon: typeof LayoutDashboard }[] = [
   { key: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { key: 'reclamation', label: 'Réclamation', icon: MessageSquareWarning },
 ];
-const inputCls = "w-full rounded-lg border border-blue-900/15 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500";
+const inputCls = "w-full rounded-lg border border-navy/15 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal/40 focus:border-teal";
 interface ProfilFormState {
   nom: string;
   prenom: string;
@@ -95,17 +95,17 @@ function ProfilTab({ user, onSaved }: { user: User; onSaved: (u: User) => void }
     <div className="flex flex-col gap-5">
       <div className="bg-white rounded-xl shadow-sm p-6">
         <div className="flex items-center justify-between mb-5">
-          <h3 className="text-sm font-bold text-blue-700 uppercase tracking-wide">Mes informations</h3>
+          <h3 className="text-sm font-bold text-teal uppercase tracking-wide">Mes informations</h3>
           {!editing ? (
-            <button onClick={startEdit} className="text-blue-900/40 hover:text-blue-700 transition-colors p-1.5 rounded-full hover:bg-blue-50">
+            <button onClick={startEdit} className="text-navy/40 hover:text-teal transition-colors p-1.5 rounded-full hover:bg-teal/5">
               <Pencil size={15} />
             </button>
           ) : (
             <div className="flex gap-1.5">
-              <button onClick={cancel} className="text-blue-900/40 hover:text-red-500 transition-colors p-1.5 rounded-full hover:bg-red-50">
+              <button onClick={cancel} className="text-navy/40 hover:text-red-500 transition-colors p-1.5 rounded-full hover:bg-red-50">
                 <X size={15} />
               </button>
-              <button onClick={save} disabled={saving} className="text-blue-700 hover:text-blue-800 transition-colors p-1.5 rounded-full hover:bg-blue-50 disabled:opacity-50">
+              <button onClick={save} disabled={saving} className="text-teal hover:text-teal/80 transition-colors p-1.5 rounded-full hover:bg-teal/5 disabled:opacity-50">
                 {saving ? <Loader2 size={15} className="animate-spin" /> : <Check size={15} />}
               </button>
             </div>
@@ -116,8 +116,8 @@ function ProfilTab({ user, onSaved }: { user: User; onSaved: (u: User) => void }
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3">
             {fields.map((f) => (
               <div key={f.key} className={f.textarea ? 'sm:col-span-2' : ''}>
-                <p className="text-[11px] text-blue-900/40 font-semibold uppercase tracking-wide">{f.label}</p>
-                <p className="text-sm text-blue-900 mt-0.5 whitespace-pre-line">{form[f.key] || '—'}</p>
+                <p className="text-[11px] text-navy/40 font-semibold uppercase tracking-wide">{f.label}</p>
+                <p className="text-sm text-navy mt-0.5 whitespace-pre-line">{form[f.key] || '—'}</p>
               </div>
             ))}
           </div>
@@ -125,7 +125,7 @@ function ProfilTab({ user, onSaved }: { user: User; onSaved: (u: User) => void }
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {fields.map((f) => (
               <div key={f.key} className={f.textarea ? 'sm:col-span-2' : ''}>
-                <label className="block text-[11px] font-medium text-blue-900/60 mb-1">{f.label}</label>
+                <label className="block text-[11px] font-medium text-navy/60 mb-1">{f.label}</label>
                 {f.textarea ? (
                   <textarea
                     value={form[f.key]}
@@ -146,18 +146,18 @@ function ProfilTab({ user, onSaved }: { user: User; onSaved: (u: User) => void }
         )}
       </div>
       <div className="bg-white rounded-xl shadow-sm p-6">
-        <h3 className="text-sm font-bold text-blue-700 uppercase tracking-wide mb-4">Diplôme</h3>
+        <h3 className="text-sm font-bold text-teal uppercase tracking-wide mb-4">Diplôme</h3>
         {user.diplomeDocumentPath ? (
-          <div className="flex items-center justify-between gap-3 rounded-lg border border-blue-900/10 bg-blue-50/50 px-4 py-3">
+          <div className="flex items-center justify-between gap-3 rounded-lg border border-navy/10 bg-teal/5 px-4 py-3">
             <a
               href={imageUrl(user.diplomeDocumentPath)}
               target="_blank"
               rel="noreferrer"
-              className="flex items-center gap-2 text-sm text-blue-700 hover:underline"
+              className="flex items-center gap-2 text-sm text-teal hover:underline"
             >
               <FileText size={16} /> Voir le document envoyé
             </a>
-            <label className="shrink-0 inline-flex items-center gap-1.5 text-xs font-semibold text-blue-700 hover:text-blue-800 cursor-pointer transition-colors">
+            <label className="shrink-0 inline-flex items-center gap-1.5 text-xs font-semibold text-teal hover:text-teal/80 cursor-pointer transition-colors">
               {diplomeUploading ? <Loader2 size={13} className="animate-spin" /> : <Paperclip size={13} />}
               Remplacer
               <input
@@ -169,7 +169,7 @@ function ProfilTab({ user, onSaved }: { user: User; onSaved: (u: User) => void }
             </label>
           </div>
         ) : (
-          <label className="flex items-center justify-center gap-2 rounded-lg border-2 border-dashed border-blue-900/15 px-4 py-6 text-sm text-blue-900/50 hover:border-blue-400 hover:bg-blue-50/50 cursor-pointer transition-colors">
+          <label className="flex items-center justify-center gap-2 rounded-lg border-2 border-dashed border-navy/15 px-4 py-6 text-sm text-navy/50 hover:border-teal hover:bg-teal/5 cursor-pointer transition-colors">
             {diplomeUploading ? <Loader2 size={16} className="animate-spin" /> : <Paperclip size={16} />}
             Choisir un fichier (JPG, PNG, WEBP ou PDF)
             <input
@@ -242,17 +242,27 @@ export default function ExpertJuridiqueDashboardPage() {
     profil: 'Profil',
     actualites: 'Actualités',
   };
+  function statusBadgeCls(status: string) {
+    if (status === 'RESOLUE') return 'bg-teal/10 text-teal';
+    if (status === 'EN_COURS') return 'bg-gold/20 text-navy-dark';
+    return 'bg-navy/5 text-navy/50';
+  }
+  function statusLabel(status: string) {
+    if (status === 'RESOLUE') return 'Résolue';
+    if (status === 'EN_COURS') return 'En cours';
+    return 'Ouverte';
+  }
   return (
-    <div className="min-h-screen bg-blue-50/40 flex">
+    <div className="min-h-screen bg-navy/[0.02] flex">
       {/* Sidebar */}
-      <aside className="fixed top-0 left-0 h-screen w-64 bg-blue-950 text-white flex flex-col shrink-0 z-40">
-        <div className="flex items-center gap-3 px-5 h-20 shrink-0 bg-black/30 border-b border-white/10">
+      <aside className="fixed top-0 left-0 h-screen w-64 bg-navy text-white flex flex-col shrink-0 z-40">
+        <div className="flex items-center gap-3 px-5 h-20 shrink-0 bg-navy-dark border-b border-white/10">
           <div className="h-11 w-11 rounded-xl bg-white/10 ring-1 ring-white/10 flex items-center justify-center shrink-0">
             <img src={BRAND.logoSrc} alt={BRAND.nameAr} className="h-8 w-8 object-contain" />
           </div>
           <div className="min-w-0">
             <p className="text-[15px] font-black tracking-tight text-white truncate">CTTEERA</p>
-            <p className="text-[10px] font-semibold text-yellow-300 uppercase tracking-widest truncate">Expert Juridique</p>
+            <p className="text-[10px] font-semibold text-gold uppercase tracking-widest truncate">Expert Juridique</p>
           </div>
         </div>
         <nav className="flex-1 overflow-y-auto py-3 px-2 flex flex-col gap-1">
@@ -261,7 +271,7 @@ export default function ExpertJuridiqueDashboardPage() {
               key={key}
               onClick={() => setTab(key)}
               className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
-                tab === key ? 'bg-yellow-400 text-blue-900 font-semibold' : 'text-white/70 hover:bg-white/10 hover:text-white'
+                tab === key ? 'bg-gold text-navy-dark font-semibold' : 'text-white/70 hover:bg-white/10 hover:text-white'
               }`}
             >
               <Icon size={18} className="shrink-0" />
@@ -271,7 +281,7 @@ export default function ExpertJuridiqueDashboardPage() {
           <button
             onClick={() => setTab('actualites')}
             className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
-              tab === 'actualites' ? 'bg-yellow-400 text-blue-900 font-semibold' : 'text-white/70 hover:bg-white/10 hover:text-white'
+              tab === 'actualites' ? 'bg-gold text-navy-dark font-semibold' : 'text-white/70 hover:bg-white/10 hover:text-white'
             }`}
           >
             <Newspaper size={18} className="shrink-0" />
@@ -282,7 +292,7 @@ export default function ExpertJuridiqueDashboardPage() {
           <button
             onClick={() => setTab('profil')}
             className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
-              tab === 'profil' ? 'bg-yellow-400 text-blue-900 font-semibold' : 'text-white/70 hover:bg-white/10 hover:text-white'
+              tab === 'profil' ? 'bg-gold text-navy-dark font-semibold' : 'text-white/70 hover:bg-white/10 hover:text-white'
             }`}
           >
             {user?.photoProfilPath ? (
@@ -310,26 +320,26 @@ export default function ExpertJuridiqueDashboardPage() {
         ) : (
         <>
         {/* Profil header */}
-        <div className="relative h-40 w-full bg-gradient-to-br from-blue-950 to-blue-800 overflow-hidden">
+        <div className="relative h-40 w-full bg-gradient-to-br from-navy to-navy-dark overflow-hidden">
           {user?.photoCouverturePath && (
             <img src={imageUrl(user.photoCouverturePath)} alt="Couverture" className="w-full h-full object-cover" />
           )}
           <label className="absolute bottom-3 end-4 grid place-items-center h-9 w-9 rounded-full bg-white/90 hover:bg-white cursor-pointer shadow transition-colors">
             {uploadingKey === 'photoCouverture' ? (
-              <Loader2 size={15} className="animate-spin text-blue-700" />
+              <Loader2 size={15} className="animate-spin text-teal" />
             ) : (
-              <ImageIcon size={15} className="text-blue-700" />
+              <ImageIcon size={15} className="text-teal" />
             )}
             <input type="file" accept="image/jpeg,image/png,image/webp" className="hidden"
               onChange={(e) => handlePhotoCouverture(e.target.files?.[0] ?? null)} />
           </label>
         </div>
         <div className="px-8 -mt-10 mb-6 flex items-end gap-4">
-          <div className="relative h-24 w-24 rounded-full border-4 border-white bg-blue-100 overflow-hidden shrink-0">
+          <div className="relative h-24 w-24 rounded-full border-4 border-white bg-navy/10 overflow-hidden shrink-0">
             {user?.photoProfilPath ? (
               <img src={imageUrl(user.photoProfilPath)} alt="Profil" className="w-full h-full object-cover" />
             ) : (
-              <div className="w-full h-full grid place-items-center text-blue-300"><UserIcon size={30} /></div>
+              <div className="w-full h-full grid place-items-center text-navy/30"><UserIcon size={30} /></div>
             )}
             <label className="absolute inset-0 grid place-items-center bg-black/0 hover:bg-black/30 transition-colors cursor-pointer group">
               {uploadingKey === 'photoProfil' ? (
@@ -342,84 +352,82 @@ export default function ExpertJuridiqueDashboardPage() {
             </label>
           </div>
           <div className="pb-1">
-            <h1 className="text-xl font-black text-blue-900">{fullName}</h1>
-            <p className="text-sm text-blue-600/70">{user?.gouvernorat ?? ''} — Expert Juridique CTTEERA</p>
+            <h1 className="text-xl font-black text-navy">{fullName}</h1>
+            <p className="text-sm text-navy/50">{user?.gouvernorat ?? ''} — Expert Juridique CTTEERA</p>
           </div>
         </div>
         {/* Contenu */}
         <div className="px-8 pb-16">
-          <h2 className="text-lg font-bold text-blue-900 mb-4">{TAB_TITLES[tab]}</h2>
+          <h2 className="text-lg font-bold text-navy mb-4">{TAB_TITLES[tab]}</h2>
           {tab === 'dashboard' ? (
             <div className="flex flex-col gap-6">
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                 <div className="bg-white rounded-xl shadow-sm p-4 flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-lg bg-blue-100 grid place-items-center shrink-0">
-                    <Inbox size={18} className="text-blue-700" />
+                  <div className="h-10 w-10 rounded-lg bg-navy/10 grid place-items-center shrink-0">
+                    <Inbox size={18} className="text-teal" />
                   </div>
                   <div>
-                    <p className="text-lg font-black text-blue-900">{conversations.length}</p>
-                    <p className="text-[11px] text-blue-900/50">Total</p>
+                    <p className="text-lg font-black text-navy">{conversations.length}</p>
+                    <p className="text-[11px] text-navy/50">Total</p>
                   </div>
                 </div>
                 <div className="bg-white rounded-xl shadow-sm p-4 flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-lg bg-blue-100 grid place-items-center shrink-0">
-                    <MessagesSquare size={18} className="text-blue-700" />
+                  <div className="h-10 w-10 rounded-lg bg-navy/10 grid place-items-center shrink-0">
+                    <MessagesSquare size={18} className="text-teal" />
                   </div>
                   <div>
-                    <p className="text-lg font-black text-blue-900">{conversations.filter((c) => c.status === 'OUVERTE').length}</p>
-                    <p className="text-[11px] text-blue-900/50">Ouvertes</p>
+                    <p className="text-lg font-black text-navy">{conversations.filter((c) => c.status === 'OUVERTE').length}</p>
+                    <p className="text-[11px] text-navy/50">Ouvertes</p>
                   </div>
                 </div>
                 <div className="bg-white rounded-xl shadow-sm p-4 flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-lg bg-yellow-100 grid place-items-center shrink-0">
-                    <Clock size={18} className="text-yellow-700" />
+                  <div className="h-10 w-10 rounded-lg bg-gold/20 grid place-items-center shrink-0">
+                    <Clock size={18} className="text-navy-dark" />
                   </div>
                   <div>
-                    <p className="text-lg font-black text-blue-900">{conversations.filter((c) => c.status === 'EN_COURS').length}</p>
-                    <p className="text-[11px] text-blue-900/50">En cours</p>
+                    <p className="text-lg font-black text-navy">{conversations.filter((c) => c.status === 'EN_COURS').length}</p>
+                    <p className="text-[11px] text-navy/50">En cours</p>
                   </div>
                 </div>
                 <div className="bg-white rounded-xl shadow-sm p-4 flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-lg bg-teal-100 grid place-items-center shrink-0">
-                    <CheckCircle2 size={18} className="text-teal-700" />
+                  <div className="h-10 w-10 rounded-lg bg-teal/10 grid place-items-center shrink-0">
+                    <CheckCircle2 size={18} className="text-teal" />
                   </div>
                   <div>
-                    <p className="text-lg font-black text-blue-900">{conversations.filter((c) => c.status === 'RESOLUE').length}</p>
-                    <p className="text-[11px] text-blue-900/50">Résolues</p>
+                    <p className="text-lg font-black text-navy">{conversations.filter((c) => c.status === 'RESOLUE').length}</p>
+                    <p className="text-[11px] text-navy/50">Résolues</p>
                   </div>
                 </div>
               </div>
               <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-                <h3 className="px-5 py-3 border-b border-blue-900/10 text-sm font-bold text-blue-700 uppercase tracking-wide">
+                <h3 className="px-5 py-3 border-b border-navy/10 text-sm font-bold text-teal uppercase tracking-wide">
                   Dernières conversations
                 </h3>
                 {conversationsLoading ? (
-                  <div className="p-10 grid place-items-center"><Loader2 className="animate-spin text-blue-400" size={20} /></div>
+                  <div className="p-10 grid place-items-center"><Loader2 className="animate-spin text-navy/40" size={20} /></div>
                 ) : conversations.length === 0 ? (
-                  <p className="p-6 text-center text-sm text-blue-900/40">Aucune conversation pour le moment.</p>
+                  <p className="p-6 text-center text-sm text-navy/40">Aucune conversation pour le moment.</p>
                 ) : (
                   <div className="flex flex-col">
                     {conversations.slice(0, 5).map((conv) => (
                       <button
                         key={conv.id}
                         onClick={() => { setSelectedConversationId(conv.id); setTab('reclamation'); }}
-                        className="text-left px-5 py-3 border-b border-blue-900/5 last:border-b-0 flex items-center gap-3 hover:bg-blue-50/50 transition-colors"
+                        className="text-left px-5 py-3 border-b border-navy/5 last:border-b-0 flex items-center gap-3 hover:bg-navy/5 transition-colors"
                       >
-                        <div className="h-10 w-10 rounded-full bg-blue-100 overflow-hidden shrink-0">
+                        <div className="h-10 w-10 rounded-full bg-navy/10 overflow-hidden shrink-0">
                           {conv.otherUser.photoProfilPath ? (
                             <img src={imageUrl(conv.otherUser.photoProfilPath)} alt="" className="w-full h-full object-cover" />
                           ) : (
-                            <div className="w-full h-full grid place-items-center text-blue-300"><UserIcon size={16} /></div>
+                            <div className="w-full h-full grid place-items-center text-navy/30"><UserIcon size={16} /></div>
                           )}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-semibold text-blue-900 truncate">{conv.otherUser.prenom} {conv.otherUser.nom}</p>
-                          <p className="text-xs text-blue-900/50 truncate">{conv.lastMessagePreview || conv.subject}</p>
+                          <p className="text-sm font-semibold text-navy truncate">{conv.otherUser.prenom} {conv.otherUser.nom}</p>
+                          <p className="text-xs text-navy/50 truncate">{conv.lastMessagePreview || conv.subject}</p>
                         </div>
-                        <span className={`shrink-0 text-[9px] font-semibold rounded-full px-1.5 py-0.5 ${
-                          conv.status === 'RESOLUE' ? 'bg-teal-100 text-teal-700' : conv.status === 'EN_COURS' ? 'bg-yellow-100 text-yellow-700' : 'bg-blue-100 text-blue-700'
-                        }`}>
-                          {conv.status === 'RESOLUE' ? 'Résolue' : conv.status === 'EN_COURS' ? 'En cours' : 'Ouverte'}
+                        <span className={`shrink-0 text-[9px] font-semibold rounded-full px-1.5 py-0.5 ${statusBadgeCls(conv.status)}`}>
+                          {statusLabel(conv.status)}
                         </span>
                       </button>
                     ))}
@@ -432,10 +440,10 @@ export default function ExpertJuridiqueDashboardPage() {
           ) : tab === 'reclamation' ? (
             conversationsLoading ? (
               <div className="bg-white rounded-xl shadow-sm p-10 grid place-items-center">
-                <Loader2 className="animate-spin text-blue-400" size={22} />
+                <Loader2 className="animate-spin text-navy/40" size={22} />
               </div>
             ) : conversations.length === 0 ? (
-              <div className="bg-white rounded-xl shadow-sm p-10 text-center text-blue-900/40 text-sm">
+              <div className="bg-white rounded-xl shadow-sm p-10 text-center text-navy/40 text-sm">
                 Aucun message pour le moment.
               </div>
             ) : (
@@ -445,30 +453,28 @@ export default function ExpertJuridiqueDashboardPage() {
                     <button
                       key={conv.id}
                       onClick={() => setSelectedConversationId(conv.id)}
-                      className={`text-left px-3 py-3 border-b border-blue-900/5 flex items-center gap-3 transition-colors ${
-                        selectedConversationId === conv.id ? 'bg-blue-50' : 'hover:bg-blue-50/50'
+                      className={`text-left px-3 py-3 border-b border-navy/5 flex items-center gap-3 transition-colors ${
+                        selectedConversationId === conv.id ? 'bg-teal/5' : 'hover:bg-navy/5'
                       }`}
                     >
-                      <div className="h-12 w-12 rounded-full bg-blue-100 overflow-hidden shrink-0">
+                      <div className="h-12 w-12 rounded-full bg-navy/10 overflow-hidden shrink-0">
                         {conv.otherUser.photoProfilPath ? (
                           <img src={imageUrl(conv.otherUser.photoProfilPath)} alt="" className="w-full h-full object-cover" />
                         ) : (
-                          <div className="w-full h-full grid place-items-center text-blue-300"><UserIcon size={20} /></div>
+                          <div className="w-full h-full grid place-items-center text-navy/30"><UserIcon size={20} /></div>
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between gap-2">
-                          <p className="text-sm font-bold text-blue-900 truncate">{conv.otherUser.prenom} {conv.otherUser.nom}</p>
-                          <span className="shrink-0 text-[10px] text-blue-900/40">
+                          <p className="text-sm font-bold text-navy truncate">{conv.otherUser.prenom} {conv.otherUser.nom}</p>
+                          <span className="shrink-0 text-[10px] text-navy/40">
                             {new Date(conv.updatedAt).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })}
                           </span>
                         </div>
                         <div className="flex items-center justify-between gap-2 mt-0.5">
-                          <p className="text-xs text-blue-900/50 truncate">{conv.lastMessagePreview || conv.subject}</p>
-                          <span className={`shrink-0 text-[9px] font-semibold rounded-full px-1.5 py-0.5 ${
-                            conv.status === 'RESOLUE' ? 'bg-teal-100 text-teal-700' : conv.status === 'EN_COURS' ? 'bg-yellow-100 text-yellow-700' : 'bg-blue-100 text-blue-700'
-                          }`}>
-                            {conv.status === 'RESOLUE' ? 'Résolue' : conv.status === 'EN_COURS' ? 'En cours' : 'Ouverte'}
+                          <p className="text-xs text-navy/50 truncate">{conv.lastMessagePreview || conv.subject}</p>
+                          <span className={`shrink-0 text-[9px] font-semibold rounded-full px-1.5 py-0.5 ${statusBadgeCls(conv.status)}`}>
+                            {statusLabel(conv.status)}
                           </span>
                         </div>
                       </div>
@@ -483,7 +489,7 @@ export default function ExpertJuridiqueDashboardPage() {
               </div>
             )
           ) : (
-            <div className="bg-white rounded-xl shadow-sm p-10 text-center text-blue-900/40 text-sm">
+            <div className="bg-white rounded-xl shadow-sm p-10 text-center text-navy/40 text-sm">
               Cette page est en cours de construction.
             </div>
           )}

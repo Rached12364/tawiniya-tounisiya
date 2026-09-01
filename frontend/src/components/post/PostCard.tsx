@@ -222,6 +222,28 @@ function CommentItem({ comment, postId, onReplyAdded, onUpdated, onDeleted, dept
     </div>
   );
 }
+const POST_TRUNCATE_LENGTH = 280;
+function PostContent({ content }: { content: string }) {
+  const [expanded, setExpanded] = useState(false);
+  const isLong = content.length > POST_TRUNCATE_LENGTH;
+  const displayed = !isLong || expanded ? content : content.slice(0, POST_TRUNCATE_LENGTH).trimEnd() + '…';
+  return (
+    <p className="mt-3 text-sm text-navy whitespace-pre-line">
+      {displayed}
+      {isLong && (
+        <>
+          {' '}
+          <button
+            onClick={() => setExpanded((v) => !v)}
+            className="text-teal font-semibold hover:underline"
+          >
+            {expanded ? 'Voir moins' : 'Voir plus'}
+          </button>
+        </>
+      )}
+    </p>
+  );
+}
 function PostComments({ postId }: { postId: number }) {
   const { user } = useAuthStore();
   const [comments, setComments] = useState<Comment[]>([]);
@@ -432,7 +454,7 @@ export default function PostCard({ post, onChanged, onRemoved }: {
           </div>
         </div>
       ) : (
-        <p className="mt-3 text-sm text-navy whitespace-pre-line">{post.content}</p>
+        <PostContent content={post.content} />
       )}
       {post.imagePath && (
         <img src={imageUrl(post.imagePath)} alt="" className="mt-3 w-full max-h-96 object-cover rounded-lg" />

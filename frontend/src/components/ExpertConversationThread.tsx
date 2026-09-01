@@ -108,32 +108,32 @@ export default function ExpertConversationThread({ conversationId, onStatusChang
     }
   }
   if (loading) {
-    return <div className="bg-white rounded-xl shadow-sm p-6 grid place-items-center"><Loader2 className="animate-spin text-blue-400" size={22} /></div>;
+    return <div className="bg-white rounded-xl shadow-sm p-6 grid place-items-center"><Loader2 className="animate-spin text-navy/40" size={22} /></div>;
   }
   if (!conversation) {
     return <p className="text-sm text-red-600">{error ?? 'Conversation introuvable.'}</p>;
   }
   return (
     <div className="bg-white rounded-xl shadow-sm overflow-hidden flex flex-col" style={{ maxHeight: '700px' }}>
-      <div className="px-5 py-3 border-b border-blue-900/10 flex items-center justify-between gap-3 shrink-0">
+      <div className="px-5 py-3 border-b border-navy/10 flex items-center justify-between gap-3 shrink-0">
         <div className="flex items-center gap-2.5 min-w-0">
-          <div className="h-9 w-9 rounded-full bg-blue-100 overflow-hidden shrink-0">
+          <div className="h-9 w-9 rounded-full bg-navy/10 overflow-hidden shrink-0">
             {conversation.otherUser.photoProfilPath ? (
               <img src={fileUrl(conversation.otherUser.photoProfilPath)} alt="" className="w-full h-full object-cover" />
             ) : (
-              <div className="w-full h-full grid place-items-center text-blue-300"><UserIcon size={14} /></div>
+              <div className="w-full h-full grid place-items-center text-navy/30"><UserIcon size={14} /></div>
             )}
           </div>
           <div className="min-w-0">
-            <p className="text-sm font-bold text-blue-900 truncate">{conversation.otherUser.prenom} {conversation.otherUser.nom}</p>
-            <p className="text-xs text-blue-900/50 truncate">{conversation.subject}</p>
+            <p className="text-sm font-bold text-navy truncate">{conversation.otherUser.prenom} {conversation.otherUser.nom}</p>
+            <p className="text-xs text-navy/50 truncate">{conversation.subject}</p>
           </div>
         </div>
         <select
           value={conversation.status ?? 'OUVERTE'}
           onChange={(e) => handleStatusChange(e.target.value as ConversationStatus)}
           disabled={updatingStatus}
-          className="shrink-0 rounded-full border border-blue-900/15 bg-white px-3 py-1.5 text-xs font-semibold text-blue-900 focus:outline-none focus:ring-2 focus:ring-blue-400/40"
+          className="shrink-0 rounded-full border border-navy/15 bg-white px-3 py-1.5 text-xs font-semibold text-navy focus:outline-none focus:ring-2 focus:ring-teal/40"
         >
           {STATUS_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
         </select>
@@ -143,12 +143,12 @@ export default function ExpertConversationThread({ conversationId, onStatusChang
           <div key={m.id} className={`flex ${m.mine ? 'justify-end' : 'justify-start'}`}>
             <div
               className={`max-w-[80%] rounded-2xl px-3.5 py-2 text-sm ${
-                m.mine ? 'bg-blue-700 text-white rounded-br-sm' : 'bg-blue-50 text-blue-900 rounded-bl-sm'
+                m.mine ? 'bg-teal text-white rounded-br-sm' : 'bg-navy/5 text-navy rounded-bl-sm'
               }`}
             >
               {m.content && <p className="whitespace-pre-line">{m.content}</p>}
               {m.attachmentPath && <AttachmentPreview path={m.attachmentPath} />}
-              <p className={`mt-1 text-[10px] ${m.mine ? 'text-white/70' : 'text-blue-900/40'}`}>
+              <p className={`mt-1 text-[10px] ${m.mine ? 'text-white/70' : 'text-navy/40'}`}>
                 {new Date(m.createdAt).toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}
               </p>
             </div>
@@ -159,13 +159,13 @@ export default function ExpertConversationThread({ conversationId, onStatusChang
       {error && <p className="px-5 text-xs text-red-600">{error}</p>}
       {pendingFile && (
         <div className="px-5 pb-1 flex items-center gap-2">
-          <span className="flex-1 truncate text-xs text-blue-900/60 bg-blue-50 rounded-full px-3 py-1">{pendingFile.name}</span>
-          <button onClick={() => setPendingFile(null)} className="text-blue-900/40 hover:text-red-500 transition-colors">
+          <span className="flex-1 truncate text-xs text-navy/60 bg-navy/5 rounded-full px-3 py-1">{pendingFile.name}</span>
+          <button onClick={() => setPendingFile(null)} className="text-navy/40 hover:text-red-500 transition-colors">
             <X size={14} />
           </button>
         </div>
       )}
-      <div className="border-t border-blue-900/10 p-3 shrink-0 flex items-center gap-2">
+      <div className="border-t border-navy/10 p-3 shrink-0 flex items-center gap-2">
         <input
           ref={fileInputRef}
           type="file"
@@ -175,7 +175,7 @@ export default function ExpertConversationThread({ conversationId, onStatusChang
         />
         <button
           onClick={() => fileInputRef.current?.click()}
-          className="shrink-0 grid place-items-center h-9 w-9 rounded-full text-blue-900/50 hover:bg-blue-50 transition-colors"
+          className="shrink-0 grid place-items-center h-9 w-9 rounded-full text-navy/50 hover:bg-navy/5 transition-colors"
           title="Joindre un fichier"
         >
           <Paperclip size={17} />
@@ -183,7 +183,7 @@ export default function ExpertConversationThread({ conversationId, onStatusChang
         <button
           onClick={recording ? stopRecording : startRecording}
           className={`shrink-0 grid place-items-center h-9 w-9 rounded-full transition-colors ${
-            recording ? 'bg-red-500 text-white animate-pulse' : 'text-blue-900/50 hover:bg-blue-50'
+            recording ? 'bg-red-500 text-white animate-pulse' : 'text-navy/50 hover:bg-navy/5'
           }`}
           title={recording ? "Arrêter l'enregistrement" : 'Message vocal'}
         >
@@ -194,12 +194,12 @@ export default function ExpertConversationThread({ conversationId, onStatusChang
           onChange={(e) => setMessage(e.target.value)}
           onKeyDown={(e) => { if (e.key === 'Enter' && !sending) handleSend(); }}
           placeholder="Répondre..."
-          className="flex-1 rounded-full border border-blue-900/15 bg-white px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400/40"
+          className="flex-1 rounded-full border border-navy/15 bg-white px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal/40"
         />
         <button
           onClick={handleSend}
           disabled={sending || (!message.trim() && !pendingFile)}
-          className="shrink-0 grid place-items-center h-9 w-9 rounded-full bg-blue-700 text-white hover:bg-blue-800 disabled:opacity-50 transition-colors"
+          className="shrink-0 grid place-items-center h-9 w-9 rounded-full bg-teal text-white hover:bg-teal/80 disabled:opacity-50 transition-colors"
         >
           {sending ? <Loader2 size={15} className="animate-spin" /> : <Send size={15} />}
         </button>
