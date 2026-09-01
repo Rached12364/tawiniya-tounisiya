@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import {
   LayoutDashboard, MessageSquareWarning, LogOut, Camera, Image as ImageIcon, Loader2, User as UserIcon,
-  UserCog, Check, X, Pencil, FileText, Paperclip, Inbox, Clock, CheckCircle2, MessagesSquare, Newspaper,
+  UserCog, Check, X, Pencil, FileText, Paperclip, Inbox, Clock, CheckCircle2, MessagesSquare, Newspaper, ChevronsLeft, ChevronsRight,
 } from 'lucide-react';
 import { getMyUserProfile, updateMyUserProfile, uploadMyPhotoProfil, uploadMyPhotoCouverture, uploadDiplomeDocument } from '../services/userProfileService';
 import { getMyConversations } from '../services/expertConversationService';
@@ -191,6 +191,7 @@ export default function ExpertJuridiqueDashboardPage() {
   const [conversations, setConversations] = useState<ExpertConversationSummary[]>([]);
   const [conversationsLoading, setConversationsLoading] = useState(true);
   const [selectedConversationId, setSelectedConversationId] = useState<number | null>(null);
+  const [collapsed, setCollapsed] = useState(false);
   const { logout } = useAuthStore();
   useEffect(() => {
     getMyUserProfile().then(setUser).catch(() => {});
@@ -255,15 +256,17 @@ export default function ExpertJuridiqueDashboardPage() {
   return (
     <div className="min-h-screen bg-navy/[0.02] flex">
       {/* Sidebar */}
-      <aside className="fixed top-0 left-0 h-screen w-64 bg-navy text-white flex flex-col shrink-0 z-40">
+      <aside className={`fixed top-0 left-0 h-screen bg-navy text-white flex flex-col shrink-0 z-40 transition-all duration-200 ${collapsed ? 'w-20' : 'w-64'}`}>
         <div className="flex items-center gap-3 px-5 h-20 shrink-0 bg-navy-dark border-b border-white/10">
           <div className="h-11 w-11 rounded-xl bg-white/10 ring-1 ring-white/10 flex items-center justify-center shrink-0">
             <img src={BRAND.logoSrc} alt={BRAND.nameAr} className="h-8 w-8 object-contain" />
           </div>
-          <div className="min-w-0">
-            <p className="text-[15px] font-black tracking-tight text-white truncate">CTTEERA</p>
-            <p className="text-[10px] font-semibold text-gold uppercase tracking-widest truncate">Expert Juridique</p>
-          </div>
+          {!collapsed && (
+            <div className="min-w-0">
+              <p className="text-[15px] font-black tracking-tight text-white truncate">CTTEERA</p>
+              <p className="text-[10px] font-semibold text-gold uppercase tracking-widest truncate">Expert Juridique</p>
+            </div>
+          )}
         </div>
         <nav className="flex-1 overflow-y-auto py-3 px-2 flex flex-col gap-1">
           {TABS.map(({ key, label, icon: Icon }) => (
@@ -275,7 +278,7 @@ export default function ExpertJuridiqueDashboardPage() {
               }`}
             >
               <Icon size={18} className="shrink-0" />
-              <span className="truncate">{label}</span>
+              {!collapsed && <span className="truncate">{label}</span>}
             </button>
           ))}
           <button
@@ -285,7 +288,7 @@ export default function ExpertJuridiqueDashboardPage() {
             }`}
           >
             <Newspaper size={18} className="shrink-0" />
-            <span className="truncate">Actualités</span>
+            {!collapsed && <span className="truncate">Actualités</span>}
           </button>
         </nav>
         <div className="border-t border-white/10 p-2 flex flex-col gap-1">
@@ -302,19 +305,26 @@ export default function ExpertJuridiqueDashboardPage() {
             ) : (
               <UserCog size={18} className="shrink-0" />
             )}
-            <span>Profil</span>
+            {!collapsed && <span>Profil</span>}
           </button>
           <button
             onClick={() => logout?.()}
             className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-white/70 hover:bg-white/10 hover:text-red-300 transition-colors w-full"
           >
             <LogOut size={18} className="shrink-0" />
-            <span>Se déconnecter</span>
+            {!collapsed && <span>Se déconnecter</span>}
+          </button>
+          <button
+            onClick={() => setCollapsed((v) => !v)}
+            className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-white/70 hover:bg-white/10 hover:text-white transition-colors w-full"
+          >
+            {collapsed ? <ChevronsRight size={18} className="shrink-0" /> : <ChevronsLeft size={18} className="shrink-0" />}
+            {!collapsed && <span>Réduire</span>}
           </button>
         </div>
       </aside>
       {/* Main content */}
-      <main className="flex-1 min-h-screen ml-64">
+      <main className={`flex-1 min-h-screen transition-all duration-200 ${collapsed ? 'ml-20' : 'ml-64'}`}>
         {tab === 'actualites' ? (
           <ActualitesPage />
         ) : (
