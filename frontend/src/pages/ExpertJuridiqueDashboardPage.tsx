@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react';
 import {
   LayoutDashboard, MessageSquareWarning, LogOut, Camera, Image as ImageIcon, Loader2, User as UserIcon,
-  UserCog, Check, X, Pencil, FileText, Paperclip, Inbox, Clock, CheckCircle2, MessagesSquare, Newspaper, ChevronsLeft, ChevronsRight,
+  UserCog, Check, X, Pencil, FileText, Paperclip, Inbox, Clock, CheckCircle2, MessagesSquare, Newspaper, ChevronsLeft, ChevronsRight, Calendar,
 } from 'lucide-react';
 import { getMyUserProfile, updateMyUserProfile, uploadMyPhotoProfil, uploadMyPhotoCouverture, uploadDiplomeDocument } from '../services/userProfileService';
 import { getMyConversations } from '../services/expertConversationService';
 import ExpertConversationThread from '../components/ExpertConversationThread';
 import ActualitesPage from './ActualitesPage';
+import EvenementsPage from './EvenementsPage';
 import type { ExpertConversationSummary } from '../types/expertConversation';
 import { useAuthStore } from '../store/authStore';
 import { BRAND } from '../config/brand';
@@ -16,7 +17,7 @@ function imageUrl(path?: string | null) {
   if (!path) return '';
   return path.startsWith('http') ? path : `${API_ORIGIN}${path}`;
 }
-type Tab = 'dashboard' | 'reclamation' | 'profil' | 'actualites';
+type Tab = 'dashboard' | 'reclamation' | 'profil' | 'actualites' | 'evenements';
 const TABS: { key: Tab; label: string; icon: typeof LayoutDashboard }[] = [
   { key: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { key: 'reclamation', label: 'Réclamation', icon: MessageSquareWarning },
@@ -242,6 +243,7 @@ export default function ExpertJuridiqueDashboardPage() {
     reclamation: 'Réclamation',
     profil: 'Profil',
     actualites: 'Actualités',
+    evenements: 'Événements',
   };
   function statusBadgeCls(status: string) {
     if (status === 'RESOLUE') return 'bg-teal/10 text-teal';
@@ -290,6 +292,15 @@ export default function ExpertJuridiqueDashboardPage() {
             <Newspaper size={18} className="shrink-0" />
             {!collapsed && <span className="truncate">Actualités</span>}
           </button>
+          <button
+            onClick={() => setTab('evenements')}
+            className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
+              tab === 'evenements' ? 'bg-gold text-navy-dark font-semibold' : 'text-white/70 hover:bg-white/10 hover:text-white'
+            }`}
+          >
+            <Calendar size={18} className="shrink-0" />
+            {!collapsed && <span className="truncate">Événements</span>}
+          </button>
         </nav>
         <div className="border-t border-white/10 p-2 flex flex-col gap-1">
           <button
@@ -327,6 +338,8 @@ export default function ExpertJuridiqueDashboardPage() {
       <main className={`flex-1 min-h-screen transition-all duration-200 ${collapsed ? 'ml-20' : 'ml-64'}`}>
         {tab === 'actualites' ? (
           <ActualitesPage />
+        ) : tab === 'evenements' ? (
+          <EvenementsPage />
         ) : (
         <>
         {/* Profil header */}

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Loader2, Image as ImageIcon, Send, X, User as UserIcon,
-  Briefcase, MessageSquareWarning, Scale, Calendar,
+  Briefcase, MessageSquareWarning, Calendar,
 } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import { getFeed, createPost } from '../services/postService';
@@ -97,7 +97,6 @@ function LeftSidebar() {
   const links = [
     ...(spacePath ? [{ label: `Espace ${ROLE_LABELS[user.role] ?? ''}`, path: spacePath, icon: Briefcase }] : []),
     { label: 'Mes réclamations', path: '/reclamation', icon: MessageSquareWarning },
-    { label: 'Service Juridique', path: '/services/juridique', icon: Scale },
     { label: 'Événements', path: '/evenements', icon: Calendar },
   ];
   return (
