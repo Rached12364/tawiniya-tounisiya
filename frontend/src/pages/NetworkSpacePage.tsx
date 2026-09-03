@@ -103,7 +103,7 @@ export default function NetworkSpacePage({ role }: { role: Role }) {
   ];
   return (
     <div className="min-h-[70vh] bg-navy/[0.02] pt-28 pb-16 px-4">
-      <div className={`mx-auto max-w-6xl ${role === 'TECHNICIEN' ? 'grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6 items-start' : ''}`}>
+      <div className={`mx-auto max-w-6xl ${SPACE_IMAGES[role] ? 'grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6 items-start' : ''}`}>
         <div className="min-w-0">
         <h1 className="text-2xl font-black text-navy mb-1">Espace {ROLE_LABELS[role]}</h1>
         <p className="text-sm text-navy/50 mb-6">Découvrez et connectez-vous avec la communauté {ROLE_LABELS[role].toLowerCase()}.</p>
