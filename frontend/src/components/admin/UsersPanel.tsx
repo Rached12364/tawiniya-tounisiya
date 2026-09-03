@@ -1,5 +1,5 @@
-import { Fragment, useEffect, useState, useCallback } from 'react';
-import { ChevronLeft, ChevronRight, Ban, CheckCircle2, ChevronDown, Trash2 } from 'lucide-react';
+import { Fragment, useEffect, useState, useCallback, useMemo } from 'react';
+import { Ban, CheckCircle2, ChevronDown, Trash2, Search } from 'lucide-react';
 import { getUsers, enableUser, disableUser, deleteUser } from '../../services/adminService';
 import type { PagedUsers } from '../../types/admin';
 import type { User } from '../../types/auth';
@@ -9,6 +9,7 @@ const ROLE_LABELS: Record<string, string> = {
   ENTREPRISE: 'Entreprise',
   CENTRE_FORMATION: 'Centre de formation',
   BENEFICIEL: 'Bénéficiaire',
+  EXPERT_JURIDIQUE: 'Expert Juridique',
 };
 function Field({ label, value }: { label: string; value: string | number | null | undefined }) {
   return (
@@ -156,23 +157,50 @@ function CentreFormationDetail({ u }: { u: User }) {
     </div>
   );
 }
+function ExpertJuridiqueDetail({ u }: { u: User }) {
+  return (
+    <div className="flex flex-col gap-3 p-4">
+      <DetailSection title="Informations">
+        <Field label="Adresse (cabinet)" value={u.adresse} />
+        <Field label="Gouvernorat" value={u.gouvernorat} />
+        <Field label="Bio" value={u.bio} />
+      </DetailSection>
+    </div>
+  );
+}
+const ROLE_FILTER_OPTIONS = ['TOUS', 'ADMIN', 'TECHNICIEN', 'ENTREPRISE', 'CENTRE_FORMATION', 'BENEFICIEL', 'EXPERT_JURIDIQUE'];
 export default function UsersPanel() {
-  const [pageData, setPageData] = useState<PagedUsers | null>(null);
-  const [page, setPage] = useState(0);
+  const [allUsers, setAllUsers] = useState<User[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [busyId, setBusyId] = useState<number | null>(null);
   const [expandedId, setExpandedId] = useState<number | null>(null);
-  const load = useCallback((p: number) => {
+  const [search, setSearch] = useState('');
+  const [roleFilter, setRoleFilter] = useState('TOUS');
+  const [statusFilter, setStatusFilter] = useState('TOUS');
+  const load = useCallback(() => {
     setLoading(true);
-    getUsers(p, 20)
-      .then(setPageData)
+    getUsers(0, 1000)
+      .then((data: PagedUsers) => setAllUsers(data.content))
       .catch(() => setError('Impossible de charger les utilisateurs.'))
       .finally(() => setLoading(false));
   }, []);
   useEffect(() => {
-    load(page);
-  }, [page, load]);
+    load();
+  }, [load]);
+  const filteredUsers = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return allUsers.filter((u) => {
+      if (roleFilter !== 'TOUS' && u.role !== roleFilter) return false;
+      if (statusFilter === 'ACTIF' && !u.enabled) return false;
+      if (statusFilter === 'DESACTIVE' && u.enabled) return false;
+      if (q) {
+        const haystack = `${u.prenom} ${u.nom} ${u.email}`.toLowerCase();
+        if (!haystack.includes(q)) return false;
+      }
+      return true;
+    });
+  }, [allUsers, search, roleFilter, statusFilter]);
   async function toggleEnabled(id: number, enabled: boolean) {
     setBusyId(id);
     try {
@@ -181,7 +209,7 @@ export default function UsersPanel() {
       } else {
         await enableUser(id);
       }
-      load(page);
+      load();
     } catch {
       setError("Impossible de modifier le statut de l'utilisateur.");
     } finally {
@@ -193,138 +221,158 @@ export default function UsersPanel() {
     setBusyId(id);
     try {
       await deleteUser(id);
-      load(page);
+      load();
     } catch {
       setError("Impossible de supprimer cet utilisateur.");
     } finally {
       setBusyId(null);
     }
   }
-  if (loading && !pageData) {
+  if (loading && allUsers.length === 0) {
     return <p className="text-navy/60">Chargement des utilisateurs…</p>;
   }
   if (error) {
     return <p className="text-red-600">{error}</p>;
   }
-  if (!pageData) return null;
   return (
-    <div className="rounded-xl border border-navy/10 bg-white overflow-hidden">
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="bg-navy/5 text-navy/70 text-left">
-              <th className="px-4 py-3 font-semibold w-8"></th>
-              <th className="px-4 py-3 font-semibold">Nom</th>
-              <th className="px-4 py-3 font-semibold">Email</th>
-              <th className="px-4 py-3 font-semibold">Téléphone</th>
-              <th className="px-4 py-3 font-semibold">Rôle</th>
-              <th className="px-4 py-3 font-semibold">Statut</th>
-              <th className="px-4 py-3 font-semibold text-right">Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {pageData.content.map((u) => {
-              const isExpanded = expandedId === u.id;
-              const hasDetail = u.role === 'TECHNICIEN' || u.role === 'ENTREPRISE' || u.role === 'CENTRE_FORMATION';
-              return (
-                <Fragment key={u.id}>
-                  <tr
-                    className={`border-t border-navy/5 ${hasDetail ? 'cursor-pointer hover:bg-navy/[0.02]' : ''}`}
-                    onClick={() => hasDetail && setExpandedId(isExpanded ? null : u.id)}
-                  >
-                    <td className="px-4 py-3">
-                      {hasDetail && (
-                        <ChevronDown
-                          size={14}
-                          className={`text-navy/40 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
-                        />
-                      )}
-                    </td>
-                    <td className="px-4 py-3 text-navy">{u.prenom} {u.nom}</td>
-                    <td className="px-4 py-3 text-navy/80">{u.email}</td>
-                    <td className="px-4 py-3 text-navy/80">{u.phone}</td>
-                    <td className="px-4 py-3">
-                      <span className="inline-block rounded-full bg-navy/10 px-2.5 py-0.5 text-xs font-medium text-navy">
-                        {ROLE_LABELS[u.role] ?? u.role}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3">
-                      <span
-                        className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                          u.enabled ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-                        }`}
-                      >
-                        {u.enabled ? 'Actif' : 'Désactivé'}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            toggleEnabled(u.id, u.enabled);
-                          }}
-                          disabled={busyId === u.id}
-                          className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-colors disabled:opacity-50 ${
-                            u.enabled
-                              ? 'bg-red-50 text-red-600 hover:bg-red-100'
-                              : 'bg-green-50 text-green-700 hover:bg-green-100'
-                          }`}
-                        >
-                          {u.enabled ? <Ban size={14} /> : <CheckCircle2 size={14} />}
-                          {u.enabled ? 'Désactiver' : 'Activer'}
-                        </button>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDelete(u.id, `${u.prenom} ${u.nom}`.trim());
-                          }}
-                          disabled={busyId === u.id}
-                          title="Supprimer definitivement"
-                          className="inline-flex items-center gap-1.5 rounded-full bg-navy/5 px-3 py-1.5 text-xs font-semibold text-navy/50 hover:bg-red-100 hover:text-red-700 transition-colors disabled:opacity-50"
-                        >
-                          <Trash2 size={14} />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                  {hasDetail && isExpanded && (
-                    <tr className="border-t border-navy/5 bg-navy/[0.015]">
-                      <td colSpan={7}>
-                        {u.role === 'TECHNICIEN' && <TechnicienDetail u={u} />}
-                        {u.role === 'ENTREPRISE' && <EntrepriseDetail u={u} />}
-                        {u.role === 'CENTRE_FORMATION' && <CentreFormationDetail u={u} />}
-                      </td>
-                    </tr>
-                  )}
-                </Fragment>
-              );
-            })}
-          </tbody>
-        </table>
+    <div className="flex flex-col gap-4">
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="relative flex-1 min-w-[220px]">
+          <Search size={16} className="absolute start-3 top-1/2 -translate-y-1/2 text-navy/30" />
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Rechercher par nom ou email..."
+            className="w-full rounded-full border border-navy/15 bg-white ps-9 pe-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal/40 focus:border-teal"
+          />
+        </div>
+        <select
+          value={roleFilter}
+          onChange={(e) => setRoleFilter(e.target.value)}
+          className="rounded-full border border-navy/15 bg-white px-3.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal/40 focus:border-teal"
+        >
+          {ROLE_FILTER_OPTIONS.map((r) => (
+            <option key={r} value={r}>{r === 'TOUS' ? 'Tous les rôles' : (ROLE_LABELS[r] ?? r)}</option>
+          ))}
+        </select>
+        <select
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+          className="rounded-full border border-navy/15 bg-white px-3.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal/40 focus:border-teal"
+        >
+          <option value="TOUS">Tous les statuts</option>
+          <option value="ACTIF">Actif</option>
+          <option value="DESACTIVE">Désactivé</option>
+        </select>
       </div>
-      <div className="flex items-center justify-between px-4 py-3 border-t border-navy/10 text-sm text-navy/60">
-        <span>
-          Page {pageData.number + 1} / {Math.max(pageData.totalPages, 1)} — {pageData.totalElements} utilisateurs
-        </span>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => setPage((p) => Math.max(p - 1, 0))}
-            disabled={pageData.number === 0}
-            className="grid place-items-center h-8 w-8 rounded-full border border-navy/10 hover:bg-navy/5 disabled:opacity-40"
-          >
-            <ChevronLeft size={16} />
-          </button>
-          <button
-            onClick={() => setPage((p) => (p + 1 < pageData.totalPages ? p + 1 : p))}
-            disabled={pageData.number + 1 >= pageData.totalPages}
-            className="grid place-items-center h-8 w-8 rounded-full border border-navy/10 hover:bg-navy/5 disabled:opacity-40"
-          >
-            <ChevronRight size={16} />
-          </button>
+      <div className="rounded-xl border border-navy/10 bg-white overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="bg-navy/5 text-navy/70 text-left">
+                <th className="px-4 py-3 font-semibold w-8"></th>
+                <th className="px-4 py-3 font-semibold">Nom</th>
+                <th className="px-4 py-3 font-semibold">Email</th>
+                <th className="px-4 py-3 font-semibold">Téléphone</th>
+                <th className="px-4 py-3 font-semibold">Rôle</th>
+                <th className="px-4 py-3 font-semibold">Statut</th>
+                <th className="px-4 py-3 font-semibold text-right">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredUsers.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="px-4 py-10 text-center text-navy/40">
+                    Aucun utilisateur ne correspond à ces critères.
+                  </td>
+                </tr>
+              ) : (
+                filteredUsers.map((u) => {
+                  const isExpanded = expandedId === u.id;
+                  const hasDetail = u.role === 'TECHNICIEN' || u.role === 'ENTREPRISE' || u.role === 'CENTRE_FORMATION' || u.role === 'EXPERT_JURIDIQUE';
+                  return (
+                    <Fragment key={u.id}>
+                      <tr
+                        className={`border-t border-navy/5 ${hasDetail ? 'cursor-pointer hover:bg-navy/[0.02]' : ''}`}
+                        onClick={() => hasDetail && setExpandedId(isExpanded ? null : u.id)}
+                      >
+                        <td className="px-4 py-3">
+                          {hasDetail && (
+                            <ChevronDown
+                              size={14}
+                              className={`text-navy/40 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+                            />
+                          )}
+                        </td>
+                        <td className="px-4 py-3 text-navy">{u.prenom} {u.nom}</td>
+                        <td className="px-4 py-3 text-navy/80">{u.email}</td>
+                        <td className="px-4 py-3 text-navy/80">{u.phone}</td>
+                        <td className="px-4 py-3">
+                          <span className="inline-block rounded-full bg-navy/10 px-2.5 py-0.5 text-xs font-medium text-navy">
+                            {ROLE_LABELS[u.role] ?? u.role}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3">
+                          <span
+                            className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                              u.enabled ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                            }`}
+                          >
+                            {u.enabled ? 'Actif' : 'Désactivé'}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 text-right">
+                          <div className="flex items-center justify-end gap-2">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                toggleEnabled(u.id, u.enabled);
+                              }}
+                              disabled={busyId === u.id}
+                              className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-colors disabled:opacity-50 ${
+                                u.enabled
+                                  ? 'bg-red-50 text-red-600 hover:bg-red-100'
+                                  : 'bg-green-50 text-green-700 hover:bg-green-100'
+                              }`}
+                            >
+                              {u.enabled ? <Ban size={14} /> : <CheckCircle2 size={14} />}
+                              {u.enabled ? 'Désactiver' : 'Activer'}
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDelete(u.id, `${u.prenom} ${u.nom}`.trim());
+                              }}
+                              disabled={busyId === u.id}
+                              title="Supprimer definitivement"
+                              className="inline-flex items-center gap-1.5 rounded-full bg-navy/5 px-3 py-1.5 text-xs font-semibold text-navy/50 hover:bg-red-100 hover:text-red-700 transition-colors disabled:opacity-50"
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                      {hasDetail && isExpanded && (
+                        <tr className="border-t border-navy/5 bg-navy/[0.015]">
+                          <td colSpan={7}>
+                            {u.role === 'TECHNICIEN' && <TechnicienDetail u={u} />}
+                            {u.role === 'ENTREPRISE' && <EntrepriseDetail u={u} />}
+                            {u.role === 'CENTRE_FORMATION' && <CentreFormationDetail u={u} />}
+                            {u.role === 'EXPERT_JURIDIQUE' && <ExpertJuridiqueDetail u={u} />}
+                          </td>
+                        </tr>
+                      )}
+                    </Fragment>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
+        <div className="flex items-center justify-between px-4 py-3 border-t border-navy/10 text-sm text-navy/60">
+          <span>{filteredUsers.length} utilisateur{filteredUsers.length > 1 ? 's' : ''} affiché{filteredUsers.length > 1 ? 's' : ''} sur {allUsers.length}</span>
         </div>
       </div>
     </div>
   );
 }
-
