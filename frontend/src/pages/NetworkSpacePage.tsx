@@ -32,6 +32,7 @@ const SPACE_IMAGES: Record<string, string> = {
   TECHNICIEN: '/images/hero_bg.jpg',
   ENTREPRISE: '/images/planification.jpg',
   CENTRE_FORMATION: '/images/centre-formation.png',
+  BENEFICIEL: '/images/beneficiel.png',
 };
 export default function NetworkSpacePage({ role }: { role: Role }) {
   const [tab, setTab] = useState<Tab>('browse');
