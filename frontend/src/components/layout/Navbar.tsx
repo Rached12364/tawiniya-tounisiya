@@ -9,16 +9,18 @@ import type { LangCode } from '../../types/nav';
 import { getUpcomingEvents } from '../../services/eventService';
 import { juridiqueService } from '../../services/juridiqueService';
 import { getMyReclamations } from '../../services/reclamationService';
+import { browseByRole } from '../../services/networkService';
+import type { Role } from '../../types/auth';
 const API_ORIGIN = (import.meta.env.VITE_API_URL || 'http://localhost:8080/api').replace(/\/api\/?$/, '');
 function imageUrl(path?: string) {
   if (!path) return '';
   return path.startsWith('http') ? path : `${API_ORIGIN}${path}`;
 }
-const SPACE_LINKS = [
-  { key: 'spaces_technicien', path: '/espace/technicien' },
-  { key: 'spaces_entreprise', path: '/espace/entreprise' },
-  { key: 'spaces_centre_formation', path: '/espace/centre-formation' },
-  { key: 'spaces_beneficiel', path: '/espace/beneficiel' },
+const SPACE_LINKS: { key: string; path: string; role: Role }[] = [
+  { key: 'spaces_technicien', path: '/espace/technicien', role: 'TECHNICIEN' },
+  { key: 'spaces_entreprise', path: '/espace/entreprise', role: 'ENTREPRISE' },
+  { key: 'spaces_centre_formation', path: '/espace/centre-formation', role: 'CENTRE_FORMATION' },
+  { key: 'spaces_beneficiel', path: '/espace/beneficiel', role: 'BENEFICIEL' },
 ];
 const NAV_LINKS = [
   { key: 'juridique', path: '/juridique', icon: '/icons/juridique.png' },
@@ -63,6 +65,7 @@ export default function Navbar() {
   const [eventsCount, setEventsCount] = useState(0);
   const [reclamationsCount, setReclamationsCount] = useState(0);
   const [juridiqueCount, setJuridiqueCount] = useState(0);
+  const [spaceCounts, setSpaceCounts] = useState<Record<string, number>>({});
   const isAdmin = isAuthenticated && user?.role === 'ADMIN';
   useEffect(() => {
     if (isAdmin) return;
@@ -88,6 +91,14 @@ export default function Navbar() {
         setReclamationsCount(pending);
       })
       .catch(() => setReclamationsCount(0));
+  }, [isAuthenticated, isAdmin]);
+  useEffect(() => {
+    if (!isAuthenticated || isAdmin) return;
+    SPACE_LINKS.forEach((link) => {
+      browseByRole(link.role, 0, 1)
+        .then((res) => setSpaceCounts((c) => ({ ...c, [link.key]: res.totalElements })))
+        .catch(() => {});
+    });
   }, [isAuthenticated, isAdmin]);
   const badgeForKey: Record<string, number> = {
     evenements: eventsCount,
@@ -167,9 +178,14 @@ export default function Navbar() {
                           key={link.path}
                           to={link.path}
                           onClick={() => setIsSpacesOpen(false)}
-                          className="block px-3.5 py-2 text-[13px] hover:bg-navy/5 hover:text-teal transition-colors"
+                          className="flex items-center justify-between gap-2 px-3.5 py-2 text-[13px] hover:bg-navy/5 hover:text-teal transition-colors"
                         >
-                          {t(`nav.${link.key}`)}
+                          <span>{t(`nav.${link.key}`)}</span>
+                          {(spaceCounts[link.key] ?? 0) > 0 && (
+                            <span className="shrink-0 min-w-[18px] h-[18px] px-1 rounded-full bg-red-600 text-white text-[10px] font-bold leading-[18px] text-center">
+                              {spaceCounts[link.key] > 99 ? '99+' : spaceCounts[link.key]}
+                            </span>
+                          )}
                         </Link>
                       ))}
                     </div>
@@ -309,8 +325,13 @@ export default function Navbar() {
               </Link>
               <div className="py-2 text-[11px] uppercase tracking-wide text-white/50">{t('nav.spaces')}</div>
               {SPACE_LINKS.map((link) => (
-                <Link key={link.path} to={link.path} onClick={closeMobileMenu} className="py-2 ps-3 text-sm hover:text-gold">
-                  {t(`nav.${link.key}`)}
+                <Link key={link.path} to={link.path} onClick={closeMobileMenu} className="py-2 ps-3 text-sm hover:text-gold flex items-center justify-between gap-2 pe-3">
+                  <span>{t(`nav.${link.key}`)}</span>
+                  {(spaceCounts[link.key] ?? 0) > 0 && (
+                    <span className="shrink-0 min-w-[18px] h-[18px] px-1 rounded-full bg-red-600 text-white text-[10px] font-bold leading-[18px] text-center">
+                      {spaceCounts[link.key] > 99 ? '99+' : spaceCounts[link.key]}
+                    </span>
+                  )}
                 </Link>
               ))}
               {NAV_LINKS.map((link) => (
