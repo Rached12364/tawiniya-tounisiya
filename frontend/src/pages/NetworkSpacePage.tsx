@@ -31,6 +31,7 @@ type Tab = 'browse' | 'connections' | 'invitations';
 const SPACE_IMAGES: Record<string, string> = {
   TECHNICIEN: '/images/hero_bg.jpg',
   ENTREPRISE: '/images/planification.jpg',
+  CENTRE_FORMATION: '/images/centre-formation.png',
 };
 export default function NetworkSpacePage({ role }: { role: Role }) {
   const [tab, setTab] = useState<Tab>('browse');
