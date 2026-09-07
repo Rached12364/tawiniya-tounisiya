@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Camera, Image as ImageIcon, Loader2, Pencil, Check, X,
-  User as UserIcon, Plus, Trash2, Scale,
+  User as UserIcon, Plus, Trash2, Scale, ChevronDown, SlidersHorizontal,
 } from 'lucide-react';
 import {
   getMyUserProfile, updateMyUserProfile, uploadMyPhotoProfil, uploadMyPhotoCouverture,
@@ -170,135 +170,85 @@ function displayValue(def: FieldDef, value: any): string {
   if (def.type === 'toggle') return value === 'OUI' ? 'Oui' : 'Non';
   return String(value);
 }
-function EditableSection({
-  section, form, onFieldChange, onSave, saving,
+function SectionFieldsGrid({
+  fields, form, onFieldChange,
 }: {
-  section: SectionDef;
+  fields: FieldDef[];
   form: Partial<User>;
   onFieldChange: (key: keyof User, value: any) => void;
-  onSave: () => Promise<void>;
-  saving: boolean;
 }) {
-  const [editing, setEditing] = useState(false);
-  const [snapshot, setSnapshot] = useState<Partial<User>>({});
-  const startEdit = () => {
-    setSnapshot({ ...form });
-    setEditing(true);
-  };
-  const cancel = () => {
-    section.fields.forEach((f) => onFieldChange(f.key, (snapshot as any)[f.key]));
-    setEditing(false);
-  };
-  const save = async () => {
-    await onSave();
-    setEditing(false);
-  };
   return (
-    <div className="bg-white rounded-xl shadow-sm p-5">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-sm font-bold text-teal uppercase tracking-wide">{section.title}</h2>
-        {!editing ? (
-          <button onClick={startEdit} className="text-navy/40 hover:text-teal transition-colors p-1.5 rounded-full hover:bg-teal/5">
-            <Pencil size={15} />
-          </button>
-        ) : (
-          <div className="flex gap-1.5">
-            <button onClick={cancel} className="text-navy/40 hover:text-red-500 transition-colors p-1.5 rounded-full hover:bg-red-50">
-              <X size={15} />
-            </button>
-            <button onClick={save} disabled={saving} className="text-teal hover:text-teal/70 transition-colors p-1.5 rounded-full hover:bg-teal/5 disabled:opacity-50">
-              {saving ? <Loader2 size={15} className="animate-spin" /> : <Check size={15} />}
-            </button>
-          </div>
-        )}
-      </div>
-      {!editing ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3">
-          {section.fields.map((f) => (
-            <div key={String(f.key)}>
-              <p className="text-[11px] text-navy/40 font-semibold uppercase tracking-wide">{f.label}</p>
-              <p className="text-sm text-navy mt-0.5 whitespace-pre-line">{displayValue(f, (form as any)[f.key])}</p>
-            </div>
-          ))}
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      {fields.map((f) => (
+        <div key={String(f.key)} className={f.type === 'textarea' ? 'sm:col-span-2' : ''}>
+          <label className="block text-[11px] font-medium text-navy/60 mb-1">{f.label}</label>
+          <FieldEditor def={f} value={(form as any)[f.key]} onChange={(v) => onFieldChange(f.key, v)} />
         </div>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {section.fields.map((f) => (
-            <div key={String(f.key)} className={f.type === 'textarea' ? 'sm:col-span-2' : ''}>
-              <label className="block text-[11px] font-medium text-navy/60 mb-1">{f.label}</label>
-              <FieldEditor def={f} value={(form as any)[f.key]} onChange={(v) => onFieldChange(f.key, v)} />
-            </div>
-          ))}
-        </div>
-      )}
+      ))}
     </div>
   );
 }
-function ExperiencesSection({
-  experiences, setExperiences, onSave, saving,
+function ReadOnlyFieldsGrid({ fields, form }: { fields: FieldDef[]; form: Partial<User> }) {
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3">
+      {fields.map((f) => (
+        <div key={String(f.key)}>
+          <p className="text-[11px] text-navy/40 font-semibold uppercase tracking-wide">{f.label}</p>
+          <p className="text-sm text-navy mt-0.5 whitespace-pre-line">{displayValue(f, (form as any)[f.key])}</p>
+        </div>
+      ))}
+    </div>
+  );
+}
+function AccordionSection({
+  title, defaultOpen, children,
+}: {
+  title: string;
+  defaultOpen?: boolean;
+  children: ReactNode;
+}) {
+  const [open, setOpen] = useState(!!defaultOpen);
+  return (
+    <div className="border-b border-navy/5 last:border-b-0">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="w-full flex items-center justify-between py-3 text-left"
+      >
+        <span className="text-sm font-bold text-teal uppercase tracking-wide">{title}</span>
+        <ChevronDown size={16} className={`text-navy/40 transition-transform ${open ? 'rotate-180' : ''}`} />
+      </button>
+      {open && <div className="pb-4">{children}</div>}
+    </div>
+  );
+}
+function ExperiencesEditor({
+  experiences, setExperiences,
 }: {
   experiences: ExperiencePro[];
   setExperiences: (e: ExperiencePro[]) => void;
-  onSave: () => Promise<void>;
-  saving: boolean;
 }) {
-  const [editing, setEditing] = useState(false);
-  const [snapshot, setSnapshot] = useState<ExperiencePro[]>([]);
-  const startEdit = () => { setSnapshot(experiences); setEditing(true); };
-  const cancel = () => { setExperiences(snapshot); setEditing(false); };
-  const save = async () => { await onSave(); setEditing(false); };
   const add = () => setExperiences([...experiences, { societe: '', periode: '' }]);
   const remove = (i: number) => setExperiences(experiences.filter((_, idx) => idx !== i));
   const update = (i: number, key: keyof ExperiencePro, value: string) =>
     setExperiences(experiences.map((e, idx) => (idx === i ? { ...e, [key]: value } : e)));
   return (
-    <div className="bg-white rounded-xl shadow-sm p-5">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-sm font-bold text-teal uppercase tracking-wide">Sociétés et périodes de travail</h2>
-        {!editing ? (
-          <button onClick={startEdit} className="text-navy/40 hover:text-teal transition-colors p-1.5 rounded-full hover:bg-teal/5">
-            <Pencil size={15} />
-          </button>
-        ) : (
-          <div className="flex gap-1.5">
-            <button onClick={cancel} className="text-navy/40 hover:text-red-500 transition-colors p-1.5 rounded-full hover:bg-red-50">
-              <X size={15} />
-            </button>
-            <button onClick={save} disabled={saving} className="text-teal hover:text-teal/70 transition-colors p-1.5 rounded-full hover:bg-teal/5 disabled:opacity-50">
-              {saving ? <Loader2 size={15} className="animate-spin" /> : <Check size={15} />}
-            </button>
-          </div>
-        )}
-      </div>
-      {!editing ? (
-        experiences.length === 0 ? (
-          <p className="text-sm text-navy/40">Aucune expérience renseignée.</p>
-        ) : (
-          <ul className="flex flex-col gap-1.5">
-            {experiences.map((exp, i) => (
-              <li key={i} className="text-sm text-navy">
-                <span className="font-medium">{exp.societe || '—'}</span>
-                {exp.periode ? <span className="text-navy/50"> · {exp.periode}</span> : null}
-              </li>
-            ))}
-          </ul>
-        )
-      ) : (
-        <div className="flex flex-col gap-2.5">
-          {experiences.map((exp, i) => (
-            <div key={i} className="flex gap-2 items-start">
-              <input value={exp.societe} onChange={(e) => update(i, 'societe', e.target.value)} placeholder="Société" className={inputCls} />
-              <input value={exp.periode} onChange={(e) => update(i, 'periode', e.target.value)} placeholder="Période" className={inputCls} />
-              <button type="button" onClick={() => remove(i)} className="shrink-0 mt-0.5 p-2 rounded-lg text-red-500 hover:bg-red-50 transition-colors">
-                <Trash2 size={16} />
-              </button>
-            </div>
-          ))}
-          <button type="button" onClick={add} className="self-start flex items-center gap-1.5 text-sm font-semibold text-teal hover:text-teal/80 transition-colors">
-            <Plus size={16} /> Ajouter une expérience
+    <div className="flex flex-col gap-2.5">
+      {experiences.length === 0 && (
+        <p className="text-sm text-navy/40">Aucune expérience renseignée.</p>
+      )}
+      {experiences.map((exp, i) => (
+        <div key={i} className="flex gap-2 items-start">
+          <input value={exp.societe} onChange={(e) => update(i, 'societe', e.target.value)} placeholder="Société" className={inputCls} />
+          <input value={exp.periode} onChange={(e) => update(i, 'periode', e.target.value)} placeholder="Période" className={inputCls} />
+          <button type="button" onClick={() => remove(i)} className="shrink-0 mt-0.5 p-2 rounded-lg text-red-500 hover:bg-red-50 transition-colors">
+            <Trash2 size={16} />
           </button>
         </div>
-      )}
+      ))}
+      <button type="button" onClick={add} className="self-start flex items-center gap-1.5 text-sm font-semibold text-teal hover:text-teal/80 transition-colors">
+        <Plus size={16} /> Ajouter une expérience
+      </button>
     </div>
   );
 }
@@ -350,6 +300,84 @@ function BioEditor({
     </div>
   );
 }
+interface EditModalTab {
+  key: string;
+  label: string;
+}
+function ProfileEditModal({
+  open, onClose, tabs, activeTab, setActiveTab, form, onFieldChange,
+  experiences, setExperiences, roleSections, onSave, saving, error,
+}: {
+  open: boolean;
+  onClose: () => void;
+  tabs: EditModalTab[];
+  activeTab: string;
+  setActiveTab: (k: string) => void;
+  form: Partial<User>;
+  onFieldChange: (key: keyof User, value: any) => void;
+  experiences: ExperiencePro[];
+  setExperiences: (e: ExperiencePro[]) => void;
+  roleSections: SectionDef[];
+  onSave: () => void;
+  saving: boolean;
+  error: string | null;
+}) {
+  if (!open) return null;
+  function renderContent() {
+    if (activeTab === 'compte') {
+      return <SectionFieldsGrid fields={ACCOUNT_SECTION.fields} form={form} onFieldChange={onFieldChange} />;
+    }
+    if (activeTab === 'experiences') {
+      return <ExperiencesEditor experiences={experiences} setExperiences={setExperiences} />;
+    }
+    const idx = Number(activeTab.replace('role-', ''));
+    const section = roleSections[idx];
+    if (!section) return null;
+    return <SectionFieldsGrid fields={section.fields} form={form} onFieldChange={onFieldChange} />;
+  }
+  return (
+    <div className="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50">
+      <div className="bg-white rounded-2xl shadow-xl w-full max-w-3xl max-h-[85vh] flex flex-col overflow-hidden">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-navy/10 shrink-0">
+          <h2 className="text-base font-bold text-navy">Modifier le profil</h2>
+          <button onClick={onClose} className="text-navy/40 hover:text-red-500 transition-colors p-1.5 rounded-full hover:bg-red-50">
+            <X size={18} />
+          </button>
+        </div>
+        {error && <p className="mx-5 mt-3 text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{error}</p>}
+        <div className="flex flex-col sm:flex-row flex-1 overflow-hidden">
+          <div className="flex sm:flex-col overflow-x-auto sm:overflow-y-auto sm:w-48 shrink-0 border-b sm:border-b-0 sm:border-e border-navy/10 py-2 px-2 gap-1">
+            {tabs.map((t) => (
+              <button
+                key={t.key}
+                onClick={() => setActiveTab(t.key)}
+                className={`shrink-0 text-left rounded-lg px-3 py-2 text-sm font-medium whitespace-nowrap transition-colors ${
+                  activeTab === t.key ? 'bg-teal/10 text-teal font-semibold' : 'text-navy/60 hover:bg-navy/5'
+                }`}
+              >
+                {t.label}
+              </button>
+            ))}
+          </div>
+          <div className="flex-1 overflow-y-auto p-5">{renderContent()}</div>
+        </div>
+        <div className="flex items-center justify-end gap-2 px-5 py-3.5 border-t border-navy/10 shrink-0">
+          <button onClick={onClose} className="rounded-full px-4 py-2 text-sm font-semibold text-navy/60 hover:bg-navy/5 transition-colors">
+            Annuler
+          </button>
+          <button
+            onClick={onSave}
+            disabled={saving}
+            className="inline-flex items-center gap-2 rounded-full bg-teal px-5 py-2 text-sm font-semibold text-white hover:bg-teal/90 disabled:opacity-50 transition-colors"
+          >
+            {saving ? <Loader2 size={15} className="animate-spin" /> : <Check size={15} />}
+            Enregistrer
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
 export default function ProfilPage() {
   const [user, setUser] = useState<User | null>(null);
   const [form, setForm] = useState<Partial<User>>({});
@@ -358,6 +386,10 @@ export default function ProfilPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [uploadingKey, setUploadingKey] = useState<string | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState('compte');
+  const [snapshotForm, setSnapshotForm] = useState<Partial<User>>({});
+  const [snapshotExperiences, setSnapshotExperiences] = useState<ExperiencePro[]>([]);
   useEffect(() => {
     getMyUserProfile()
       .then((u) => {
@@ -414,6 +446,27 @@ export default function ProfilPage() {
       setUploadingKey(null);
     }
   }
+  function openEditModal() {
+    setSnapshotForm({ ...form });
+    setSnapshotExperiences(experiences);
+    setActiveTab('compte');
+    setError(null);
+    setModalOpen(true);
+  }
+  function closeEditModal() {
+    setForm(snapshotForm);
+    setExperiences(snapshotExperiences);
+    setError(null);
+    setModalOpen(false);
+  }
+  async function saveEditModal() {
+    try {
+      await persist();
+      setModalOpen(false);
+    } catch {
+      // erreur deja affichee via error(); on laisse la modale ouverte pour reessayer
+    }
+  }
   if (loading) {
     return <div className="min-h-[70vh] grid place-items-center"><Loader2 className="animate-spin text-navy/40" size={28} /></div>;
   }
@@ -429,6 +482,11 @@ export default function ProfilPage() {
     user.role === 'TECHNICIEN' ? TECHNICIEN_SECTIONS :
     user.role === 'ENTREPRISE' ? ENTREPRISE_SECTIONS :
     user.role === 'CENTRE_FORMATION' ? CENTRE_FORMATION_SECTIONS : [];
+  const modalTabs: EditModalTab[] = [
+    { key: 'compte', label: 'Compte' },
+    ...roleSections.map((s, i) => ({ key: `role-${i}`, label: s.title })),
+    ...(user.role === 'TECHNICIEN' ? [{ key: 'experiences', label: 'Expériences' }] : []),
+  ];
   return (
     <div className="min-h-[70vh] bg-navy/[0.02] pb-16">
       {/* Bannière */}
@@ -474,35 +532,67 @@ export default function ProfilPage() {
           <div className="order-1 lg:order-2 min-w-0">
             {/* Header profil */}
             <div className="relative -mt-16 mb-6 bg-white rounded-xl shadow-sm px-6 pt-4 pb-5">
-              <div className="relative h-28 w-28 rounded-full border-4 border-white bg-navy/10 overflow-hidden shrink-0 -mt-16 mb-3">
-                {user.photoProfilPath ? (
-                  <img src={imageUrl(user.photoProfilPath)} alt="Profil" className="w-full h-full object-cover" />
-                ) : (
-                  <div className="w-full h-full grid place-items-center text-navy/30"><UserIcon size={36} /></div>
-                )}
-                <label className="absolute inset-0 grid place-items-center bg-black/0 hover:bg-black/30 transition-colors cursor-pointer group">
-                  {uploadingKey === 'photoProfil' ? (
-                    <Loader2 size={16} className="animate-spin text-white" />
+              <div className="flex items-start justify-between gap-3">
+                <div className="relative h-28 w-28 rounded-full border-4 border-white bg-navy/10 overflow-hidden shrink-0 -mt-16 mb-3">
+                  {user.photoProfilPath ? (
+                    <img src={imageUrl(user.photoProfilPath)} alt="Profil" className="w-full h-full object-cover" />
                   ) : (
-                    <Camera size={16} className="text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <div className="w-full h-full grid place-items-center text-navy/30"><UserIcon size={36} /></div>
                   )}
-                  <input type="file" accept="image/jpeg,image/png,image/webp" className="hidden"
-                    onChange={(e) => handlePhotoProfil(e.target.files?.[0] ?? null)} />
-                </label>
+                  <label className="absolute inset-0 grid place-items-center bg-black/0 hover:bg-black/30 transition-colors cursor-pointer group">
+                    {uploadingKey === 'photoProfil' ? (
+                      <Loader2 size={16} className="animate-spin text-white" />
+                    ) : (
+                      <Camera size={16} className="text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                    )}
+                    <input type="file" accept="image/jpeg,image/png,image/webp" className="hidden"
+                      onChange={(e) => handlePhotoProfil(e.target.files?.[0] ?? null)} />
+                  </label>
+                </div>
+                <button
+                  onClick={openEditModal}
+                  className="mt-2 shrink-0 inline-flex items-center gap-2 rounded-full bg-teal px-4 py-2 text-sm font-semibold text-white hover:bg-teal/90 transition-colors"
+                >
+                  <SlidersHorizontal size={15} />
+                  Modifier le profil
+                </button>
               </div>
               <h1 className="text-xl font-black text-navy">{fullName}</h1>
               <p className="text-sm text-navy/50 mt-0.5 mb-3">{ROLE_LABELS[user.role] ?? user.role} — CTTEERA</p>
               <BioEditor bio={form.bio} onChange={(v) => fieldChange('bio', v)} onSave={persist} saving={saving} />
             </div>
-            {error && <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2 mb-4">{error}</p>}
+            {error && !modalOpen && <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2 mb-4">{error}</p>}
             <div className="flex flex-col gap-5">
-              <EditableSection section={ACCOUNT_SECTION} form={form} onFieldChange={fieldChange} onSave={persist} saving={saving} />
+              <div className="bg-white rounded-xl shadow-sm p-5">
+                <h2 className="text-sm font-bold text-teal uppercase tracking-wide mb-4">{ACCOUNT_SECTION.title}</h2>
+                <ReadOnlyFieldsGrid fields={ACCOUNT_SECTION.fields} form={form} />
+              </div>
               <ChangePasswordForm />
-              {roleSections.map((section) => (
-                <EditableSection key={section.title} section={section} form={form} onFieldChange={fieldChange} onSave={persist} saving={saving} />
-              ))}
+              {roleSections.length > 0 && (
+                <div className="bg-white rounded-xl shadow-sm px-5">
+                  {roleSections.map((section, i) => (
+                    <AccordionSection key={section.title} title={section.title} defaultOpen={i === 0}>
+                      <ReadOnlyFieldsGrid fields={section.fields} form={form} />
+                    </AccordionSection>
+                  ))}
+                </div>
+              )}
               {user.role === 'TECHNICIEN' && (
-                <ExperiencesSection experiences={experiences} setExperiences={setExperiences} onSave={persist} saving={saving} />
+                <div className="bg-white rounded-xl shadow-sm p-5">
+                  <h2 className="text-sm font-bold text-teal uppercase tracking-wide mb-4">Sociétés et périodes de travail</h2>
+                  {experiences.length === 0 ? (
+                    <p className="text-sm text-navy/40">Aucune expérience renseignée.</p>
+                  ) : (
+                    <ul className="flex flex-col gap-1.5">
+                      {experiences.map((exp, i) => (
+                        <li key={i} className="text-sm text-navy">
+                          <span className="font-medium">{exp.societe || '—'}</span>
+                          {exp.periode ? <span className="text-navy/50"> · {exp.periode}</span> : null}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
               )}
             </div>
             <div className="mt-6">
@@ -512,6 +602,21 @@ export default function ProfilPage() {
           </div>
         </div>
       </div>
+      <ProfileEditModal
+        open={modalOpen}
+        onClose={closeEditModal}
+        tabs={modalTabs}
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        form={form}
+        onFieldChange={fieldChange}
+        experiences={experiences}
+        setExperiences={setExperiences}
+        roleSections={roleSections}
+        onSave={saveEditModal}
+        saving={saving}
+        error={modalOpen ? error : null}
+      />
     </div>
   );
 }
