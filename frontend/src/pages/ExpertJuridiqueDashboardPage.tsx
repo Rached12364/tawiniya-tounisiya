@@ -10,6 +10,7 @@ import ActualitesPage from './ActualitesPage';
 import ChangePasswordForm from '../components/ChangePasswordForm';
 import EvenementsPage from './EvenementsPage';
 import type { ExpertConversationSummary } from '../types/expertConversation';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { useAuthStore } from '../store/authStore';
 import { BRAND } from '../config/brand';
 import type { User } from '../types/auth';
@@ -184,6 +185,90 @@ function ProfilTab({ user, onSaved }: { user: User; onSaved: (u: User) => void }
         )}
       </div>
       <ChangePasswordForm />
+    </div>
+  );
+}
+function timeAgo(dateStr: string): string {
+  const diffMs = Date.now() - new Date(dateStr).getTime();
+  const mins = Math.floor(diffMs / 60000);
+  if (mins < 1) return "À l'instant";
+  if (mins < 60) return `${mins} min`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `${hours} h`;
+  const days = Math.floor(hours / 24);
+  return `${days} j`;
+}
+type Period = 'jour' | 'semaine' | 'mois';
+function buildChartData(conversations: ExpertConversationSummary[], period: Period) {
+  const now = new Date();
+  const buckets: { label: string; count: number }[] = [];
+  if (period === 'jour') {
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() - i);
+      const label = d.toLocaleDateString('fr-FR', { weekday: 'short' });
+      const count = conversations.filter((c) => new Date(c.createdAt).toDateString() === d.toDateString()).length;
+      buckets.push({ label, count });
+    }
+  } else if (period === 'semaine') {
+    for (let i = 7; i >= 0; i--) {
+      const end = new Date(now.getFullYear(), now.getMonth(), now.getDate() - i * 7);
+      const start = new Date(end);
+      start.setDate(start.getDate() - 6);
+      const label = `${start.getDate()}/${start.getMonth() + 1}`;
+      const count = conversations.filter((c) => {
+        const cd = new Date(c.createdAt);
+        return cd >= start && cd <= end;
+      }).length;
+      buckets.push({ label, count });
+    }
+  } else {
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const label = d.toLocaleDateString('fr-FR', { month: 'short' });
+      const count = conversations.filter((c) => {
+        const cd = new Date(c.createdAt);
+        return cd.getFullYear() === d.getFullYear() && cd.getMonth() === d.getMonth();
+      }).length;
+      buckets.push({ label, count });
+    }
+  }
+  return buckets;
+}
+function ReclamationsChart({ conversations }: { conversations: ExpertConversationSummary[] }) {
+  const [period, setPeriod] = useState<Period>('jour');
+  const data = buildChartData(conversations, period);
+  const PERIOD_LABELS: Record<Period, string> = { jour: 'Jour', semaine: 'Semaine', mois: 'Mois' };
+  return (
+    <div className="bg-white rounded-xl shadow-sm p-5">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-sm font-bold text-teal uppercase tracking-wide">Réclamations reçues</h3>
+        <div className="flex gap-1 rounded-full bg-navy/5 p-1">
+          {(['jour', 'semaine', 'mois'] as Period[]).map((p) => (
+            <button
+              key={p}
+              onClick={() => setPeriod(p)}
+              className={`px-3 py-1 rounded-full text-xs font-semibold transition-colors ${
+                period === p ? 'bg-navy text-white' : 'text-navy/50 hover:text-navy'
+              }`}
+            >
+              {PERIOD_LABELS[p]}
+            </button>
+          ))}
+        </div>
+      </div>
+      <ResponsiveContainer width="100%" height={220}>
+        <BarChart data={data} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
+          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
+          <XAxis dataKey="label" tick={{ fontSize: 11, fill: '#64748b' }} axisLine={false} tickLine={false} />
+          <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: '#64748b' }} axisLine={false} tickLine={false} width={30} />
+          <Tooltip
+            cursor={{ fill: 'rgba(20, 184, 166, 0.08)' }}
+            contentStyle={{ borderRadius: 8, border: '1px solid #e5e7eb', fontSize: 12 }}
+            labelStyle={{ fontWeight: 600, color: '#0f172a' }}
+          />
+          <Bar dataKey="count" name="Réclamations" fill="#14b8a6" radius={[4, 4, 0, 0]} maxBarSize={36} />
+        </BarChart>
+      </ResponsiveContainer>
     </div>
   );
 }
@@ -386,48 +471,54 @@ export default function ExpertJuridiqueDashboardPage() {
           <h2 className="text-lg font-bold text-navy mb-4">{TAB_TITLES[tab]}</h2>
           {tab === 'dashboard' ? (
             <div className="flex flex-col gap-6">
+              <ReclamationsChart conversations={conversations} />
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                <div className="bg-white rounded-xl shadow-sm p-4 flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-lg bg-navy/10 grid place-items-center shrink-0">
-                    <Inbox size={18} className="text-teal" />
+                <div className="bg-white rounded-2xl shadow-sm border-l-4 border-navy p-4 flex items-center gap-3 hover:shadow-md transition-shadow">
+                  <div className="h-11 w-11 rounded-full bg-navy/10 grid place-items-center shrink-0">
+                    <Inbox size={20} className="text-navy" />
                   </div>
                   <div>
-                    <p className="text-lg font-black text-navy">{conversations.length}</p>
-                    <p className="text-[11px] text-navy/50">Total</p>
+                    <p className="text-2xl font-black text-navy leading-none">{conversations.length}</p>
+                    <p className="text-[11px] text-navy/50 mt-1">Total</p>
                   </div>
                 </div>
-                <div className="bg-white rounded-xl shadow-sm p-4 flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-lg bg-navy/10 grid place-items-center shrink-0">
-                    <MessagesSquare size={18} className="text-teal" />
+                <div className="bg-white rounded-2xl shadow-sm border-l-4 border-amber-500 p-4 flex items-center gap-3 hover:shadow-md transition-shadow">
+                  <div className="h-11 w-11 rounded-full bg-amber-50 grid place-items-center shrink-0">
+                    <MessagesSquare size={20} className="text-amber-600" />
                   </div>
                   <div>
-                    <p className="text-lg font-black text-navy">{conversations.filter((c) => c.status === 'OUVERTE').length}</p>
-                    <p className="text-[11px] text-navy/50">Ouvertes</p>
+                    <p className="text-2xl font-black text-navy leading-none">{conversations.filter((c) => c.status === 'OUVERTE').length}</p>
+                    <p className="text-[11px] text-navy/50 mt-1">Ouvertes</p>
                   </div>
                 </div>
-                <div className="bg-white rounded-xl shadow-sm p-4 flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-lg bg-gold/20 grid place-items-center shrink-0">
-                    <Clock size={18} className="text-navy-dark" />
+                <div className="bg-white rounded-2xl shadow-sm border-l-4 border-gold p-4 flex items-center gap-3 hover:shadow-md transition-shadow">
+                  <div className="h-11 w-11 rounded-full bg-gold/15 grid place-items-center shrink-0">
+                    <Clock size={20} className="text-navy-dark" />
                   </div>
                   <div>
-                    <p className="text-lg font-black text-navy">{conversations.filter((c) => c.status === 'EN_COURS').length}</p>
-                    <p className="text-[11px] text-navy/50">En cours</p>
+                    <p className="text-2xl font-black text-navy leading-none">{conversations.filter((c) => c.status === 'EN_COURS').length}</p>
+                    <p className="text-[11px] text-navy/50 mt-1">En cours</p>
                   </div>
                 </div>
-                <div className="bg-white rounded-xl shadow-sm p-4 flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-lg bg-teal/10 grid place-items-center shrink-0">
-                    <CheckCircle2 size={18} className="text-teal" />
+                <div className="bg-white rounded-2xl shadow-sm border-l-4 border-teal p-4 flex items-center gap-3 hover:shadow-md transition-shadow">
+                  <div className="h-11 w-11 rounded-full bg-teal/10 grid place-items-center shrink-0">
+                    <CheckCircle2 size={20} className="text-teal" />
                   </div>
                   <div>
-                    <p className="text-lg font-black text-navy">{conversations.filter((c) => c.status === 'RESOLUE').length}</p>
-                    <p className="text-[11px] text-navy/50">Résolues</p>
+                    <p className="text-2xl font-black text-navy leading-none">{conversations.filter((c) => c.status === 'RESOLUE').length}</p>
+                    <p className="text-[11px] text-navy/50 mt-1">Résolues</p>
                   </div>
                 </div>
               </div>
-              <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-                <h3 className="px-5 py-3 border-b border-navy/10 text-sm font-bold text-teal uppercase tracking-wide">
-                  Dernières conversations
-                </h3>
+              <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+                <div className="flex items-center justify-between px-5 py-3.5 border-b border-navy/10">
+                  <h3 className="text-sm font-bold text-teal uppercase tracking-wide">Dernières conversations</h3>
+                  {conversations.length > 0 && (
+                    <button onClick={() => setTab('reclamation')} className="text-xs font-semibold text-navy/50 hover:text-teal transition-colors">
+                      Voir tout
+                    </button>
+                  )}
+                </div>
                 {conversationsLoading ? (
                   <div className="p-10 grid place-items-center"><Loader2 className="animate-spin text-navy/40" size={20} /></div>
                 ) : conversations.length === 0 ? (
@@ -438,22 +529,25 @@ export default function ExpertJuridiqueDashboardPage() {
                       <button
                         key={conv.id}
                         onClick={() => { setSelectedConversationId(conv.id); setTab('reclamation'); }}
-                        className="text-left px-5 py-3 border-b border-navy/5 last:border-b-0 flex items-center gap-3 hover:bg-navy/5 transition-colors"
+                        className="text-left px-5 py-3.5 border-b border-navy/5 last:border-b-0 flex items-center gap-3.5 hover:bg-navy/[0.03] transition-colors group"
                       >
-                        <div className="h-10 w-10 rounded-full bg-navy/10 overflow-hidden shrink-0">
+                        <div className="h-11 w-11 rounded-full bg-navy/10 overflow-hidden shrink-0 ring-2 ring-white shadow-sm">
                           {conv.otherUser.photoProfilPath ? (
                             <img src={imageUrl(conv.otherUser.photoProfilPath)} alt="" className="w-full h-full object-cover" />
                           ) : (
-                            <div className="w-full h-full grid place-items-center text-navy/30"><UserIcon size={16} /></div>
+                            <div className="w-full h-full grid place-items-center text-navy/30"><UserIcon size={18} /></div>
                           )}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-semibold text-navy truncate">{conv.otherUser.prenom} {conv.otherUser.nom}</p>
+                          <p className="text-sm font-semibold text-navy truncate group-hover:text-teal transition-colors">{conv.otherUser.prenom} {conv.otherUser.nom}</p>
                           <p className="text-xs text-navy/50 truncate">{conv.lastMessagePreview || conv.subject}</p>
                         </div>
-                        <span className={`shrink-0 text-[9px] font-semibold rounded-full px-1.5 py-0.5 ${statusBadgeCls(conv.status)}`}>
-                          {statusLabel(conv.status)}
-                        </span>
+                        <div className="shrink-0 flex flex-col items-end gap-1">
+                          <span className="text-[10px] text-navy/35">{timeAgo(conv.updatedAt)}</span>
+                          <span className={`text-[9px] font-semibold rounded-full px-1.5 py-0.5 ${statusBadgeCls(conv.status)}`}>
+                            {statusLabel(conv.status)}
+                          </span>
+                        </div>
                       </button>
                     ))}
                   </div>
