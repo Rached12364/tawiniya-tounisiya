@@ -48,6 +48,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/content/**").permitAll()
                 .requestMatchers("/api/events/**").permitAll()
                 .requestMatchers("/uploads/**").permitAll()
+                .requestMatchers("/ws-notifications/**").permitAll()
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
                 .requestMatchers("/api/reclamations/**").authenticated()
                 .requestMatchers("/api/technicien-profile/**").authenticated()

@@ -25,6 +25,7 @@ public class PostService {
     private final CommentReactionRepository commentReactionRepository;
     private final PostSaveRepository postSaveRepository;
     private final FileStorageService fileStorageService;
+    private final NotificationService notificationService;
     private PostAuthorDto toAuthorDto(User u) {
         return PostAuthorDto.builder()
                 .id(u.getId())
@@ -89,6 +90,7 @@ public class PostService {
                 .imagePath(imagePath)
                 .build();
         postRepository.save(post);
+        notificationService.notifyNewPost(post);
         return toResponse(post, currentUser);
     }
     private Post findOwnedOrAdmin(User currentUser, Long postId) {
@@ -147,10 +149,12 @@ public class PostService {
             } else {
                 r.setType(type);
                 postReactionRepository.save(r);
+                notificationService.notify(post.getAuthor(), currentUser, NotificationType.LIKE_POST, post, null);
             }
         } else {
             PostReaction r = PostReaction.builder().post(post).user(currentUser).type(type).build();
             postReactionRepository.save(r);
+            notificationService.notify(post.getAuthor(), currentUser, NotificationType.LIKE_POST, post, null);
         }
         return toResponse(post, currentUser);
     }
@@ -208,6 +212,11 @@ public class PostService {
                 .parentComment(parent)
                 .build();
         postCommentRepository.save(comment);
+        if (parent != null) {
+            notificationService.notify(parent.getAuthor(), currentUser, NotificationType.REPLY_COMMENT, post, comment);
+        } else {
+            notificationService.notify(post.getAuthor(), currentUser, NotificationType.COMMENT_POST, post, comment);
+        }
         return toCommentResponse(comment, currentUser, true);
     }
     @Transactional
