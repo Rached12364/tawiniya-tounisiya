@@ -9,7 +9,6 @@ import tn.tawiniya.tounisiya.entity.ReclamationType;
 @Data
 public class ReclamationRequest {
 
-    @NotNull(message = "Le type de réclamation est obligatoire")
     private ReclamationType type;
 
     @NotBlank(message = "L'objet est obligatoire")

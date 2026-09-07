@@ -10,7 +10,6 @@ import org.springframework.web.multipart.MultipartFile;
 import tn.tawiniya.tounisiya.dto.PagedResponse;
 import tn.tawiniya.tounisiya.dto.ReclamationRequest;
 import tn.tawiniya.tounisiya.dto.ReclamationResponse;
-import tn.tawiniya.tounisiya.entity.ReclamationType;
 import tn.tawiniya.tounisiya.entity.User;
 import tn.tawiniya.tounisiya.service.ReclamationService;
 
@@ -29,13 +28,11 @@ public class ReclamationController {
     @PostMapping(consumes = "multipart/form-data")
     public ResponseEntity<ReclamationResponse> create(
             @AuthenticationPrincipal User currentUser,
-            @RequestParam ReclamationType type,
             @RequestParam String subject,
             @RequestParam String description,
             @RequestParam(value = "attachment", required = false) MultipartFile attachment
     ) {
         ReclamationRequest request = new ReclamationRequest();
-        request.setType(type);
         request.setSubject(subject);
         request.setDescription(description);
 

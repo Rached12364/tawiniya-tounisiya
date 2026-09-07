@@ -9,6 +9,7 @@ import tn.tawiniya.tounisiya.dto.ReclamationRequest;
 import tn.tawiniya.tounisiya.dto.ReclamationResponse;
 import tn.tawiniya.tounisiya.entity.Reclamation;
 import tn.tawiniya.tounisiya.entity.ReclamationStatus;
+import tn.tawiniya.tounisiya.entity.ReclamationType;
 import tn.tawiniya.tounisiya.entity.User;
 import tn.tawiniya.tounisiya.exception.ResourceNotFoundException;
 import tn.tawiniya.tounisiya.repository.ReclamationRepository;
@@ -22,7 +23,7 @@ public class ReclamationService {
         String attachmentPath = fileStorageService.storeAttachment(attachment);
         Reclamation reclamation = Reclamation.builder()
                 .user(author)
-                .type(request.getType())
+                .type(ReclamationType.ADMINISTRATIVE)
                 .subject(request.getSubject())
                 .description(request.getDescription())
                 .attachmentPath(attachmentPath)

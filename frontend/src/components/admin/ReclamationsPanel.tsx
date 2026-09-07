@@ -1,10 +1,9 @@
-﻿import { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Loader2, Paperclip, X } from 'lucide-react';
 import { getAllReclamations, updateReclamationStatus } from '../../services/reclamationService';
 import {
   RECLAMATION_STATUS_COLORS,
   RECLAMATION_STATUS_LABELS,
-  RECLAMATION_TYPE_LABELS,
   type Reclamation,
   type ReclamationStatus,
 } from '../../types/reclamation';
@@ -57,7 +56,6 @@ export default function ReclamationsPanel() {
             <thead className="bg-navy/5 text-navy/60 text-xs uppercase">
               <tr>
                 <th className="text-start px-4 py-3 font-semibold">Auteur</th>
-                <th className="text-start px-4 py-3 font-semibold">Type</th>
                 <th className="text-start px-4 py-3 font-semibold">Objet</th>
                 <th className="text-start px-4 py-3 font-semibold">Statut</th>
                 <th className="text-start px-4 py-3 font-semibold">Date</th>
@@ -71,7 +69,6 @@ export default function ReclamationsPanel() {
                     <p className="font-medium text-navy">{r.userPrenom} {r.userNom}</p>
                     <p className="text-xs text-navy/40">{r.userEmail} · {r.userRole}</p>
                   </td>
-                  <td className="px-4 py-3 text-navy/70">{RECLAMATION_TYPE_LABELS[r.type]}</td>
                   <td className="px-4 py-3 text-navy/70 max-w-[220px] truncate">{r.subject}</td>
                   <td className="px-4 py-3">
                     <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${RECLAMATION_STATUS_COLORS[r.status]}`}>

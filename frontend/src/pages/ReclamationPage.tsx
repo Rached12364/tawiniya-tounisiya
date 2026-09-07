@@ -1,22 +1,16 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  Paperclip, Loader2, Send, MessageSquareWarning, FileText, Scale,
+  Paperclip, Loader2, Send, MessageSquareWarning,
   Clock, RefreshCw, CheckCircle2, XCircle, X, Inbox,
 } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import { createReclamation, getMyReclamations } from '../services/reclamationService';
 import {
   RECLAMATION_STATUS_LABELS,
-  RECLAMATION_TYPE_LABELS,
   type Reclamation,
-  type ReclamationType,
   type ReclamationStatus,
 } from '../types/reclamation';
-const TYPE_OPTIONS: { value: ReclamationType; icon: typeof FileText }[] = [
-  { value: 'ADMINISTRATIVE', icon: FileText },
-  { value: 'JURIDIQUE', icon: Scale },
-];
 const STATUS_META: Record<ReclamationStatus, { icon: typeof Clock; dot: string; badge: string }> = {
   OUVERTE: { icon: Clock, dot: 'bg-amber-500', badge: 'bg-amber-50 text-amber-700 border-amber-200' },
   EN_COURS: { icon: RefreshCw, dot: 'bg-blue-500', badge: 'bg-blue-50 text-blue-700 border-blue-200' },
@@ -26,7 +20,6 @@ const STATUS_META: Record<ReclamationStatus, { icon: typeof Clock; dot: string; 
 export default function ReclamationPage() {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuthStore();
-  const [type, setType] = useState<ReclamationType>('ADMINISTRATIVE');
   const [subject, setSubject] = useState('');
   const [description, setDescription] = useState('');
   const [attachment, setAttachment] = useState<File | null>(null);
@@ -63,7 +56,7 @@ export default function ReclamationPage() {
     setSuccessMessage(null);
     setIsSubmitting(true);
     try {
-      await createReclamation({ type, subject, description, attachment });
+      await createReclamation({ subject, description, attachment });
       setSuccessMessage('Votre réclamation a bien été envoyée. Vous pouvez suivre son statut ci-dessous.');
       setSubject('');
       setDescription('');
@@ -93,29 +86,6 @@ export default function ReclamationPage() {
         <div className="mt-8 grid lg:grid-cols-[1.1fr_0.9fr] gap-6 items-start">
           {/* Formulaire */}
           <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-sm p-6 flex flex-col gap-5">
-            <div>
-              <label className="block text-sm font-semibold text-navy mb-2.5">Type de réclamation</label>
-              <div className="grid grid-cols-2 gap-2 max-w-xs">
-                {TYPE_OPTIONS.map(({ value, icon: Icon }) => {
-                  const isSelected = type === value;
-                  return (
-                    <button
-                      key={value}
-                      type="button"
-                      onClick={() => setType(value)}
-                      className={`flex flex-col items-center gap-1.5 rounded-xl border-2 px-2 py-3 text-center transition-colors ${
-                        isSelected ? 'border-teal bg-teal/5' : 'border-navy/10 hover:border-navy/25'
-                      }`}
-                    >
-                      <Icon size={18} className={isSelected ? 'text-teal' : 'text-navy/40'} />
-                      <span className={`text-[12px] font-semibold ${isSelected ? 'text-teal' : 'text-navy/70'}`}>
-                        {RECLAMATION_TYPE_LABELS[value]}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
             <div>
               <label className="block text-sm font-semibold text-navy mb-1.5">Objet</label>
               <input
@@ -208,9 +178,6 @@ export default function ReclamationPage() {
                       <span className={`absolute left-0 top-0 h-full w-1.5 ${meta.dot}`} />
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0">
-                          <p className="text-[11px] font-semibold text-navy/40 uppercase tracking-wide mb-1">
-                            {RECLAMATION_TYPE_LABELS[r.type]}
-                          </p>
                           <h3 className="font-semibold text-navy truncate">{r.subject}</h3>
                         </div>
                         <span className={`shrink-0 inline-flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1 rounded-full border ${meta.badge}`}>

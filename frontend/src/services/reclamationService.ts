@@ -1,14 +1,12 @@
-﻿import api from './api';
-import type { PagedResponse, Reclamation, ReclamationStatus, ReclamationType } from '../types/reclamation';
+import api from './api';
+import type { PagedResponse, Reclamation, ReclamationStatus } from '../types/reclamation';
 export interface CreateReclamationPayload {
-  type: ReclamationType;
   subject: string;
   description: string;
   attachment?: File | null;
 }
 export async function createReclamation(payload: CreateReclamationPayload): Promise<Reclamation> {
   const form = new FormData();
-  form.append('type', payload.type);
   form.append('subject', payload.subject);
   form.append('description', payload.description);
   if (payload.attachment) {
