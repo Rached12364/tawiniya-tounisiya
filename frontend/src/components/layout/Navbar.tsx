@@ -11,6 +11,7 @@ import { juridiqueService } from '../../services/juridiqueService';
 import { getMyReclamations } from '../../services/reclamationService';
 import { browseByRole } from '../../services/networkService';
 import type { Role } from '../../types/auth';
+import NotificationBell from './NotificationBell';
 const API_ORIGIN = (import.meta.env.VITE_API_URL || 'http://localhost:8080/api').replace(/\/api\/?$/, '');
 function imageUrl(path?: string) {
   if (!path) return '';
@@ -241,6 +242,7 @@ export default function Navbar() {
               </div>
             )}
           </div>
+          {isAuthenticated && <NotificationBell />}
           {isAuthenticated ? (
             <div className="relative shrink-0" ref={accountRef}>
               <button
