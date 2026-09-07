@@ -39,6 +39,21 @@ public class AdminService {
                 .failedLoginAttempts(failedLogins)
                 .build();
     }
+    public java.util.List<tn.tawiniya.tounisiya.dto.UserGrowthPointResponse> getUserGrowth() {
+        java.util.List<Object[]> rows = userRepository.countUsersGroupedByMonth();
+        java.util.List<tn.tawiniya.tounisiya.dto.UserGrowthPointResponse> result = new java.util.ArrayList<>();
+        long cumulative = 0;
+        for (Object[] row : rows) {
+            String month = (String) row[0];
+            long count = ((Number) row[1]).longValue();
+            cumulative += count;
+            result.add(tn.tawiniya.tounisiya.dto.UserGrowthPointResponse.builder()
+                    .month(month)
+                    .totalUsers(cumulative)
+                    .build());
+        }
+        return result;
+    }
     @Transactional(readOnly = true)
     public Page<UserResponse> listUsers(Pageable pageable) {
         return userRepository.findAll(pageable).map(userMapper::toResponse);

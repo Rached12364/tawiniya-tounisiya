@@ -56,6 +56,7 @@ public class ExpertConversationService {
                             .subject(c.getSubject())
                             .status(c.getStatus())
                             .updatedAt(c.getUpdatedAt())
+                            .createdAt(c.getCreatedAt())
                             .otherUser(toParticipant(other))
                             .lastMessagePreview(last != null ? last.getContent() : null)
                             .isExpertSide(isExpertSide)

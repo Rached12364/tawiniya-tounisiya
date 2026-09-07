@@ -4,6 +4,10 @@ export interface AdminStats {
   usersByRole: Record<Role, number>;
   failedLoginAttempts: number;
 }
+export interface UserGrowthPoint {
+  month: string;
+  totalUsers: number;
+}
 export interface PagedUsers {
   content: User[];
   totalElements: number;

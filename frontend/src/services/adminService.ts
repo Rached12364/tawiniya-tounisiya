@@ -1,8 +1,12 @@
 import api from './api';
 import type { User } from '../types/auth';
-import type { AdminStats, PagedUsers, ContentImage, ContentSection, SiteVideo } from '../types/admin';
+import type { AdminStats, PagedUsers, ContentImage, ContentSection, SiteVideo, UserGrowthPoint } from '../types/admin';
 export async function getStats(): Promise<AdminStats> {
   const { data } = await api.get<AdminStats>('/admin/stats');
+  return data;
+}
+export async function getUserGrowth(): Promise<UserGrowthPoint[]> {
+  const { data } = await api.get<UserGrowthPoint[]>('/admin/stats/user-growth');
   return data;
 }
 export async function getUsers(page = 0, size = 20): Promise<PagedUsers> {

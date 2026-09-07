@@ -20,6 +20,7 @@ export interface ExpertConversationSummary {
   subject: string;
   status: ConversationStatus;
   updatedAt: string;
+  createdAt: string;
   otherUser: ConversationParticipant;
   lastMessagePreview?: string;
   isExpertSide: boolean;

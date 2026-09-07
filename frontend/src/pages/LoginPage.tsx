@@ -1,7 +1,7 @@
-﻿import { useState, type FormEvent } from 'react';
+import { useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { Mail, Lock, LogIn, Loader2 } from 'lucide-react';
+import { Mail, Lock, LogIn, Loader2, Eye, EyeOff } from 'lucide-react';
 import { login } from '../services/authService';
 import { useAuthStore, redirectPathForRole } from '../store/authStore';
 import type { ApiError } from '../types/auth';
@@ -10,6 +10,7 @@ export default function LoginPage() {
   const setAuth = useAuthStore((s) => s.setAuth);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const handleSubmit = async (e: FormEvent) => {
@@ -63,13 +64,21 @@ export default function LoginPage() {
               <Lock size={17} className="absolute start-3 top-1/2 -translate-y-1/2 text-navy/30" />
               <input
                 id="password"
-                type="password"
+                type={showPassword ? 'text' : 'password'}
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full rounded-lg border border-navy/15 ps-10 pe-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal/40 focus:border-teal"
+                className="w-full rounded-lg border border-navy/15 ps-10 pe-10 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal/40 focus:border-teal"
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword((v) => !v)}
+                className="absolute end-3 top-1/2 -translate-y-1/2 text-navy/30 hover:text-navy/60 transition-colors"
+                tabIndex={-1}
+              >
+                {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
+              </button>
             </div>
           </div>
           {error && (

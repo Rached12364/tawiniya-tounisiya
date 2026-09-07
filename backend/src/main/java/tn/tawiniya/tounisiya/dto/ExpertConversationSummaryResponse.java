@@ -14,6 +14,7 @@ public class ExpertConversationSummaryResponse {
     private String subject;
     private ConversationStatus status;
     private LocalDateTime updatedAt;
+    private LocalDateTime createdAt;
     private ConversationParticipant otherUser;
     private String lastMessagePreview;
     private boolean isExpertSide;

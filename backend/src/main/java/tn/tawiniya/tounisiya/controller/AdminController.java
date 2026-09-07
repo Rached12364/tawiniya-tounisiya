@@ -22,6 +22,10 @@ public class AdminController {
     public AdminStatsResponse getStats() {
         return adminService.getStats();
     }
+    @GetMapping("/stats/user-growth")
+    public java.util.List<tn.tawiniya.tounisiya.dto.UserGrowthPointResponse> getUserGrowth() {
+        return adminService.getUserGrowth();
+    }
     @GetMapping("/users")
     public PagedResponse<UserResponse> listUsers(Pageable pageable) {
         return PagedResponse.from(adminService.listUsers(pageable));
