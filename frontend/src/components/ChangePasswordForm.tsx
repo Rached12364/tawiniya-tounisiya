@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { Loader2, Check, Lock, Eye, EyeOff } from 'lucide-react';
+import { Loader2, Check, Lock, Eye, EyeOff, ChevronDown } from 'lucide-react';
 import { changeMyPassword } from '../services/userProfileService';
 export default function ChangePasswordForm() {
+  const [open, setOpen] = useState(false);
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -41,10 +42,19 @@ export default function ChangePasswordForm() {
   const inputCls = "w-full rounded-lg border border-navy/15 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal/40 focus:border-teal";
   return (
     <div className="bg-white rounded-xl shadow-sm p-5">
-      <div className="flex items-center justify-between mb-4">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="w-full flex items-center justify-between"
+      >
         <h2 className="flex items-center gap-2 text-sm font-bold text-teal uppercase tracking-wide">
           <Lock size={15} /> Mot de passe
         </h2>
+        <ChevronDown size={16} className={`text-navy/40 transition-transform ${open ? 'rotate-180' : ''}`} />
+      </button>
+      {open && (
+      <>
+      <div className="flex justify-end mb-2 mt-4">
         <button
           onClick={() => setShowPasswords((v) => !v)}
           className="text-navy/40 hover:text-teal transition-colors p-1.5 rounded-full hover:bg-teal/5"
@@ -94,6 +104,8 @@ export default function ChangePasswordForm() {
           Mettre à jour
         </button>
       </div>
+      </>
+      )}
     </div>
   );
 }
