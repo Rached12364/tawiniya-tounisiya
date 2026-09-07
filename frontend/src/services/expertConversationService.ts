@@ -18,7 +18,7 @@ export async function sendToExpert(expertId: number, subject: string, content: s
   form.append('content', content);
   if (attachment) form.append('attachment', attachment);
   const { data } = await api.post<ExpertConversationDetail>(`/expert-conversations/with/${expertId}`, form, {
-    headers: { 'Content-Type': 'multipart/form-data' },
+    headers: { 'Content-Type': undefined },
   });
   return data;
 }
@@ -27,7 +27,7 @@ export async function replyToConversation(id: number, content: string, attachmen
   form.append('content', content);
   if (attachment) form.append('attachment', attachment);
   const { data } = await api.post<ExpertConversationDetail>(`/expert-conversations/${id}/messages`, form, {
-    headers: { 'Content-Type': 'multipart/form-data' },
+    headers: { 'Content-Type': undefined },
   });
   return data;
 }

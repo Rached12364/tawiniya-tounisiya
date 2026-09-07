@@ -7,6 +7,7 @@ import { getMyUserProfile, updateMyUserProfile, uploadMyPhotoProfil, uploadMyPho
 import { getMyConversations } from '../services/expertConversationService';
 import ExpertConversationThread from '../components/ExpertConversationThread';
 import ActualitesPage from './ActualitesPage';
+import ChangePasswordForm from '../components/ChangePasswordForm';
 import EvenementsPage from './EvenementsPage';
 import type { ExpertConversationSummary } from '../types/expertConversation';
 import { useAuthStore } from '../store/authStore';
@@ -182,6 +183,7 @@ function ProfilTab({ user, onSaved }: { user: User; onSaved: (u: User) => void }
           </label>
         )}
       </div>
+      <ChangePasswordForm />
     </div>
   );
 }

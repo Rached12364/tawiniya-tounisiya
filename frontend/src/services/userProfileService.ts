@@ -9,6 +9,9 @@ export async function updateMyUserProfile(payload: UpdateProfilePayload): Promis
   const { data } = await api.put<User>('/users/me', payload);
   return data;
 }
+export async function changeMyPassword(currentPassword: string, newPassword: string): Promise<void> {
+  await api.put('/users/me/password', { currentPassword, newPassword });
+}
 export async function uploadMyPhotoProfil(file: File): Promise<User> {
   const formData = new FormData();
   formData.append('file', file);

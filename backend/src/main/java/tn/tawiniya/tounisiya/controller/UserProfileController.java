@@ -3,6 +3,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import tn.tawiniya.tounisiya.dto.ChangePasswordRequest;
 import tn.tawiniya.tounisiya.dto.UpdateProfileRequest;
 import tn.tawiniya.tounisiya.dto.UserResponse;
 import tn.tawiniya.tounisiya.entity.User;
@@ -22,6 +23,13 @@ public class UserProfileController {
             @RequestBody UpdateProfileRequest request
     ) {
         return profileService.updateMine(currentUser, request);
+    }
+    @PutMapping("/me/password")
+    public void changePassword(
+            @AuthenticationPrincipal User currentUser,
+            @RequestBody ChangePasswordRequest request
+    ) {
+        profileService.changePassword(currentUser, request);
     }
     @PostMapping(value = "/me/photo-profil", consumes = "multipart/form-data")
     public UserResponse updatePhotoProfil(

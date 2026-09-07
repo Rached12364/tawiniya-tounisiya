@@ -3,7 +3,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import tn.tawiniya.tounisiya.dto.ChangePasswordRequest;
 import tn.tawiniya.tounisiya.dto.UpdateProfileRequest;
+import tn.tawiniya.tounisiya.exception.InvalidPasswordException;
 import tn.tawiniya.tounisiya.dto.UserMapper;
 import tn.tawiniya.tounisiya.dto.UserResponse;
 import tn.tawiniya.tounisiya.entity.Role;
@@ -19,6 +22,7 @@ public class UserProfileService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final FileStorageService fileStorageService;
+    private final PasswordEncoder passwordEncoder;
     @Transactional(readOnly = true)
     public UserResponse getMine(User currentUser) {
         User fresh = userRepository.findById(currentUser.getId())
@@ -107,6 +111,19 @@ public class UserProfileService {
         }
         userRepository.save(user);
         return userMapper.toResponse(user);
+    }
+    @Transactional
+    public void changePassword(User currentUser, ChangePasswordRequest request) {
+        User user = userRepository.findById(currentUser.getId())
+                .orElseThrow(() -> new IllegalStateException("Utilisateur introuvable"));
+        if (request.getCurrentPassword() == null || !passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
+            throw new InvalidPasswordException("Mot de passe actuel incorrect.");
+        }
+        if (request.getNewPassword() == null || request.getNewPassword().length() < 6) {
+            throw new InvalidPasswordException("Le nouveau mot de passe doit contenir au moins 6 caracteres.");
+        }
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        userRepository.save(user);
     }
     @Transactional
     public UserResponse updatePhotoProfil(User currentUser, MultipartFile file) {

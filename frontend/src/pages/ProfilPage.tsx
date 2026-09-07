@@ -8,6 +8,7 @@ import {
   getMyUserProfile, updateMyUserProfile, uploadMyPhotoProfil, uploadMyPhotoCouverture,
 } from '../services/userProfileService';
 import UserPostsList from '../components/post/UserPostsList';
+import ChangePasswordForm from '../components/ChangePasswordForm';
 import type { User, ExperiencePro } from '../types/auth';
 const API_ORIGIN = (import.meta.env.VITE_API_URL || 'http://localhost:8080/api').replace(/\/api\/?$/, '');
 function imageUrl(path: string | null | undefined) {
@@ -496,6 +497,7 @@ export default function ProfilPage() {
             {error && <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2 mb-4">{error}</p>}
             <div className="flex flex-col gap-5">
               <EditableSection section={ACCOUNT_SECTION} form={form} onFieldChange={fieldChange} onSave={persist} saving={saving} />
+              <ChangePasswordForm />
               {roleSections.map((section) => (
                 <EditableSection key={section.title} section={section} form={form} onFieldChange={fieldChange} onSave={persist} saving={saving} />
               ))}
