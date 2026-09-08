@@ -62,6 +62,7 @@ export default function ExpertChatWidget({ expertId }: { expertId: number }) {
   }, [conversation?.messages.length]);
   async function handleSend() {
     if (!message.trim() && !pendingFile) return;
+    alert(`DEBUG envoi: pendingFile=${pendingFile ? pendingFile.name + ' (' + pendingFile.size + ' octets)' : 'AUCUN FICHIER'}`);
     setSending(true);
     setError(null);
     try {
@@ -83,6 +84,7 @@ export default function ExpertChatWidget({ expertId }: { expertId: number }) {
   }
   function handleFilePick(file: File | null) {
     if (!file) return;
+    alert(`DEBUG selection: nom=${file.name}, taille=${file.size} octets, type=${file.type}`);
     setPendingFile(file);
   }
   async function startRecording() {

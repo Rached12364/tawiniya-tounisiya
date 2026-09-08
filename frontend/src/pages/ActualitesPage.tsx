@@ -96,8 +96,10 @@ function LeftSidebar() {
   const spacePath = SPACE_PATH_BY_ROLE[user.role];
   const links = [
     ...(spacePath ? [{ label: `Espace ${ROLE_LABELS[user.role] ?? ''}`, path: spacePath, icon: Briefcase }] : []),
-    { label: 'Mes réclamations', path: '/reclamation', icon: MessageSquareWarning },
-    { label: 'Événements', path: '/evenements', icon: Calendar },
+    ...(user.role !== 'EXPERT_JURIDIQUE' ? [
+      { label: 'Mes réclamations', path: '/reclamation', icon: MessageSquareWarning },
+      { label: 'Événements', path: '/evenements', icon: Calendar },
+    ] : []),
   ];
   return (
     <div className="bg-white rounded-xl shadow-sm overflow-hidden">

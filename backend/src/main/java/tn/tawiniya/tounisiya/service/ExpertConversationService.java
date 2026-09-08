@@ -18,6 +18,7 @@ public class ExpertConversationService {
     private final ExpertConversationRepository conversationRepository;
     private final ExpertMessageRepository messageRepository;
     private final UserRepository userRepository;
+    private final FileStorageService fileStorageService;
     private ConversationParticipant toParticipant(User u) {
         return ConversationParticipant.builder()
                 .id(u.getId())
@@ -34,6 +35,7 @@ public class ExpertConversationService {
                 .senderNom(sender.getNom())
                 .senderPrenom(sender.getPrenom())
                 .content(m.getContent())
+                .attachmentPath(m.getAttachmentPath())
                 .createdAt(m.getCreatedAt())
                 .mine(sender.getId().equals(currentUserId))
                 .build();
@@ -128,10 +130,12 @@ public class ExpertConversationService {
         return appendMessage(c, currentUser, content, file);
     }
     private ExpertConversationDetailResponse appendMessage(ExpertConversation c, User sender, String content, MultipartFile file) {
+        String attachmentPath = (file != null && !file.isEmpty()) ? fileStorageService.storeMessageAttachment(file) : null;
         ExpertMessage message = ExpertMessage.builder()
                 .conversation(c)
                 .sender(sender)
                 .content(content)
+                .attachmentPath(attachmentPath)
                 .build();
         messageRepository.save(message);
         c.setUpdatedAt(java.time.LocalDateTime.now());
