@@ -93,6 +93,13 @@ export default function NotificationBell() {
                 ))}
               </div>
             )}
+            <Link
+              to="/notifications"
+              onClick={() => setOpen(false)}
+              className="block text-center text-xs font-semibold text-teal hover:text-teal/80 transition-colors py-2.5 border-t border-navy/10 sticky bottom-0 bg-white"
+            >
+              Voir tout
+            </Link>
           </div>
         </div>
       )}

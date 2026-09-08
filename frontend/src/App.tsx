@@ -11,6 +11,7 @@ import NotFoundPage from './pages/NotFoundPage';
 import NetworkSpacePage from './pages/NetworkSpacePage';
 import PublicProfilePage from './pages/PublicProfilePage';
 import ActualitesPage from './pages/ActualitesPage';
+import NotificationsPage from './pages/NotificationsPage';
 import AdminDashboardPage from './pages/admin/AdminDashboardPage';
 import ProtectedRoute from './components/admin/ProtectedRoute';
 import ExpertJuridiqueDashboardPage from './pages/ExpertJuridiqueDashboardPage';
@@ -46,6 +47,15 @@ function App() {
           element={
             <ProtectedRoute>
               <ActualitesPage />
+            </ProtectedRoute>
+          }
+        />
+        {/* Notifications (tous roles) */}
+        <Route
+          path="notifications"
+          element={
+            <ProtectedRoute>
+              <NotificationsPage />
             </ProtectedRoute>
           }
         />
