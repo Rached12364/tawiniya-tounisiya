@@ -1,6 +1,8 @@
 package tn.tawiniya.tounisiya.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,6 +16,8 @@ import tn.tawiniya.tounisiya.repository.PostCommentRepository;
 import tn.tawiniya.tounisiya.repository.PostReactionRepository;
 import tn.tawiniya.tounisiya.repository.PostRepository;
 import tn.tawiniya.tounisiya.repository.PostSaveRepository;
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 @Service
@@ -65,10 +69,54 @@ public class PostService {
                 .canEdit(canEdit)
                 .build();
     }
+    private static final int FEED_POOL_SIZE = 200;
     @Transactional(readOnly = true)
     public Page<PostResponse> listFeed(User currentUser, Pageable pageable) {
-        return postRepository.findAllByOrderByCreatedAtDesc(pageable)
-                .map(p -> toResponse(p, currentUser));
+        List<Post> pool = postRepository.findAllByOrderByCreatedAtDesc(PageRequest.of(0, FEED_POOL_SIZE)).getContent();
+        if (pool.isEmpty()) {
+            return new PageImpl<>(List.of(), pageable, 0);
+        }
+        List<Long> poolIds = pool.stream().map(Post::getId).collect(Collectors.toList());
+        Map<Long, Long> reactionAffinity = toCountMap(postReactionRepository.countAuthorAffinityForUser(currentUser.getId()));
+        Map<Long, Long> commentAffinity = toCountMap(postCommentRepository.countAuthorAffinityForUser(currentUser.getId()));
+        Map<Long, Long> reactionTotals = toCountMap(postReactionRepository.countTotalGroupedByPostIds(poolIds));
+        Map<Long, Long> commentTotals = toCountMap(postCommentRepository.countGroupedByPostIds(poolIds));
+        LocalDateTime now = LocalDateTime.now();
+        List<Post> ranked = pool.stream()
+                .sorted(Comparator.comparingDouble(
+                        (Post p) -> -score(p, currentUser, reactionAffinity, commentAffinity, reactionTotals, commentTotals, now)))
+                .collect(Collectors.toList());
+        int start = Math.min((int) pageable.getOffset(), ranked.size());
+        int end = Math.min(start + pageable.getPageSize(), ranked.size());
+        List<PostResponse> content = ranked.subList(start, end).stream()
+                .map(p -> toResponse(p, currentUser))
+                .collect(Collectors.toList());
+        return new PageImpl<>(content, pageable, ranked.size());
+    }
+    private Map<Long, Long> toCountMap(List<Object[]> rows) {
+        Map<Long, Long> map = new HashMap<>();
+        for (Object[] row : rows) {
+            map.put((Long) row[0], (Long) row[1]);
+        }
+        return map;
+    }
+    private double score(
+            Post p, User currentUser,
+            Map<Long, Long> reactionAffinity, Map<Long, Long> commentAffinity,
+            Map<Long, Long> reactionTotals, Map<Long, Long> commentTotals,
+            LocalDateTime now
+    ) {
+        Long authorId = p.getAuthor().getId();
+        double affinity = reactionAffinity.getOrDefault(authorId, 0L) * 1.0
+                + commentAffinity.getOrDefault(authorId, 0L) * 2.0;
+        double roleBonus = (p.getAuthor().getRole() == currentUser.getRole()) ? 2.0 : 0.0;
+        double popularity = reactionTotals.getOrDefault(p.getId(), 0L) * 1.0
+                + commentTotals.getOrDefault(p.getId(), 0L) * 1.5;
+        double hoursOld = Math.max(0, Duration.between(p.getCreatedAt(), now).toMinutes() / 60.0);
+        double recency = 48.0 / (hoursOld + 2.0);
+        double pinnedBonus = p.isPinned() ? 5.0 : 0.0;
+        double ownPostPenalty = authorId.equals(currentUser.getId()) ? -1.0 : 0.0;
+        return affinity + roleBonus + popularity + recency + pinnedBonus + ownPostPenalty;
     }
     @Transactional(readOnly = true)
     public Page<PostResponse> listByAuthor(Long authorId, User currentUser, Pageable pageable) {

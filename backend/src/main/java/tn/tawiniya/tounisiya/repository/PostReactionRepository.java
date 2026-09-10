@@ -13,4 +13,10 @@ public interface PostReactionRepository extends JpaRepository<PostReaction, Long
     @Query("SELECT r.post.id AS postId, r.type AS type, COUNT(r) AS total FROM PostReaction r " +
            "WHERE r.post.id IN :postIds GROUP BY r.post.id, r.type")
     List<Object[]> countGroupedByPostIds(@Param("postIds") List<Long> postIds);
+    @Query("SELECT p.author.id AS authorId, COUNT(r) AS total FROM PostReaction r JOIN r.post p " +
+           "WHERE r.user.id = :userId GROUP BY p.author.id")
+    List<Object[]> countAuthorAffinityForUser(@Param("userId") Long userId);
+    @Query("SELECT r.post.id AS postId, COUNT(r) AS total FROM PostReaction r " +
+           "WHERE r.post.id IN :postIds GROUP BY r.post.id")
+    List<Object[]> countTotalGroupedByPostIds(@Param("postIds") List<Long> postIds);
 }
