@@ -37,6 +37,12 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiError> handleInvalidFile(InvalidFileException ex) {
         return build(HttpStatus.BAD_REQUEST, ex.getMessage(), null);
     }
+    // 503 - service IA indisponible ou erreur d'appel
+    @ExceptionHandler(AiServiceException.class)
+    public ResponseEntity<ApiError> handleAiService(AiServiceException ex) {
+        log.error("Erreur du service IA", ex);
+        return build(HttpStatus.SERVICE_UNAVAILABLE, "Le service d'analyse IA est momentanement indisponible.", null);
+    }
     // 401 - mauvais identifiants (login)
     @ExceptionHandler({ BadCredentialsException.class, AuthenticationException.class })
     public ResponseEntity<ApiError> handleBadCredentials(AuthenticationException ex) {

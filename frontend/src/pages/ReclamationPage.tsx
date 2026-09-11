@@ -2,14 +2,16 @@ import { useEffect, useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Paperclip, Loader2, Send, MessageSquareWarning,
-  Clock, RefreshCw, CheckCircle2, XCircle, X, Inbox,
+  Clock, RefreshCw, CheckCircle2, XCircle, X, Inbox, Sparkles,
 } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
-import { createReclamation, getMyReclamations } from '../services/reclamationService';
+import { createReclamation, getMyReclamations, analyzeReclamation } from '../services/reclamationService';
 import {
   RECLAMATION_STATUS_LABELS,
+  RECLAMATION_TYPE_LABELS,
   type Reclamation,
   type ReclamationStatus,
+  type ReclamationType,
 } from '../types/reclamation';
 const STATUS_META: Record<ReclamationStatus, { icon: typeof Clock; dot: string; badge: string }> = {
   OUVERTE: { icon: Clock, dot: 'bg-amber-500', badge: 'bg-amber-50 text-amber-700 border-amber-200' },
@@ -22,8 +24,11 @@ export default function ReclamationPage() {
   const { isAuthenticated } = useAuthStore();
   const [subject, setSubject] = useState('');
   const [description, setDescription] = useState('');
+  const [type, setType] = useState<ReclamationType>('ADMINISTRATIVE');
   const [attachment, setAttachment] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [aiSummary, setAiSummary] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [items, setItems] = useState<Reclamation[]>([]);
@@ -50,17 +55,38 @@ export default function ReclamationPage() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated]);
+  const handleAnalyze = async () => {
+    if (!description.trim()) {
+      setError('Décrivez votre problème avant de lancer l\'analyse IA.');
+      return;
+    }
+    setError(null);
+    setAiSummary(null);
+    setIsAnalyzing(true);
+    try {
+      const result = await analyzeReclamation(description);
+      setSubject(result.suggestedSubject);
+      setType(result.suggestedType);
+      setAiSummary(result.summary);
+    } catch {
+      setError("L'analyse IA n'est pas disponible pour le moment. Vous pouvez remplir le formulaire manuellement.");
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError(null);
     setSuccessMessage(null);
     setIsSubmitting(true);
     try {
-      await createReclamation({ subject, description, attachment });
+      await createReclamation({ subject, description, type, attachment });
       setSuccessMessage('Votre réclamation a bien été envoyée. Vous pouvez suivre son statut ci-dessous.');
       setSubject('');
       setDescription('');
+      setType('ADMINISTRATIVE');
       setAttachment(null);
+      setAiSummary(null);
       loadMine();
     } catch {
       setError("Impossible d'envoyer la réclamation. Réessayez dans un instant.");
@@ -87,17 +113,6 @@ export default function ReclamationPage() {
           {/* Formulaire */}
           <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-sm p-6 flex flex-col gap-5">
             <div>
-              <label className="block text-sm font-semibold text-navy mb-1.5">Objet</label>
-              <input
-                required
-                maxLength={150}
-                value={subject}
-                onChange={(e) => setSubject(e.target.value)}
-                placeholder="Résumez votre problème en quelques mots"
-                className="w-full rounded-xl border border-navy/15 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal/40 focus:border-teal"
-              />
-            </div>
-            <div>
               <label className="block text-sm font-semibold text-navy mb-1.5">Description</label>
               <textarea
                 required
@@ -109,6 +124,50 @@ export default function ReclamationPage() {
                 className="w-full rounded-xl border border-navy/15 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal/40 focus:border-teal resize-none"
               />
               <p className="mt-1 text-right text-[11px] text-navy/30">{description.length}/3000</p>
+            </div>
+            <button
+              type="button"
+              onClick={handleAnalyze}
+              disabled={isAnalyzing || !description.trim()}
+              className="self-start flex items-center gap-2 rounded-full border border-teal/40 bg-teal/5 px-4 py-2 text-sm font-semibold text-teal hover:bg-teal/10 transition-colors disabled:opacity-50"
+            >
+              {isAnalyzing ? <Loader2 size={15} className="animate-spin" /> : <Sparkles size={15} />}
+              Analyser avec IA
+            </button>
+            {aiSummary && (
+              <p className="text-sm text-navy/60 bg-teal/5 border border-teal/20 rounded-lg px-3 py-2">
+                <span className="font-semibold text-teal">Résumé IA : </span>{aiSummary}
+              </p>
+            )}
+            <div>
+              <label className="block text-sm font-semibold text-navy mb-1.5">Objet</label>
+              <input
+                required
+                maxLength={150}
+                value={subject}
+                onChange={(e) => setSubject(e.target.value)}
+                placeholder="Résumez votre problème en quelques mots"
+                className="w-full rounded-xl border border-navy/15 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal/40 focus:border-teal"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-navy mb-1.5">Catégorie</label>
+              <div className="flex gap-2">
+                {(Object.keys(RECLAMATION_TYPE_LABELS) as ReclamationType[]).map((t) => (
+                  <button
+                    key={t}
+                    type="button"
+                    onClick={() => setType(t)}
+                    className={`rounded-full px-4 py-2 text-sm font-semibold border transition-colors ${
+                      type === t
+                        ? 'bg-navy text-white border-navy'
+                        : 'bg-white text-navy/60 border-navy/15 hover:border-navy/30'
+                    }`}
+                  >
+                    {RECLAMATION_TYPE_LABELS[t]}
+                  </button>
+                ))}
+              </div>
             </div>
             <div>
               <label className="block text-sm font-semibold text-navy mb-1.5">

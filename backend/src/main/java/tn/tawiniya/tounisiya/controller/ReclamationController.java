@@ -8,9 +8,13 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import tn.tawiniya.tounisiya.dto.PagedResponse;
+import tn.tawiniya.tounisiya.dto.ReclamationAnalysisRequest;
+import tn.tawiniya.tounisiya.dto.ReclamationAnalysisResponse;
 import tn.tawiniya.tounisiya.dto.ReclamationRequest;
+import jakarta.validation.Valid;
 import tn.tawiniya.tounisiya.dto.ReclamationResponse;
 import tn.tawiniya.tounisiya.entity.User;
+import tn.tawiniya.tounisiya.service.ReclamationAiService;
 import tn.tawiniya.tounisiya.service.ReclamationService;
 
 /**
@@ -24,20 +28,28 @@ import tn.tawiniya.tounisiya.service.ReclamationService;
 public class ReclamationController {
 
     private final ReclamationService reclamationService;
+    private final ReclamationAiService reclamationAiService;
 
     @PostMapping(consumes = "multipart/form-data")
     public ResponseEntity<ReclamationResponse> create(
             @AuthenticationPrincipal User currentUser,
             @RequestParam String subject,
             @RequestParam String description,
+            @RequestParam(value = "type", required = false) tn.tawiniya.tounisiya.entity.ReclamationType type,
             @RequestParam(value = "attachment", required = false) MultipartFile attachment
     ) {
         ReclamationRequest request = new ReclamationRequest();
         request.setSubject(subject);
         request.setDescription(description);
+        request.setType(type);
 
         ReclamationResponse response = reclamationService.create(currentUser, request, attachment);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @PostMapping("/analyze")
+    public ReclamationAnalysisResponse analyze(@Valid @RequestBody ReclamationAnalysisRequest request) {
+        return reclamationAiService.analyze(request.getDescription());
     }
 
     @GetMapping("/mine")

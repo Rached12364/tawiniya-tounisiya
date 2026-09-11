@@ -23,7 +23,7 @@ public class ReclamationService {
         String attachmentPath = fileStorageService.storeAttachment(attachment);
         Reclamation reclamation = Reclamation.builder()
                 .user(author)
-                .type(ReclamationType.ADMINISTRATIVE)
+                .type(request.getType() != null ? request.getType() : ReclamationType.ADMINISTRATIVE)
                 .subject(request.getSubject())
                 .description(request.getDescription())
                 .attachmentPath(attachmentPath)
