@@ -56,9 +56,9 @@ public class ExpertRatingService {
             throw new InvalidFileException("La note doit etre comprise entre 1 et 5.");
         }
         User expert = userRepository.findById(expertId)
-                .orElseThrow(() -> new ResourceNotFoundException("Expert introuvable : " + expertId));
-        if (expert.getRole() != Role.EXPERT_JURIDIQUE) {
-            throw new ForbiddenOperationException("Cet utilisateur n'est pas un expert juridique.");
+                .orElseThrow(() -> new ResourceNotFoundException("Utilisateur introuvable : " + expertId));
+        if (expert.getRole() == Role.ADMIN) {
+            throw new ForbiddenOperationException("Ce compte ne peut pas etre note.");
         }
         ExpertRating r = ratingRepository.findByExpertIdAndAuthorId(expertId, currentUser.getId())
                 .orElseGet(() -> ExpertRating.builder().expert(expert).author(currentUser).build());

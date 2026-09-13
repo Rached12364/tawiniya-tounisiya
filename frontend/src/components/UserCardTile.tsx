@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User as UserIcon, Loader2, UserPlus, Clock, Check, MapPin } from 'lucide-react';
+import { User as UserIcon, Loader2, UserPlus, Clock, Check, MapPin, Star } from 'lucide-react';
+import { getExpertRatings } from '../services/expertRatingService';
 import type { Role } from '../types/auth';
 import type { UserCard } from '../types/network';
 const API_ORIGIN = (import.meta.env.VITE_API_URL || 'http://localhost:8080/api').replace(/\/api\/?$/, '');
@@ -14,8 +15,12 @@ export const ROLE_LABELS: Record<Role, string> = {
 };
 export default function UserCardTile({ card, onAction }: { card: UserCard; onAction: (card: UserCard) => Promise<void> }) {
   const [busy, setBusy] = useState(false);
+  const [rating, setRating] = useState<{ average: number; count: number } | null>(null);
   const navigate = useNavigate();
   const fullName = `${card.prenom} ${card.nom}`.trim();
+  useEffect(() => {
+    getExpertRatings(card.id).then((res) => setRating({ average: res.average, count: res.count })).catch(() => {});
+  }, [card.id]);
   async function handleClick() {
     setBusy(true);
     try {
@@ -44,6 +49,11 @@ export default function UserCardTile({ card, onAction }: { card: UserCard; onAct
         </div>
         <h3 className="mt-2 text-sm font-bold text-navy truncate max-w-full">{fullName}</h3>
         <p className="text-xs text-navy/50 truncate max-w-full">{card.subtitle || ROLE_LABELS[card.role]}</p>
+        {rating && rating.count > 0 && (
+          <span className="mt-0.5 flex items-center justify-center gap-1 text-[11px] text-navy/50">
+            <Star size={11} className="fill-gold text-gold" /> {rating.average.toFixed(1)} ({rating.count})
+          </span>
+        )}
         {card.adresse && (
           <p className="mt-0.5 flex items-center justify-center gap-1 text-[11px] text-navy/40 truncate max-w-full">
             <MapPin size={11} /> {card.adresse}

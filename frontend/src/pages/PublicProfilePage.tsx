@@ -189,7 +189,7 @@ export default function PublicProfilePage() {
             <InfoRow icon={<Globe size={16} />} label="LinkedIn" value={profile.linkedin} />
           </div>
         </div>
-        {profile.role === 'EXPERT_JURIDIQUE' && (
+        {profile.role !== 'ADMIN' && (
           <div className="mt-6">
             <ExpertRatingWidget expertId={profile.id} isSelf={profile.connectionStatus === 'SELF'} />
           </div>
