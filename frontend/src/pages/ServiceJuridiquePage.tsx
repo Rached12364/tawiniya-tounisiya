@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Loader2, Search, MapPin, User as UserIcon, ArrowLeft } from 'lucide-react';
+import { Loader2, Search, MapPin, User as UserIcon, ArrowLeft, Star } from 'lucide-react';
 import { browseByRole } from '../services/networkService';
+import { getExpertRatings } from '../services/expertRatingService';
 import { getMyConversations } from '../services/expertConversationService';
 import { imageUrl } from '../components/UserCardTile';
 import ExpertChatWidget from '../components/ExpertChatWidget';
@@ -10,6 +11,10 @@ import type { ExpertConversationSummary } from '../types/expertConversation';
 function ExpertRow({ card }: { card: UserCard }) {
   const navigate = useNavigate();
   const fullName = `${card.prenom} ${card.nom}`.trim();
+  const [rating, setRating] = useState<{ average: number; count: number } | null>(null);
+  useEffect(() => {
+    getExpertRatings(card.id).then((res) => setRating({ average: res.average, count: res.count })).catch(() => {});
+  }, [card.id]);
   return (
     <div
       onClick={() => navigate(`/profil/${card.id}`)}
@@ -24,7 +29,14 @@ function ExpertRow({ card }: { card: UserCard }) {
       </div>
       <div className="flex-1 min-w-0">
         <p className="text-sm font-bold text-navy truncate">{fullName}</p>
-        <p className="text-xs text-navy/50 truncate">{card.subtitle || 'Expert Juridique'}</p>
+        <div className="flex items-center gap-1.5">
+          <p className="text-xs text-navy/50 truncate">{card.subtitle || 'Expert Juridique'}</p>
+          {rating && rating.count > 0 && (
+            <span className="flex items-center gap-0.5 text-xs text-navy/50 shrink-0">
+              <Star size={11} className="fill-gold text-gold" /> {rating.average.toFixed(1)}
+            </span>
+          )}
+        </div>
       </div>
       <div className="hidden sm:flex items-center gap-1.5 text-xs text-navy/50 w-40 shrink-0 truncate">
         {card.adresse && (

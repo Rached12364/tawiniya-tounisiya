@@ -8,6 +8,7 @@ import {
 import { getPublicProfile, sendConnectionRequest, acceptConnection } from '../services/networkService';
 import UserPostsList from '../components/post/UserPostsList';
 import ExpertChatWidget from '../components/ExpertChatWidget';
+import ExpertRatingWidget from '../components/ExpertRatingWidget';
 import type { UserPublicProfile } from '../types/network';
 const API_ORIGIN = (import.meta.env.VITE_API_URL || 'http://localhost:8080/api').replace(/\/api\/?$/, '');
 function imageUrl(path?: string) {
@@ -188,6 +189,11 @@ export default function PublicProfilePage() {
             <InfoRow icon={<Globe size={16} />} label="LinkedIn" value={profile.linkedin} />
           </div>
         </div>
+        {profile.role === 'EXPERT_JURIDIQUE' && (
+          <div className="mt-6">
+            <ExpertRatingWidget expertId={profile.id} isSelf={profile.connectionStatus === 'SELF'} />
+          </div>
+        )}
         <div className="mt-6">
           <h2 className="text-sm font-bold text-teal uppercase tracking-wide mb-3">Publications</h2>
           <UserPostsList authorId={profile.id} />
