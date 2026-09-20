@@ -8,7 +8,7 @@ export default function Layout() {
   const isMedecinRoute = location.pathname.startsWith('/medecin');
   const hideChrome = isAdminRoute || isExpertJuridiqueRoute || isMedecinRoute;
   return (
-    <div className="min-h-screen flex flex-col bg-white dark:bg-[#0B1C2E] transition-colors">
+    <div className={`min-h-screen flex flex-col ${hideChrome ? 'light bg-white' : 'bg-white dark:bg-[#0B1C2E] transition-colors'}`}>
       {!hideChrome && <Navbar />}
       <main className="flex-1">
         <Outlet />
