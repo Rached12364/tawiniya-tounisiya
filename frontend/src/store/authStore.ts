@@ -40,6 +40,9 @@ export function redirectPathForRole(role: User['role']): string {
   if (role === 'EXPERT_JURIDIQUE') {
     return '/expert-juridique';
   }
+  if (role === 'MEDECIN') {
+    return '/medecin';
+  }
   return '/';
 }
 

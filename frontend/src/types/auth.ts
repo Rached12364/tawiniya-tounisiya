@@ -1,4 +1,4 @@
-export type Role = 'ADMIN' | 'TECHNICIEN' | 'ENTREPRISE' | 'CENTRE_FORMATION' | 'BENEFICIEL' | 'EXPERT_JURIDIQUE';
+export type Role = 'ADMIN' | 'TECHNICIEN' | 'ENTREPRISE' | 'CENTRE_FORMATION' | 'BENEFICIEL' | 'EXPERT_JURIDIQUE' | 'MEDECIN';
 export interface ExperiencePro {
   societe: string;
   periode: string;

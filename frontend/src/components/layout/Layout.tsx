@@ -5,7 +5,8 @@ export default function Layout() {
   const location = useLocation();
   const isAdminRoute = location.pathname.startsWith('/admin');
   const isExpertJuridiqueRoute = location.pathname.startsWith('/expert-juridique');
-  const hideChrome = isAdminRoute || isExpertJuridiqueRoute;
+  const isMedecinRoute = location.pathname.startsWith('/medecin');
+  const hideChrome = isAdminRoute || isExpertJuridiqueRoute || isMedecinRoute;
   return (
     <div className="min-h-screen flex flex-col">
       {!hideChrome && <Navbar />}

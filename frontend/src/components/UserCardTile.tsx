@@ -11,7 +11,7 @@ export function imageUrl(path?: string) {
 }
 export const ROLE_LABELS: Record<Role, string> = {
   TECHNICIEN: 'Technicien', ENTREPRISE: 'Entreprise', CENTRE_FORMATION: 'Centre de formation',
-  BENEFICIEL: 'Bénéficiaire', ADMIN: 'Administrateur', EXPERT_JURIDIQUE: 'Expert Juridique',
+  BENEFICIEL: 'Bénéficiaire', ADMIN: 'Administrateur', EXPERT_JURIDIQUE: 'Expert Juridique', MEDECIN: 'Médecin',
 };
 export default function UserCardTile({ card, onAction }: { card: UserCard; onAction: (card: UserCard) => Promise<void> }) {
   const [busy, setBusy] = useState(false);

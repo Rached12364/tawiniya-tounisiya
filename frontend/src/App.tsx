@@ -16,6 +16,8 @@ import AdminDashboardPage from './pages/admin/AdminDashboardPage';
 import ProtectedRoute from './components/admin/ProtectedRoute';
 import ExpertJuridiqueDashboardPage from './pages/ExpertJuridiqueDashboardPage';
 import ServiceJuridiquePage from './pages/ServiceJuridiquePage';
+import MedecinDashboardPage from './pages/MedecinDashboardPage';
+import ServiceSantePage from './pages/ServiceSantePage';
 function App() {
   return (
     <Routes>
@@ -38,6 +40,14 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={['EXPERT_JURIDIQUE']}>
               <ExpertJuridiqueDashboardPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="medecin"
+          element={
+            <ProtectedRoute allowedRoles={['MEDECIN']}>
+              <MedecinDashboardPage />
             </ProtectedRoute>
           }
         />
@@ -111,6 +121,7 @@ function App() {
         />
         <Route path="juridique" element={<JuridiquePage />} />
         <Route path="services/juridique" element={<ServiceJuridiquePage />} />
+        <Route path="services/sante" element={<ServiceSantePage />} />
         <Route path="reclamation" element={<ReclamationPage />} />
         <Route path="evenements" element={<EvenementsPage />} />
         <Route path="*" element={<NotFoundPage />} />
