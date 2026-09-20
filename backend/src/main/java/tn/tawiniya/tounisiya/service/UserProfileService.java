@@ -165,7 +165,7 @@ public class UserProfileService {
         if (user.getCarteServiceDocumentPath() != null) {
             fileStorageService.deleteImage(user.getCarteServiceDocumentPath());
         }
-        user.setCarteServiceDocumentPath(fileStorageService.storeImage(file));
+        user.setCarteServiceDocumentPath(fileStorageService.storeAttachment(file));
         userRepository.save(user);
         return userMapper.toResponse(user);
     }
