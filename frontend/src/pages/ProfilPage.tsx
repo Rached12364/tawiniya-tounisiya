@@ -2,7 +2,7 @@ import { useEffect, useState, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Camera, Image as ImageIcon, Loader2, Pencil, Check, X,
-  User as UserIcon, Plus, Trash2, Scale, ChevronDown, SlidersHorizontal,
+  User as UserIcon, Plus, Trash2, Scale, Stethoscope, ChevronDown, SlidersHorizontal,
 } from 'lucide-react';
 import {
   getMyUserProfile, updateMyUserProfile, uploadMyPhotoProfil, uploadMyPhotoCouverture,
@@ -125,6 +125,7 @@ const CENTRE_FORMATION_SECTIONS: SectionDef[] = [
 ];
 const SERVICES = [
   { label: 'Service Juridique', icon: Scale, path: '/services/juridique' },
+  { label: 'Service Santé', icon: Stethoscope, path: '/services/sante' },
 ];
 function FieldEditor({ def, value, onChange }: { def: FieldDef; value: any; onChange: (v: any) => void }) {
   if (def.type === 'toggle') {
