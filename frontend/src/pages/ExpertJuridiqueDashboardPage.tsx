@@ -3,7 +3,7 @@ import {
   LayoutDashboard, MessageSquareWarning, LogOut, Camera, Image as ImageIcon, Loader2, User as UserIcon,
   UserCog, Check, X, Pencil, FileText, Paperclip, Inbox, Clock, CheckCircle2, MessagesSquare, Newspaper, ChevronsLeft, ChevronsRight, Calendar,
 } from 'lucide-react';
-import { getMyUserProfile, updateMyUserProfile, uploadMyPhotoProfil, uploadMyPhotoCouverture, uploadDiplomeDocument } from '../services/userProfileService';
+import { getMyUserProfile, updateMyUserProfile, uploadMyPhotoProfil, uploadMyPhotoCouverture, uploadDiplomeDocument, uploadCarteServiceDocument } from '../services/userProfileService';
 import { getMyConversations } from '../services/expertConversationService';
 import ExpertConversationThread from '../components/ExpertConversationThread';
 import ActualitesPage from './ActualitesPage';
@@ -41,6 +41,7 @@ function ProfilTab({ user, onSaved }: { user: User; onSaved: (u: User) => void }
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [diplomeUploading, setDiplomeUploading] = useState(false);
+  const [carteServiceUploading, setCarteServiceUploading] = useState(false);
   useEffect(() => {
     setForm({
       nom: user.nom ?? '',
@@ -85,6 +86,20 @@ function ProfilTab({ user, onSaved }: { user: User; onSaved: (u: User) => void }
       setError("Échec de l'envoi du document.");
     } finally {
       setDiplomeUploading(false);
+    }
+  }
+
+  async function handleCarteServiceUpload(file: File | null) {
+    if (!file) return;
+    setCarteServiceUploading(true);
+    setError(null);
+    try {
+      const updated = await uploadCarteServiceDocument(file);
+      onSaved(updated);
+    } catch {
+      setError("Échec de l'envoi du document.");
+    } finally {
+      setCarteServiceUploading(false);
     }
   }
   const fields: { key: keyof ProfilFormState; label: string; textarea?: boolean }[] = [
@@ -180,6 +195,42 @@ function ProfilTab({ user, onSaved }: { user: User; onSaved: (u: User) => void }
               accept="image/jpeg,image/png,image/webp,application/pdf"
               className="hidden"
               onChange={(e) => handleDiplomeUpload(e.target.files?.[0] ?? null)}
+            />
+          </label>
+        )}
+      </div>
+      <div className="bg-white rounded-xl shadow-sm p-6">
+        <h3 className="text-sm font-bold text-teal uppercase tracking-wide mb-4">Carte de service</h3>
+        {user.carteServiceDocumentPath ? (
+          <div className="flex items-center justify-between gap-3 rounded-lg border border-navy/10 bg-teal/5 px-4 py-3">
+            <a
+              href={imageUrl(user.carteServiceDocumentPath)}
+              target="_blank"
+              rel="noreferrer"
+              className="flex items-center gap-2 text-sm text-teal hover:underline"
+            >
+              <FileText size={16} /> Voir le document envoyé
+            </a>
+            <label className="shrink-0 inline-flex items-center gap-1.5 text-xs font-semibold text-teal hover:text-teal/80 cursor-pointer transition-colors">
+              {carteServiceUploading ? <Loader2 size={13} className="animate-spin" /> : <Paperclip size={13} />}
+              Remplacer
+              <input
+                type="file"
+                accept="image/jpeg,image/png,image/webp,application/pdf"
+                className="hidden"
+                onChange={(e) => handleCarteServiceUpload(e.target.files?.[0] ?? null)}
+              />
+            </label>
+          </div>
+        ) : (
+          <label className="flex items-center justify-center gap-2 rounded-lg border-2 border-dashed border-navy/15 px-4 py-6 text-sm text-navy/50 hover:border-teal hover:bg-teal/5 cursor-pointer transition-colors">
+            {carteServiceUploading ? <Loader2 size={16} className="animate-spin" /> : <Paperclip size={16} />}
+            Choisir un fichier (JPG, PNG, WEBP ou PDF)
+            <input
+              type="file"
+              accept="image/jpeg,image/png,image/webp,application/pdf"
+              className="hidden"
+              onChange={(e) => handleCarteServiceUpload(e.target.files?.[0] ?? null)}
             />
           </label>
         )}

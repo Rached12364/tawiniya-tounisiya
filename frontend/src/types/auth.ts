@@ -15,6 +15,7 @@ export interface TechnicienProfil {
   instagram?: string;
   diplome?: string;
   diplomeDocumentPath?: string;
+  carteServiceDocumentPath?: string;
   specialite?: string;
   niveauScolaire?: string;
   permisConduire?: 'OUI' | 'NON' | null;

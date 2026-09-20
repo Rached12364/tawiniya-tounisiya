@@ -36,3 +36,12 @@ export async function uploadDiplomeDocument(file: File): Promise<User> {
   });
   return data;
 }
+
+export async function uploadCarteServiceDocument(file: File): Promise<User> {
+  const formData = new FormData();
+  formData.append('file', file);
+  const { data } = await api.post<User>('/users/me/carte-service-document', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  return data;
+}

@@ -158,4 +158,15 @@ public class UserProfileService {
         userRepository.save(user);
         return userMapper.toResponse(user);
     }
+
+    public UserResponse updateCarteServiceDocument(User currentUser, MultipartFile file) {
+        User user = userRepository.findById(currentUser.getId())
+                .orElseThrow(() -> new IllegalStateException("Utilisateur introuvable"));
+        if (user.getCarteServiceDocumentPath() != null) {
+            fileStorageService.deleteImage(user.getCarteServiceDocumentPath());
+        }
+        user.setCarteServiceDocumentPath(fileStorageService.storeImage(file));
+        userRepository.save(user);
+        return userMapper.toResponse(user);
+    }
 }

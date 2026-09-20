@@ -35,6 +35,7 @@ public class UserResponse {
     private String instagram;
     private String diplome;
     private String diplomeDocumentPath;
+    private String carteServiceDocumentPath;
     private String specialite;
     private String niveauScolaire;
     private String permisConduire;

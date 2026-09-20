@@ -52,4 +52,12 @@ public class UserProfileController {
     ) {
         return profileService.updateDiplomeDocument(currentUser, file);
     }
+
+    @PostMapping(value = "/me/carte-service-document", consumes = "multipart/form-data")
+    public UserResponse updateCarteServiceDocument(
+            @AuthenticationPrincipal User currentUser,
+            @RequestParam("file") MultipartFile file
+    ) {
+        return profileService.updateCarteServiceDocument(currentUser, file);
+    }
 }

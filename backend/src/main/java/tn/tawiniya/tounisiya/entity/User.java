@@ -69,6 +69,7 @@ public class User implements UserDetails {
     // ----- Formation -----
     private String diplome;
     private String diplomeDocumentPath;
+    private String carteServiceDocumentPath;
     private String specialite;
     @Column(name = "niveau_scolaire")
     private String niveauScolaire;
