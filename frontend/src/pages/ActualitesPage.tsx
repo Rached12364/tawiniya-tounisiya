@@ -48,7 +48,7 @@ function PostComposer({ onPosted }: { onPosted: (p: Post) => void }) {
     }
   }
   return (
-    <div className="bg-white rounded-xl shadow-sm p-4 mb-5">
+    <div className="bg-white dark:bg-[#12283F] rounded-xl shadow-sm dark:shadow-black/30 p-4 mb-5">
       <div className="flex gap-3">
         <Avatar path={user?.photoProfilPath} />
         <textarea
@@ -56,7 +56,7 @@ function PostComposer({ onPosted }: { onPosted: (p: Post) => void }) {
           onChange={(e) => setContent(e.target.value)}
           placeholder="Partagez une actualité, une réussite, une question..."
           rows={2}
-          className="flex-1 rounded-lg border border-navy/15 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal/40 focus:border-teal resize-none"
+          className="flex-1 rounded-lg border border-navy/15 dark:border-white/15 bg-transparent px-3 py-2 text-sm text-navy dark:text-white placeholder:text-navy/40 dark:placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-teal/40 focus:border-teal resize-none"
         />
       </div>
       {preview && (
@@ -71,7 +71,7 @@ function PostComposer({ onPosted }: { onPosted: (p: Post) => void }) {
         </div>
       )}
       <div className="flex items-center justify-between mt-3 ms-[52px]">
-        <label className="flex items-center gap-1.5 text-sm font-medium text-navy/60 hover:text-teal cursor-pointer transition-colors">
+        <label className="flex items-center gap-1.5 text-sm font-medium text-navy/60 dark:text-white/60 hover:text-teal cursor-pointer transition-colors">
           <ImageIcon size={17} />
           Photo
           <input type="file" accept="image/jpeg,image/png,image/webp" className="hidden"
@@ -102,7 +102,7 @@ function LeftSidebar() {
     ] : []),
   ];
   return (
-    <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+    <div className="bg-white dark:bg-[#12283F] rounded-xl shadow-sm dark:shadow-black/30 overflow-hidden">
       <div className="h-14 bg-gradient-to-br from-navy to-teal overflow-hidden">
         {user.photoCouverturePath && (
           <img src={imageUrl(user.photoCouverturePath)} alt="" className="w-full h-full object-cover" />
@@ -116,15 +116,15 @@ function LeftSidebar() {
             <div className="w-full h-full grid place-items-center text-navy/30"><UserIcon size={20} /></div>
           )}
         </div>
-        <p className="mt-2 text-sm font-bold text-navy truncate max-w-full">{fullName}</p>
-        <p className="text-xs text-navy/50 truncate max-w-full">{ROLE_LABELS[user.role] ?? user.role} — CTTEERA</p>
+        <p className="mt-2 text-sm font-bold text-navy dark:text-white truncate max-w-full">{fullName}</p>
+        <p className="text-xs text-navy/50 dark:text-white/50 truncate max-w-full">{ROLE_LABELS[user.role] ?? user.role} — CTTEERA</p>
       </div>
-      <nav className="border-t border-navy/10 py-2">
+      <nav className="border-t border-navy/10 dark:border-white/10 py-2">
         {links.map((l) => (
           <Link
             key={l.path}
             to={l.path}
-            className="flex items-center gap-2.5 px-4 py-2 text-sm text-navy/70 hover:bg-navy/5 hover:text-teal transition-colors"
+            className="flex items-center gap-2.5 px-4 py-2 text-sm text-navy/70 dark:text-white/70 hover:bg-navy/5 dark:hover:bg-white/5 hover:text-teal transition-colors"
           >
             <l.icon size={15} className="shrink-0" />
             <span className="truncate">{l.label}</span>
@@ -139,7 +139,7 @@ function MiniCard({ card }: { card: UserCard }) {
   return (
     <Link
       to={`/profil/${card.id}`}
-      className="flex items-center gap-2.5 py-2 hover:bg-navy/[0.03] rounded-lg px-1.5 -mx-1.5 transition-colors"
+      className="flex items-center gap-2.5 py-2 hover:bg-navy/[0.03] dark:hover:bg-white/5 rounded-lg px-1.5 -mx-1.5 transition-colors"
     >
       <div className="h-9 w-9 rounded-full bg-navy/10 overflow-hidden shrink-0">
         {card.photoProfilPath ? (
@@ -149,8 +149,8 @@ function MiniCard({ card }: { card: UserCard }) {
         )}
       </div>
       <div className="min-w-0 flex-1">
-        <p className="text-xs font-semibold text-navy truncate">{fullName}</p>
-        <p className="text-[11px] text-navy/40 truncate">{card.adresse || card.subtitle || ROLE_LABELS[card.role]}</p>
+        <p className="text-xs font-semibold text-navy dark:text-white truncate">{fullName}</p>
+        <p className="text-[11px] text-navy/40 dark:text-white/40 truncate">{card.adresse || card.subtitle || ROLE_LABELS[card.role]}</p>
       </div>
     </Link>
   );
@@ -170,7 +170,7 @@ function RightSidebar() {
   return (
     <div className="flex flex-col gap-4">
       {experts.length > 0 && (
-        <div className="bg-white rounded-xl shadow-sm p-4">
+        <div className="bg-white dark:bg-[#12283F] rounded-xl shadow-sm dark:shadow-black/30 p-4">
           <h3 className="text-xs font-bold text-teal uppercase tracking-wide mb-1.5">Experts Juridiques</h3>
           <div className="flex flex-col divide-y divide-navy/5">
             {experts.map((c) => <MiniCard key={c.id} card={c} />)}
@@ -181,7 +181,7 @@ function RightSidebar() {
         </div>
       )}
       {suggestions.length > 0 && (
-        <div className="bg-white rounded-xl shadow-sm p-4">
+        <div className="bg-white dark:bg-[#12283F] rounded-xl shadow-sm dark:shadow-black/30 p-4">
           <h3 className="text-xs font-bold text-teal uppercase tracking-wide mb-1.5">Suggestions</h3>
           <div className="flex flex-col divide-y divide-navy/5">
             {suggestions.map((c) => <MiniCard key={c.id} card={c} />)}
@@ -211,20 +211,20 @@ export default function ActualitesPage() {
     setPosts((ps) => ps.filter((p) => p.id !== postId));
   }
   return (
-    <div className="min-h-[70vh] bg-navy/[0.02] pt-28 pb-16 px-4">
+    <div className="min-h-[70vh] bg-navy/[0.02] dark:bg-transparent pt-28 pb-16 px-4">
       <div className="mx-auto max-w-6xl grid grid-cols-1 lg:grid-cols-[240px_1fr_280px] gap-6 items-start">
         <aside className="hidden lg:block lg:sticky lg:top-24">
           <LeftSidebar />
         </aside>
         <div className="min-w-0 lg:h-[calc(100vh-7rem)] lg:overflow-y-auto lg:pr-2">
-          <h1 className="text-2xl font-black text-navy mb-1">Fil d'actualité</h1>
-          <p className="text-sm text-navy/50 mb-6">Partagez et échangez avec la communauté CTTEERA.</p>
+          <h1 className="text-2xl font-black text-navy dark:text-white mb-1">Fil d'actualité</h1>
+          <p className="text-sm text-navy/50 dark:text-white/50 mb-6">Partagez et échangez avec la communauté CTTEERA.</p>
           <PostComposer onPosted={handlePosted} />
           {error && <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2 mb-4">{error}</p>}
           {loading ? (
             <div className="grid place-items-center py-16"><Loader2 className="animate-spin text-navy/40" size={28} /></div>
           ) : posts.length === 0 ? (
-            <p className="text-navy/50 text-sm text-center py-10">Aucune publication pour le moment. Soyez le premier à partager !</p>
+            <p className="text-navy/50 dark:text-white/50 text-sm text-center py-10">Aucune publication pour le moment. Soyez le premier à partager !</p>
           ) : (
             posts.map((post) => (
               <PostCard key={post.id} post={post} onChanged={handleChanged} onRemoved={handleRemoved} />
