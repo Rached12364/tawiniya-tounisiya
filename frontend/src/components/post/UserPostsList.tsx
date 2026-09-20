@@ -20,10 +20,10 @@ export default function UserPostsList({ authorId }: { authorId: number }) {
     setPosts((ps) => ps.filter((p) => p.id !== id));
   }
   if (loading) {
-    return <div className="grid place-items-center py-10"><Loader2 className="animate-spin text-navy/30" size={22} /></div>;
+    return <div className="grid place-items-center py-10"><Loader2 className="animate-spin text-navy/30 dark:text-white/30" size={22} /></div>;
   }
   if (posts.length === 0) {
-    return <p className="text-sm text-navy/40 py-6 text-center">Aucune publication pour le moment.</p>;
+    return <p className="text-sm text-navy/40 dark:text-white/40 py-6 text-center">Aucune publication pour le moment.</p>;
   }
   return (
     <div>
