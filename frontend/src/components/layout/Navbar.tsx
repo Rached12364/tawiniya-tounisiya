@@ -1,8 +1,9 @@
 import { useEffect, useState, useRef } from 'react';
 import { Link, NavLink as RouterNavLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Menu, X, ChevronDown, User as UserIcon, Users } from 'lucide-react';
+import { Menu, X, ChevronDown, User as UserIcon, Users, Sun, Moon } from 'lucide-react';
 import { useUiStore } from '../../store/uiStore';
+import { useThemeStore } from '../../store/themeStore';
 import { useAuthStore } from '../../store/authStore';
 import { BRAND } from '../../config/brand';
 import type { LangCode } from '../../types/nav';
@@ -60,6 +61,7 @@ export default function Navbar() {
   const [isLangOpen, setIsLangOpen] = useState(false);
   const langRef = useRef<HTMLDivElement>(null);
   const { isMobileMenuOpen, toggleMobileMenu, closeMobileMenu } = useUiStore();
+  const { isDark, toggleTheme } = useThemeStore();
   const { isAuthenticated, user, logout } = useAuthStore();
   const spacesRef = useRef<HTMLDivElement>(null);
   const accountRef = useRef<HTMLDivElement>(null);
@@ -212,6 +214,14 @@ export default function Navbar() {
           )}
         </div>
         <div className="hidden lg:flex flex-wrap items-center gap-3 shrink-0">
+          <button
+            type="button"
+            onClick={toggleTheme}
+            aria-label={isDark ? 'Activer le mode clair' : 'Activer le mode sombre'}
+            className="flex items-center justify-center h-8 w-8 rounded-full text-navy hover:text-gold hover:bg-white/40 transition-colors shrink-0"
+          >
+            {isDark ? <Sun size={16} /> : <Moon size={16} />}
+          </button>
           <div className="relative shrink-0 border-e border-navy/20 pe-3" ref={langRef}>
             <button
               type="button"
@@ -358,6 +368,14 @@ export default function Navbar() {
             </RouterNavLink>
           )}
           <div className="flex items-center gap-2 py-2">
+            <button
+              type="button"
+              onClick={toggleTheme}
+              className="flex items-center gap-1 px-2 py-1 rounded text-sm hover:text-gold"
+            >
+              {isDark ? <Sun size={16} /> : <Moon size={16} />}
+              {isDark ? 'Mode clair' : 'Mode sombre'}
+            </button>
             {LANGUAGES.map((lang) => (
               <button
                 key={lang.code}

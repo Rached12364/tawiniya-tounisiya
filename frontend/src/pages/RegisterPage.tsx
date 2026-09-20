@@ -51,8 +51,8 @@ const initialForm: RegisterPayload = {
   // Centre de formation
   horaires: '', formationsProposees: '',
 };
-const inputCls = "w-full rounded-lg border border-navy/15 bg-white px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal/40 focus:border-teal";
-const labelCls = "block text-sm font-medium text-navy mb-1.5";
+const inputCls = "w-full rounded-lg border border-navy/15 dark:border-white/15 bg-white dark:bg-white/5 px-3 py-2.5 text-sm text-navy dark:text-white placeholder:text-navy/30 dark:placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-teal/40 focus:border-teal";
+const labelCls = "block text-sm font-medium text-navy dark:text-white mb-1.5";
 function Field({ label, children, required }: { label: string; children: React.ReactNode; required?: boolean }) {
   return (
     <div>
@@ -65,7 +65,7 @@ function Field({ label, children, required }: { label: string; children: React.R
   );
 }
 function SectionTitle({ children }: { children: React.ReactNode }) {
-  return <p className="text-xs font-bold uppercase tracking-wide text-teal/70 -mb-1">{children}</p>;
+  return <p className="text-xs font-bold uppercase tracking-wide text-teal/70 dark:text-teal-light/80 -mb-1">{children}</p>;
 }
 function OuiNonToggle({ value, onChange }: { value: 'OUI' | 'NON' | null | undefined; onChange: (v: 'OUI' | 'NON') => void }) {
   return (
@@ -76,7 +76,7 @@ function OuiNonToggle({ value, onChange }: { value: 'OUI' | 'NON' | null | undef
           type="button"
           onClick={() => onChange(opt)}
           className={`flex-1 rounded-lg border-2 py-2 text-sm font-semibold transition-colors ${
-            value === opt ? 'border-teal bg-teal/10 text-teal' : 'border-navy/15 text-navy/50 hover:border-navy/30'
+            value === opt ? 'border-teal bg-teal/10 text-teal' : 'border-navy/15 dark:border-white/15 text-navy/50 dark:text-white/50 hover:border-navy/30 dark:hover:border-white/30'
           }`}
         >
           {opt === 'OUI' ? 'Oui' : 'Non'}
@@ -92,13 +92,13 @@ function SpecialiteMultiSelect({ value, onChange }: { value?: string; onChange: 
     onChange(next.join(', '));
   }
   return (
-    <div className="flex flex-col gap-3 rounded-lg border border-navy/15 bg-white p-3 max-h-64 overflow-y-auto">
+    <div className="flex flex-col gap-3 rounded-lg border border-navy/15 dark:border-white/15 bg-white dark:bg-white/5 p-3 max-h-64 overflow-y-auto">
       {SPECIALITES_CATEGORIES.map((cat) => (
         <div key={cat.title}>
           <p className="text-[11px] font-bold uppercase tracking-wide text-teal/70 mb-1.5">{cat.title}</p>
           <div className="flex flex-col gap-1">
             {cat.options.map((opt) => (
-              <label key={opt} className="flex items-center gap-2 text-sm text-navy cursor-pointer">
+              <label key={opt} className="flex items-center gap-2 text-sm text-navy dark:text-white cursor-pointer">
                 <input
                   type="checkbox"
                   checked={selected.includes(opt)}
@@ -176,10 +176,10 @@ export default function RegisterPage() {
     }
   };
   return (
-    <div className="min-h-[70vh] flex items-center justify-center px-4 py-16 bg-navy/[0.02]">
-      <div className="w-full max-w-2xl bg-white rounded-2xl shadow-lg p-8">
-        <h1 className="text-2xl font-black text-navy text-center">Créer un compte</h1>
-        <p className="mt-1.5 text-sm text-navy/50 text-center">Rejoignez la plateforme selon votre profil.</p>
+    <div className="min-h-[70vh] flex items-center justify-center px-4 py-16 bg-navy/[0.02] dark:bg-transparent">
+      <div className="w-full max-w-2xl bg-white dark:bg-[#12283F] rounded-2xl shadow-lg dark:shadow-black/40 p-8">
+        <h1 className="text-2xl font-black text-navy dark:text-white text-center">Créer un compte</h1>
+        <p className="mt-1.5 text-sm text-navy/50 dark:text-white/50 text-center">Rejoignez la plateforme selon votre profil.</p>
         <form onSubmit={handleSubmit} className="mt-8 flex flex-col gap-4">
           <div>
             <label className={labelCls}>Vous êtes...</label>
@@ -193,7 +193,7 @@ export default function RegisterPage() {
                     type="button"
                     onClick={() => selectRole(opt.value)}
                     className={`relative flex flex-col items-center gap-1.5 rounded-xl border-2 px-2 py-3.5 text-center transition-colors ${
-                      isSelected ? 'border-teal bg-teal/5' : 'border-navy/10 hover:border-navy/25 hover:bg-navy/[0.02]'
+                      isSelected ? 'border-teal bg-teal/5' : 'border-navy/10 dark:border-white/15 hover:border-navy/25 dark:hover:border-white/30 hover:bg-navy/[0.02] dark:hover:bg-white/5'
                     }`}
                   >
                     {isSelected && (
@@ -201,9 +201,9 @@ export default function RegisterPage() {
                         <Check size={11} strokeWidth={3} />
                       </span>
                     )}
-                    <Icon size={22} className={isSelected ? 'text-teal' : 'text-navy/40'} />
-                    <span className={`text-[13px] font-semibold ${isSelected ? 'text-teal' : 'text-navy'}`}>{opt.label}</span>
-                    <span className="text-[10px] text-navy/40 leading-tight">{opt.description}</span>
+                    <Icon size={22} className={isSelected ? 'text-teal' : 'text-navy/40 dark:text-white/40'} />
+                    <span className={`text-[13px] font-semibold ${isSelected ? 'text-teal' : 'text-navy dark:text-white'}`}>{opt.label}</span>
+                    <span className="text-[10px] text-navy/40 dark:text-white/40 leading-tight">{opt.description}</span>
                   </button>
                 );
               })}
@@ -212,40 +212,40 @@ export default function RegisterPage() {
           <div className="grid sm:grid-cols-2 gap-4">
             <Field label="Nom" required>
               <div className="relative">
-                <User size={17} className="absolute start-3 top-1/2 -translate-y-1/2 text-navy/30" />
+                <User size={17} className="absolute start-3 top-1/2 -translate-y-1/2 text-navy/30 dark:text-white/30" />
                 <input required value={form.nom} onChange={update('nom')} className={`${inputCls} ps-10`} />
               </div>
-              {fieldErrors.nom && <p className="mt-1 text-xs text-red-600">{fieldErrors.nom}</p>}
+              {fieldErrors.nom && <p className="mt-1 text-xs text-red-600 dark:text-red-400">{fieldErrors.nom}</p>}
             </Field>
             <Field label="Prénom" required>
               <input required value={form.prenom} onChange={update('prenom')} className={inputCls} />
-              {fieldErrors.prenom && <p className="mt-1 text-xs text-red-600">{fieldErrors.prenom}</p>}
+              {fieldErrors.prenom && <p className="mt-1 text-xs text-red-600 dark:text-red-400">{fieldErrors.prenom}</p>}
             </Field>
           </div>
           <Field label="Email" required>
             <div className="relative">
-              <Mail size={17} className="absolute start-3 top-1/2 -translate-y-1/2 text-navy/30" />
+              <Mail size={17} className="absolute start-3 top-1/2 -translate-y-1/2 text-navy/30 dark:text-white/30" />
               <input type="email" required value={form.email} onChange={update('email')} className={`${inputCls} ps-10`} />
             </div>
-            {fieldErrors.email && <p className="mt-1 text-xs text-red-600">{fieldErrors.email}</p>}
+            {fieldErrors.email && <p className="mt-1 text-xs text-red-600 dark:text-red-400">{fieldErrors.email}</p>}
           </Field>
           <div className="grid sm:grid-cols-2 gap-4">
             <Field label="Téléphone" required>
               <div className="relative">
-                <Phone size={17} className="absolute start-3 top-1/2 -translate-y-1/2 text-navy/30" />
+                <Phone size={17} className="absolute start-3 top-1/2 -translate-y-1/2 text-navy/30 dark:text-white/30" />
                 <input required value={form.phone} onChange={update('phone')} placeholder="+216 ..." className={`${inputCls} ps-10`} />
               </div>
             </Field>
             <Field label="Mot de passe" required>
               <div className="relative">
-                <Lock size={17} className="absolute start-3 top-1/2 -translate-y-1/2 text-navy/30" />
+                <Lock size={17} className="absolute start-3 top-1/2 -translate-y-1/2 text-navy/30 dark:text-white/30" />
                 <input type="password" required minLength={6} value={form.password} onChange={update('password')} placeholder="6 caractères min." className={`${inputCls} ps-10`} />
               </div>
-              {fieldErrors.password && <p className="mt-1 text-xs text-red-600">{fieldErrors.password}</p>}
+              {fieldErrors.password && <p className="mt-1 text-xs text-red-600 dark:text-red-400">{fieldErrors.password}</p>}
             </Field>
             <Field label="Confirmer le mot de passe" required>
               <div className="relative">
-                <Lock size={17} className="absolute start-3 top-1/2 -translate-y-1/2 text-navy/30" />
+                <Lock size={17} className="absolute start-3 top-1/2 -translate-y-1/2 text-navy/30 dark:text-white/30" />
                 <input
                   type="password"
                   required
@@ -257,12 +257,12 @@ export default function RegisterPage() {
                 />
               </div>
               {confirmPassword && form.password !== confirmPassword && (
-                <p className="mt-1 text-xs text-red-600">Les mots de passe ne correspondent pas.</p>
+                <p className="mt-1 text-xs text-red-600 dark:text-red-400">Les mots de passe ne correspondent pas.</p>
               )}
             </Field>
           </div>
           {form.role === 'TECHNICIEN' && (
-            <div className="rounded-xl bg-teal/[0.04] border border-teal/15 p-4 flex flex-col gap-4">
+            <div className="rounded-xl bg-teal/[0.04] dark:bg-teal/[0.08] border border-teal/15 dark:border-teal/25 p-4 flex flex-col gap-4">
               <SectionTitle>Identité</SectionTitle>
               <div className="grid sm:grid-cols-2 gap-4">
                 <Field label="Date de naissance"><input type="date" value={form.dateNaissance} onChange={update('dateNaissance')} className={inputCls} /></Field>
@@ -271,7 +271,7 @@ export default function RegisterPage() {
               <div className="grid sm:grid-cols-2 gap-4">
                 <Field label="Nom parent"><input value={form.nomParent} onChange={update('nomParent')} className={inputCls} /></Field>
                 <Field label="Adresse" required>
-                  <select required value={form.adresse} onChange={update('adresse')} className={`${inputCls} bg-white`}>
+                  <select required value={form.adresse} onChange={update('adresse')} className={`${inputCls} bg-white dark:bg-white/5`}>
                     <option value="">Sélectionner...</option>
                     {GOUVERNORATS.map((g) => <option key={g} value={g}>{g}</option>)}
                   </select>
@@ -308,7 +308,7 @@ export default function RegisterPage() {
               <Field label="Numéro banque / poste"><input value={form.numeroBanque} onChange={update('numeroBanque')} className={inputCls} /></Field>
               <SectionTitle>Santé</SectionTitle>
               <Field label="Groupe sanguin">
-                <select value={form.groupeSanguin} onChange={update('groupeSanguin')} className={`${inputCls} bg-white`}>
+                <select value={form.groupeSanguin} onChange={update('groupeSanguin')} className={`${inputCls} bg-white dark:bg-white/5`}>
                   <option value="">Sélectionner...</option>
                   {GROUPES_SANGUINS.map((g) => <option key={g} value={g}>{g}</option>)}
                 </select>
@@ -373,7 +373,7 @@ export default function RegisterPage() {
             </div>
           )}
           {form.role === 'ENTREPRISE' && (
-            <div className="rounded-xl bg-teal/[0.04] border border-teal/15 p-4 flex flex-col gap-4">
+            <div className="rounded-xl bg-teal/[0.04] dark:bg-teal/[0.08] border border-teal/15 dark:border-teal/25 p-4 flex flex-col gap-4">
               <SectionTitle>Informations générales</SectionTitle>
               <Field label="Nom de l'entreprise (raison sociale)">
                 <input required value={form.raisonSociale} onChange={update('raisonSociale')} className={inputCls} />
@@ -384,7 +384,7 @@ export default function RegisterPage() {
               </div>
               <div className="grid sm:grid-cols-2 gap-4">
                 <Field label="Secteur d'activité" required>
-                  <select required value={form.secteurActivite} onChange={update('secteurActivite')} className={`${inputCls} bg-white`}>
+                  <select required value={form.secteurActivite} onChange={update('secteurActivite')} className={`${inputCls} bg-white dark:bg-white/5`}>
                     <option value="">Sélectionner...</option>
                     {SECTEURS_ACTIVITE.map((s) => <option key={s} value={s}>{s}</option>)}
                   </select>
@@ -399,7 +399,7 @@ export default function RegisterPage() {
               </Field>
               <SectionTitle>Coordonnées</SectionTitle>
               <Field label="Adresse" required>
-                <select required value={form.entrepriseAdresse} onChange={update('entrepriseAdresse')} className={`${inputCls} bg-white`}>
+                <select required value={form.entrepriseAdresse} onChange={update('entrepriseAdresse')} className={`${inputCls} bg-white dark:bg-white/5`}>
                   <option value="">Sélectionner...</option>
                   {GOUVERNORATS.map((g) => <option key={g} value={g}>{g}</option>)}
                 </select>
@@ -437,10 +437,10 @@ export default function RegisterPage() {
             </div>
           )}
           {form.role === 'CENTRE_FORMATION' && (
-            <div className="rounded-xl bg-teal/[0.04] border border-teal/15 p-4 flex flex-col gap-4">
+            <div className="rounded-xl bg-teal/[0.04] dark:bg-teal/[0.08] border border-teal/15 dark:border-teal/25 p-4 flex flex-col gap-4">
               <SectionTitle>Informations du centre</SectionTitle>
               <Field label="Adresse" required>
-                <select required value={form.adresse} onChange={update('adresse')} className={`${inputCls} bg-white`}>
+                <select required value={form.adresse} onChange={update('adresse')} className={`${inputCls} bg-white dark:bg-white/5`}>
                   <option value="">Sélectionner...</option>
                   {GOUVERNORATS.map((g) => <option key={g} value={g}>{g}</option>)}
                 </select>
@@ -457,7 +457,7 @@ export default function RegisterPage() {
               </Field>
             </div>
           )}
-          {error && <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{error}</p>}
+          {error && <p className="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/40 rounded-lg px-3 py-2">{error}</p>}
           <button
             type="submit"
             disabled={isLoading}
@@ -467,7 +467,7 @@ export default function RegisterPage() {
             Créer mon compte
           </button>
         </form>
-        <p className="mt-6 text-center text-sm text-navy/60">
+        <p className="mt-6 text-center text-sm text-navy/60 dark:text-white/60">
           Déjà inscrit ?{' '}
           <Link to="/login" className="text-teal font-semibold hover:underline">Se connecter</Link>
         </p>

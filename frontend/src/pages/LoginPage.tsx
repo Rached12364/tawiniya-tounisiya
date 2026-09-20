@@ -32,19 +32,19 @@ export default function LoginPage() {
     }
   };
   return (
-    <div className="min-h-[70vh] flex items-center justify-center px-4 py-16 bg-navy/[0.02]">
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-lg p-8">
-        <h1 className="text-2xl font-black text-navy text-center">Connexion</h1>
-        <p className="mt-1.5 text-sm text-navy/50 text-center">
+    <div className="min-h-[70vh] flex items-center justify-center px-4 py-16 bg-navy/[0.02] dark:bg-transparent">
+      <div className="w-full max-w-md bg-white dark:bg-[#12283F] rounded-2xl shadow-lg dark:shadow-black/40 p-8">
+        <h1 className="text-2xl font-black text-navy dark:text-white text-center">Connexion</h1>
+        <p className="mt-1.5 text-sm text-navy/50 dark:text-white/50 text-center">
           Accédez à votre espace personnel.
         </p>
         <form onSubmit={handleSubmit} className="mt-8 flex flex-col gap-4">
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-navy mb-1.5">
+            <label htmlFor="email" className="block text-sm font-medium text-navy dark:text-white mb-1.5">
               Email
             </label>
             <div className="relative">
-              <Mail size={17} className="absolute start-3 top-1/2 -translate-y-1/2 text-navy/30" />
+              <Mail size={17} className="absolute start-3 top-1/2 -translate-y-1/2 text-navy/30 dark:text-white/30" />
               <input
                 id="email"
                 type="email"
@@ -52,16 +52,16 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="vous@exemple.com"
-                className="w-full rounded-lg border border-navy/15 ps-10 pe-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal/40 focus:border-teal"
+                className="w-full rounded-lg border border-navy/15 dark:border-white/15 bg-transparent ps-10 pe-3 py-2.5 text-sm text-navy dark:text-white placeholder:text-navy/30 dark:placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-teal/40 focus:border-teal"
               />
             </div>
           </div>
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-navy mb-1.5">
+            <label htmlFor="password" className="block text-sm font-medium text-navy dark:text-white mb-1.5">
               Mot de passe
             </label>
             <div className="relative">
-              <Lock size={17} className="absolute start-3 top-1/2 -translate-y-1/2 text-navy/30" />
+              <Lock size={17} className="absolute start-3 top-1/2 -translate-y-1/2 text-navy/30 dark:text-white/30" />
               <input
                 id="password"
                 type={showPassword ? 'text' : 'password'}
@@ -69,12 +69,12 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full rounded-lg border border-navy/15 ps-10 pe-10 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal/40 focus:border-teal"
+                className="w-full rounded-lg border border-navy/15 dark:border-white/15 bg-transparent ps-10 pe-10 py-2.5 text-sm text-navy dark:text-white placeholder:text-navy/30 dark:placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-teal/40 focus:border-teal"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword((v) => !v)}
-                className="absolute end-3 top-1/2 -translate-y-1/2 text-navy/30 hover:text-navy/60 transition-colors"
+                className="absolute end-3 top-1/2 -translate-y-1/2 text-navy/30 dark:text-white/30 hover:text-navy/60 dark:hover:text-white/60 transition-colors"
                 tabIndex={-1}
               >
                 {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
@@ -82,7 +82,7 @@ export default function LoginPage() {
             </div>
           </div>
           {error && (
-            <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{error}</p>
+            <p className="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/40 rounded-lg px-3 py-2">{error}</p>
           )}
           <button
             type="submit"
@@ -93,7 +93,7 @@ export default function LoginPage() {
             Se connecter
           </button>
         </form>
-        <p className="mt-6 text-center text-sm text-navy/60">
+        <p className="mt-6 text-center text-sm text-navy/60 dark:text-white/60">
           Pas encore de compte ?{' '}
           <Link to="/register" className="text-teal font-semibold hover:underline">
             S'inscrire
