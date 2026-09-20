@@ -14,7 +14,7 @@ export default function ServicesSection() {
 
   return (
     <section className="mx-auto max-w-7xl px-4 py-20">
-      <h2 className="text-3xl md:text-4xl font-black text-navy text-center mb-12">
+      <h2 className="text-3xl md:text-4xl font-black text-navy dark:text-white text-center mb-12">
         {t('home.services_title')}
       </h2>
 

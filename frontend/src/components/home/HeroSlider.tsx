@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
@@ -45,13 +45,13 @@ export default function HeroSlider() {
       aria-roledescription="carousel"
     >
       <div className="relative h-full mx-auto max-w-7xl px-4 flex flex-col items-start justify-center">
-        <div className="max-w-2xl rounded-2xl bg-white/40 backdrop-blur-sm px-6 py-5">
+        <div className="max-w-2xl rounded-2xl bg-white/40 dark:bg-navy-dark/60 backdrop-blur-sm px-6 py-5">
           <span className="h-1 w-16 bg-gold rounded-full mb-6 block" />
-          <h1 className="max-w-2xl text-2xl md:text-4xl font-black leading-[1.1] tracking-tight text-navy">
+          <h1 className="max-w-2xl text-2xl md:text-4xl font-black leading-[1.1] tracking-tight text-navy dark:text-white">
             {currentTitle}
           </h1>
           {currentSubtitle && (
-            <p className="mt-3 max-w-lg text-sm text-navy/80">{currentSubtitle}</p>
+            <p className="mt-3 max-w-lg text-sm text-navy/80 dark:text-white/80">{currentSubtitle}</p>
           )}
           <Link
             to="/espace/technicien"
@@ -66,14 +66,14 @@ export default function HeroSlider() {
           <button
             onClick={() => goTo(index - 1)}
             aria-label="Slide précédent"
-            className="absolute top-1/2 start-4 -translate-y-1/2 z-10 grid place-items-center h-10 w-10 rounded-full bg-navy/10 text-navy backdrop-blur hover:bg-navy/20 transition-colors"
+            className="absolute top-1/2 start-4 -translate-y-1/2 z-10 grid place-items-center h-10 w-10 rounded-full bg-navy/10 dark:bg-white/15 text-navy dark:text-white backdrop-blur hover:bg-navy/20 dark:hover:bg-white/25 transition-colors"
           >
             <ChevronLeft size={20} />
           </button>
           <button
             onClick={() => goTo(index + 1)}
             aria-label="Slide suivant"
-            className="absolute top-1/2 end-4 -translate-y-1/2 z-10 grid place-items-center h-10 w-10 rounded-full bg-navy/10 text-navy backdrop-blur hover:bg-navy/20 transition-colors"
+            className="absolute top-1/2 end-4 -translate-y-1/2 z-10 grid place-items-center h-10 w-10 rounded-full bg-navy/10 dark:bg-white/15 text-navy dark:text-white backdrop-blur hover:bg-navy/20 dark:hover:bg-white/25 transition-colors"
           >
             <ChevronRight size={20} />
           </button>
@@ -84,7 +84,7 @@ export default function HeroSlider() {
                 onClick={() => goTo(i)}
                 aria-label={`Aller au slide ${i + 1}`}
                 className={`h-1.5 rounded-full transition-all duration-300 ${
-                  i === index ? 'w-8 bg-gold' : 'w-1.5 bg-navy/30'
+                  i === index ? 'w-8 bg-gold' : 'w-1.5 bg-navy/30 dark:bg-white/40'
                 }`}
               />
             ))}

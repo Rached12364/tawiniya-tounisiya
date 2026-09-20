@@ -18,10 +18,10 @@ export default function AboutSection() {
     <section className="mx-auto max-w-7xl px-4 py-20 grid md:grid-cols-2 gap-12 items-center">
       <div dir="rtl" className="text-end">
         <span className="text-teal font-semibold text-sm tracking-wide">من نحن</span>
-        <h2 className="mt-2 text-3xl md:text-4xl font-black text-navy leading-tight">
+        <h2 className="mt-2 text-3xl md:text-4xl font-black text-navy dark:text-white leading-tight">
           {BRAND.nameAr}
         </h2>
-        <p className="mt-5 text-navy/70 leading-relaxed text-lg">
+        <p className="mt-5 text-navy/70 dark:text-white/70 leading-relaxed text-lg">
           تعمل التعاونية التونسية للتقنيين في مجالات الكهرباء والطاقة المتجددة والأنشطة التابعة على
           دعم التقنيين والمؤسسات العاملة في هذا القطاع، من خلال تسهيل التواصل والتكوين المستمر
           والمتابعة المهنية، من أجل قطاع كهربائي وطاقي أقوى وأكثر تضامنا في تونس.
