@@ -27,7 +27,7 @@ interface SectionDef {
   title: string;
   fields: FieldDef[];
 }
-const inputCls = "w-full rounded-lg border border-navy/15 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal/40 focus:border-teal";
+const inputCls = "w-full rounded-lg border border-navy/15 dark:border-white/15 bg-white dark:bg-white/5 px-3 py-2 text-sm text-navy dark:text-white placeholder:text-navy/30 dark:placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-teal/40 focus:border-teal";
 const ACCOUNT_SECTION: SectionDef = {
   title: 'Informations de compte',
   fields: [
@@ -137,7 +137,7 @@ function FieldEditor({ def, value, onChange }: { def: FieldDef; value: any; onCh
             type="button"
             onClick={() => onChange(opt)}
             className={`flex-1 rounded-lg border-2 py-1.5 text-sm font-semibold transition-colors ${
-              value === opt ? 'border-teal bg-teal/10 text-teal' : 'border-navy/15 text-navy/50 hover:border-navy/30'
+              value === opt ? 'border-teal bg-teal/10 text-teal' : 'border-navy/15 dark:border-white/15 text-navy/50 dark:text-white/50 hover:border-navy/30 dark:hover:border-white/30'
             }`}
           >
             {opt === 'OUI' ? 'Oui' : 'Non'}
@@ -148,7 +148,7 @@ function FieldEditor({ def, value, onChange }: { def: FieldDef; value: any; onCh
   }
   if (def.type === 'select') {
     return (
-      <select value={value ?? ''} onChange={(e) => onChange(e.target.value)} className={`${inputCls} bg-white`}>
+      <select value={value ?? ''} onChange={(e) => onChange(e.target.value)} className={`${inputCls} bg-white dark:bg-white/5`}>
         <option value="">Sélectionner...</option>
         {def.options?.map((o) => <option key={o} value={o}>{o}</option>)}
       </select>
@@ -182,7 +182,7 @@ function SectionFieldsGrid({
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
       {fields.map((f) => (
         <div key={String(f.key)} className={f.type === 'textarea' ? 'sm:col-span-2' : ''}>
-          <label className="block text-[11px] font-medium text-navy/60 mb-1">{f.label}</label>
+          <label className="block text-[11px] font-medium text-navy/60 dark:text-white/60 mb-1">{f.label}</label>
           <FieldEditor def={f} value={(form as any)[f.key]} onChange={(v) => onFieldChange(f.key, v)} />
         </div>
       ))}
@@ -194,8 +194,8 @@ function ReadOnlyFieldsGrid({ fields, form }: { fields: FieldDef[]; form: Partia
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3">
       {fields.map((f) => (
         <div key={String(f.key)}>
-          <p className="text-[11px] text-navy/40 font-semibold uppercase tracking-wide">{f.label}</p>
-          <p className="text-sm text-navy mt-0.5 whitespace-pre-line">{displayValue(f, (form as any)[f.key])}</p>
+          <p className="text-[11px] text-navy/40 dark:text-white/40 font-semibold uppercase tracking-wide">{f.label}</p>
+          <p className="text-sm text-navy dark:text-white mt-0.5 whitespace-pre-line">{displayValue(f, (form as any)[f.key])}</p>
         </div>
       ))}
     </div>
@@ -210,14 +210,14 @@ function AccordionSection({
 }) {
   const [open, setOpen] = useState(!!defaultOpen);
   return (
-    <div className="border-b border-navy/5 last:border-b-0">
+    <div className="border-b border-navy/5 dark:border-white/10 last:border-b-0">
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
         className="w-full flex items-center justify-between py-3 text-left"
       >
-        <span className="text-sm font-bold text-teal uppercase tracking-wide">{title}</span>
-        <ChevronDown size={16} className={`text-navy/40 transition-transform ${open ? 'rotate-180' : ''}`} />
+        <span className="text-sm font-bold text-teal dark:text-teal-light uppercase tracking-wide">{title}</span>
+        <ChevronDown size={16} className={`text-navy/40 dark:text-white/40 transition-transform ${open ? 'rotate-180' : ''}`} />
       </button>
       {open && <div className="pb-4">{children}</div>}
     </div>
@@ -236,7 +236,7 @@ function ExperiencesEditor({
   return (
     <div className="flex flex-col gap-2.5">
       {experiences.length === 0 && (
-        <p className="text-sm text-navy/40">Aucune expérience renseignée.</p>
+        <p className="text-sm text-navy/40 dark:text-white/40">Aucune expérience renseignée.</p>
       )}
       {experiences.map((exp, i) => (
         <div key={i} className="flex gap-2 items-start">
@@ -269,12 +269,12 @@ function BioEditor({
   if (!editing) {
     return (
       <div className="group flex items-start gap-2">
-        <p className="text-sm text-navy/70 italic flex-1">
+        <p className="text-sm text-navy/70 dark:text-white/70 italic flex-1">
           {bio ? `"${bio}"` : 'Ajouter une bio...'}
         </p>
         <button
           onClick={startEdit}
-          className="text-navy/30 hover:text-teal transition-colors p-1 rounded-full hover:bg-teal/5 opacity-0 group-hover:opacity-100 shrink-0"
+          className="text-navy/30 dark:text-white/30 hover:text-teal transition-colors p-1 rounded-full hover:bg-teal/5 dark:hover:bg-teal/10 opacity-0 group-hover:opacity-100 shrink-0"
         >
           <Pencil size={13} />
         </button>
@@ -288,10 +288,10 @@ function BioEditor({
         onChange={(e) => onChange(e.target.value)}
         rows={2}
         placeholder="Ex: Ingénieur en électricité | Passionné d'énergie renouvelable"
-        className="w-full rounded-lg border border-navy/15 bg-white px-3 py-2 text-sm italic focus:outline-none focus:ring-2 focus:ring-teal/40 focus:border-teal resize-none"
+        className="w-full rounded-lg border border-navy/15 dark:border-white/15 bg-white dark:bg-white/5 px-3 py-2 text-sm text-navy dark:text-white italic focus:outline-none focus:ring-2 focus:ring-teal/40 focus:border-teal resize-none"
       />
       <div className="flex gap-2 self-end">
-        <button onClick={cancel} className="text-navy/40 hover:text-red-500 transition-colors p-1.5 rounded-full hover:bg-red-50">
+        <button onClick={cancel} className="text-navy/40 dark:text-white/40 hover:text-red-500 transition-colors p-1.5 rounded-full hover:bg-red-50 dark:hover:bg-red-950/30">
           <X size={15} />
         </button>
         <button onClick={save} disabled={saving} className="text-teal hover:text-teal/70 transition-colors p-1.5 rounded-full hover:bg-teal/5 disabled:opacity-50">
@@ -338,22 +338,22 @@ function ProfileEditModal({
   }
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-3xl max-h-[85vh] flex flex-col overflow-hidden">
-        <div className="flex items-center justify-between px-5 py-4 border-b border-navy/10 shrink-0">
-          <h2 className="text-base font-bold text-navy">Modifier le profil</h2>
-          <button onClick={onClose} className="text-navy/40 hover:text-red-500 transition-colors p-1.5 rounded-full hover:bg-red-50">
+      <div className="bg-white dark:bg-[#12283F] rounded-2xl shadow-xl dark:shadow-black/40 w-full max-w-3xl max-h-[85vh] flex flex-col overflow-hidden">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-navy/10 dark:border-white/10 shrink-0">
+          <h2 className="text-base font-bold text-navy dark:text-white">Modifier le profil</h2>
+          <button onClick={onClose} className="text-navy/40 dark:text-white/40 hover:text-red-500 transition-colors p-1.5 rounded-full hover:bg-red-50 dark:hover:bg-red-950/30">
             <X size={18} />
           </button>
         </div>
         {error && <p className="mx-5 mt-3 text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{error}</p>}
         <div className="flex flex-col sm:flex-row flex-1 overflow-hidden">
-          <div className="flex sm:flex-col overflow-x-auto sm:overflow-y-auto sm:w-48 shrink-0 border-b sm:border-b-0 sm:border-e border-navy/10 py-2 px-2 gap-1">
+          <div className="flex sm:flex-col overflow-x-auto sm:overflow-y-auto sm:w-48 shrink-0 border-b sm:border-b-0 sm:border-e border-navy/10 dark:border-white/10 py-2 px-2 gap-1">
             {tabs.map((t) => (
               <button
                 key={t.key}
                 onClick={() => setActiveTab(t.key)}
                 className={`shrink-0 text-left rounded-lg px-3 py-2 text-sm font-medium whitespace-nowrap transition-colors ${
-                  activeTab === t.key ? 'bg-teal/10 text-teal font-semibold' : 'text-navy/60 hover:bg-navy/5'
+                  activeTab === t.key ? 'bg-teal/10 text-teal font-semibold' : 'text-navy/60 dark:text-white/60 hover:bg-navy/5 dark:hover:bg-white/5'
                 }`}
               >
                 {t.label}
@@ -362,8 +362,8 @@ function ProfileEditModal({
           </div>
           <div className="flex-1 overflow-y-auto p-5">{renderContent()}</div>
         </div>
-        <div className="flex items-center justify-end gap-2 px-5 py-3.5 border-t border-navy/10 shrink-0">
-          <button onClick={onClose} className="rounded-full px-4 py-2 text-sm font-semibold text-navy/60 hover:bg-navy/5 transition-colors">
+        <div className="flex items-center justify-end gap-2 px-5 py-3.5 border-t border-navy/10 dark:border-white/10 shrink-0">
+          <button onClick={onClose} className="rounded-full px-4 py-2 text-sm font-semibold text-navy/60 dark:text-white/60 hover:bg-navy/5 dark:hover:bg-white/5 transition-colors">
             Annuler
           </button>
           <button
@@ -489,7 +489,7 @@ export default function ProfilPage() {
     ...(user.role === 'TECHNICIEN' ? [{ key: 'experiences', label: 'Expériences' }] : []),
   ];
   return (
-    <div className="min-h-[70vh] bg-navy/[0.02] pb-16">
+    <div className="min-h-[70vh] bg-navy/[0.02] dark:bg-transparent pb-16">
       {/* Bannière */}
       <div className="relative h-48 md:h-60 w-full bg-gradient-to-br from-navy via-navy-dark to-teal overflow-hidden">
         {user.photoCouverturePath && (
@@ -508,8 +508,8 @@ export default function ProfilPage() {
       <div className="mx-auto max-w-6xl px-4">
         <div className="grid grid-cols-1 lg:grid-cols-[260px_1fr] gap-6 items-start">
           <aside className="order-2 lg:order-1 lg:sticky lg:top-24">
-            <div className="bg-white rounded-xl shadow-sm p-4">
-              <h2 className="text-sm font-bold text-teal uppercase tracking-wide mb-3">Services</h2>
+            <div className="bg-white dark:bg-[#12283F] rounded-xl shadow-sm dark:shadow-black/30 p-4">
+              <h2 className="text-sm font-bold text-teal dark:text-teal-light uppercase tracking-wide mb-3">Services</h2>
               <ul className="flex flex-col gap-1">
                 {SERVICES.map((s) => {
                   const Icon = s.icon;
@@ -517,7 +517,7 @@ export default function ProfilPage() {
                     <li key={s.path}>
                       <Link
                         to={s.path}
-                        className="flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm font-medium text-navy hover:bg-teal/5 hover:text-teal transition-colors"
+                        className="flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm font-medium text-navy dark:text-white hover:bg-teal/5 dark:hover:bg-teal/10 hover:text-teal transition-colors"
                       >
                         <span className="grid place-items-center h-8 w-8 rounded-lg bg-teal/10 text-teal shrink-0">
                           <Icon size={16} />
@@ -532,7 +532,7 @@ export default function ProfilPage() {
           </aside>
           <div className="order-1 lg:order-2 min-w-0">
             {/* Header profil */}
-            <div className="relative -mt-16 mb-6 bg-white rounded-xl shadow-sm px-6 pt-4 pb-5">
+            <div className="relative -mt-16 mb-6 bg-white dark:bg-[#12283F] rounded-xl shadow-sm dark:shadow-black/30 px-6 pt-4 pb-5">
               <div className="flex items-start justify-between gap-3">
                 <div className="relative h-28 w-28 rounded-full border-4 border-white bg-navy/10 overflow-hidden shrink-0 -mt-16 mb-3">
                   {user.photoProfilPath ? (
@@ -558,19 +558,19 @@ export default function ProfilPage() {
                   Modifier le profil
                 </button>
               </div>
-              <h1 className="text-xl font-black text-navy">{fullName}</h1>
-              <p className="text-sm text-navy/50 mt-0.5 mb-3">{ROLE_LABELS[user.role] ?? user.role} — CTTEERA</p>
+              <h1 className="text-xl font-black text-navy dark:text-white">{fullName}</h1>
+              <p className="text-sm text-navy/50 dark:text-white/50 mt-0.5 mb-3">{ROLE_LABELS[user.role] ?? user.role} — CTTEERA</p>
               <BioEditor bio={form.bio} onChange={(v) => fieldChange('bio', v)} onSave={persist} saving={saving} />
             </div>
             {error && !modalOpen && <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2 mb-4">{error}</p>}
             <div className="flex flex-col gap-5">
-              <div className="bg-white rounded-xl shadow-sm p-5">
-                <h2 className="text-sm font-bold text-teal uppercase tracking-wide mb-4">{ACCOUNT_SECTION.title}</h2>
+              <div className="bg-white dark:bg-[#12283F] rounded-xl shadow-sm dark:shadow-black/30 p-5">
+                <h2 className="text-sm font-bold text-teal dark:text-teal-light uppercase tracking-wide mb-4">{ACCOUNT_SECTION.title}</h2>
                 <ReadOnlyFieldsGrid fields={ACCOUNT_SECTION.fields} form={form} />
               </div>
               <ChangePasswordForm />
               {roleSections.length > 0 && (
-                <div className="bg-white rounded-xl shadow-sm px-5">
+                <div className="bg-white dark:bg-[#12283F] rounded-xl shadow-sm dark:shadow-black/30 px-5">
                   {roleSections.map((section, i) => (
                     <AccordionSection key={section.title} title={section.title} defaultOpen={i === 0}>
                       <ReadOnlyFieldsGrid fields={section.fields} form={form} />
@@ -579,16 +579,16 @@ export default function ProfilPage() {
                 </div>
               )}
               {user.role === 'TECHNICIEN' && (
-                <div className="bg-white rounded-xl shadow-sm p-5">
+                <div className="bg-white dark:bg-[#12283F] rounded-xl shadow-sm dark:shadow-black/30 p-5">
                   <h2 className="text-sm font-bold text-teal uppercase tracking-wide mb-4">Sociétés et périodes de travail</h2>
                   {experiences.length === 0 ? (
-                    <p className="text-sm text-navy/40">Aucune expérience renseignée.</p>
+                    <p className="text-sm text-navy/40 dark:text-white/40">Aucune expérience renseignée.</p>
                   ) : (
                     <ul className="flex flex-col gap-1.5">
                       {experiences.map((exp, i) => (
-                        <li key={i} className="text-sm text-navy">
+                        <li key={i} className="text-sm text-navy dark:text-white">
                           <span className="font-medium">{exp.societe || '—'}</span>
-                          {exp.periode ? <span className="text-navy/50"> · {exp.periode}</span> : null}
+                          {exp.periode ? <span className="text-navy/50 dark:text-white/50"> · {exp.periode}</span> : null}
                         </li>
                       ))}
                     </ul>
@@ -597,7 +597,7 @@ export default function ProfilPage() {
               )}
             </div>
             <div className="mt-6">
-              <h2 className="text-sm font-bold text-teal uppercase tracking-wide mb-3">Publications</h2>
+              <h2 className="text-sm font-bold text-teal dark:text-teal-light uppercase tracking-wide mb-3">Publications</h2>
               <UserPostsList authorId={user.id} />
             </div>
           </div>
