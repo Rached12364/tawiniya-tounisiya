@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class ExpertConversationService {
+    private static final java.util.Set<Role> ALLOWED_PROVIDER_ROLES = java.util.Set.of(Role.EXPERT_JURIDIQUE, Role.MEDECIN);
     private final ExpertConversationRepository conversationRepository;
     private final ExpertMessageRepository messageRepository;
     private final UserRepository userRepository;
@@ -111,8 +112,8 @@ public class ExpertConversationService {
         }
         User expert = userRepository.findById(expertId)
                 .orElseThrow(() -> new ResourceNotFoundException("Expert introuvable : " + expertId));
-        if (expert.getRole() != Role.EXPERT_JURIDIQUE) {
-            throw new ForbiddenOperationException("Cet utilisateur n'est pas un expert juridique.");
+        if (!ALLOWED_PROVIDER_ROLES.contains(expert.getRole())) {
+            throw new ForbiddenOperationException("Cet utilisateur ne peut pas etre contacte via ce service.");
         }
         ExpertConversation c = conversationRepository.findByRequesterIdAndExpertId(currentUser.getId(), expertId)
                 .orElseGet(() -> conversationRepository.save(ExpertConversation.builder()
