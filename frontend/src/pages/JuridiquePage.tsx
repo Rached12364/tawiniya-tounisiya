@@ -27,7 +27,7 @@ export default function JuridiquePage() {
               <div key={s.id} className="bg-white rounded-2xl shadow-sm overflow-hidden border border-navy/5">
                 <button onClick={() => setOpenId(isOpen ? null : s.id)} className="w-full flex items-center justify-between px-6 py-4 text-start">
                   <span className="font-semibold text-navy">{s.title}</span>
-                  <ChevronDown size={18} className={`text-navy/40 transition-transform shrink-0 ${isOpen ? 'rotate-180' : ''}`} />
+                  <ChevronDown size={18} className={`text-navy/40 dark:text-white/40 transition-transform shrink-0 ${isOpen ? 'rotate-180' : ''}`} />
                 </button>
                 {isOpen && (
                   <div className="px-6 pb-6 text-sm text-navy/70 leading-relaxed prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: s.content }} />
