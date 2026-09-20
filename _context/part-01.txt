@@ -1,0 +1,522 @@
+
+===== FILE: frontend\src\pages\ServiceJuridiquePage.tsx =====
+import { useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Loader2, Search, MapPin, User as UserIcon, ArrowLeft, Star } from 'lucide-react';
+import { browseByRole } from '../services/networkService';
+import { getExpertRatings } from '../services/expertRatingService';
+import { getMyConversations } from '../services/expertConversationService';
+import { imageUrl } from '../components/UserCardTile';
+import ExpertChatWidget from '../components/ExpertChatWidget';
+import type { UserCard } from '../types/network';
+import type { ExpertConversationSummary } from '../types/expertConversation';
+function ExpertRow({ card }: { card: UserCard }) {
+  const navigate = useNavigate();
+  const fullName = `${card.prenom} ${card.nom}`.trim();
+  const [rating, setRating] = useState<{ average: number; count: number } | null>(null);
+  useEffect(() => {
+    getExpertRatings(card.id).then((res) => setRating({ average: res.average, count: res.count })).catch(() => {});
+  }, [card.id]);
+  return (
+    <div
+      onClick={() => navigate(`/profil/${card.id}`)}
+      className="bg-white rounded-xl border border-navy/10 px-4 py-3 flex items-center gap-4 hover:shadow-sm hover:border-teal/30 transition-all cursor-pointer"
+    >
+      <div className="h-11 w-11 rounded-full bg-navy/10 overflow-hidden shrink-0">
+        {card.photoProfilPath ? (
+          <img src={imageUrl(card.photoProfilPath)} alt={fullName} className="w-full h-full object-cover" />
+        ) : (
+          <div className="w-full h-full grid place-items-center text-navy/30"><UserIcon size={18} /></div>
+        )}
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-bold text-navy truncate">{fullName}</p>
+        <div className="flex items-center gap-1.5">
+          <p className="text-xs text-navy/50 truncate">{card.subtitle || 'Expert Juridique'}</p>
+          {rating && rating.count > 0 && (
+            <span className="flex items-center gap-0.5 text-xs text-navy/50 shrink-0">
+              <Star size={11} className="fill-gold text-gold" /> {rating.average.toFixed(1)}
+            </span>
+          )}
+        </div>
+      </div>
+      <div className="hidden sm:flex items-center gap-1.5 text-xs text-navy/50 w-40 shrink-0 truncate">
+        {card.adresse && (
+          <>
+            <MapPin size={12} className="text-teal shrink-0" />
+            <span className="truncate">{card.adresse}</span>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+export default function ServiceJuridiquePage() {
+  const [cards, setCards] = useState<UserCard[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [search, setSearch] = useState('');
+  const [filterAdresse, setFilterAdresse] = useState('');
+  const [conversations, setConversations] = useState<ExpertConversationSummary[]>([]);
+  const [conversationsLoading, setConversationsLoading] = useState(true);
+  const [selectedExpertId, setSelectedExpertId] = useState<number | null>(null);
+  useEffect(() => {
+    setLoading(true);
+    setError(null);
+    browseByRole('EXPERT_JURIDIQUE', 0, 100)
+      .then((res) => setCards(res.content))
+      .catch(() => setError('Impossible de charger les experts juridiques.'))
+      .finally(() => setLoading(false));
+  }, []);
+  function loadConversations() {
+    setConversationsLoading(true);
+    getMyConversations()
+      .then(setConversations)
+      .catch(() => {})
+      .finally(() => setConversationsLoading(false));
+  }
+  useEffect(loadConversations, []);
+  const adresseOptions = useMemo(() => {
+    const set = new Set<string>();
+    cards.forEach((c) => { if (c.adresse?.trim()) set.add(c.adresse.trim()); });
+    return Array.from(set).sort((a, b) => a.localeCompare(b, 'fr'));
+  }, [cards]);
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return cards
+      .filter((c) => !filterAdresse || c.adresse === filterAdresse)
+      .filter((c) => {
+        if (!q) return true;
+        return `${c.prenom} ${c.nom}`.toLowerCase().includes(q)
+          || (c.bio ?? '').toLowerCase().includes(q)
+          || (c.adresse ?? '').toLowerCase().includes(q);
+      })
+      .sort((a, b) => `${a.prenom} ${a.nom}`.localeCompare(`${b.prenom} ${b.nom}`, 'fr'));
+  }, [cards, search, filterAdresse]);
+  const selectedConversation = conversations.find((c) => c.otherUser.id === selectedExpertId);
+  const selectedExpertCard = cards.find((c) => c.id === selectedExpertId);
+  const selectedName = selectedConversation
+    ? `${selectedConversation.otherUser.prenom} ${selectedConversation.otherUser.nom}`
+    : selectedExpertCard
+    ? `${selectedExpertCard.prenom} ${selectedExpertCard.nom}`
+    : '';
+  return (
+    <div className="min-h-[70vh] bg-navy/[0.02] pt-24 pb-16 px-4">
+      <div className="mx-auto max-w-6xl flex gap-5">
+        {/* Colonne gauche : mes conversations */}
+        <aside className="w-72 shrink-0 hidden md:block">
+          <h2 className="text-sm font-bold text-teal uppercase tracking-wide mb-3 px-1">Mes conversations</h2>
+          {conversationsLoading ? (
+            <div className="grid place-items-center py-10"><Loader2 className="animate-spin text-navy/40" size={20} /></div>
+          ) : conversations.length === 0 ? (
+            <p className="text-xs text-navy/40 px-1">Aucune conversation pour le moment.</p>
+          ) : (
+            <div className="flex flex-col gap-2">
+              {conversations.map((conv) => (
+                <div
+                  key={conv.id}
+                  onClick={() => setSelectedExpertId(conv.otherUser.id)}
+                  className={`bg-white rounded-xl border px-3 py-2.5 flex items-center gap-2.5 cursor-pointer transition-all ${
+                    selectedExpertId === conv.otherUser.id ? 'border-teal shadow-sm' : 'border-navy/10 hover:border-teal/30 hover:shadow-sm'
+                  }`}
+                >
+                  <div className="h-9 w-9 rounded-full bg-navy/10 overflow-hidden shrink-0">
+                    {conv.otherUser.photoProfilPath ? (
+                      <img src={imageUrl(conv.otherUser.photoProfilPath)} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full grid place-items-center text-navy/30"><UserIcon size={14} /></div>
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-semibold text-navy truncate">{conv.otherUser.prenom} {conv.otherUser.nom}</p>
+                    <p className="text-[11px] text-navy/50 truncate">{conv.lastMessagePreview || conv.subject}</p>
+                  </div>
+                  <span className={`shrink-0 text-[9px] font-semibold rounded-full px-1.5 py-0.5 ${
+                    conv.status === 'RESOLUE' ? 'bg-teal/10 text-teal' : conv.status === 'EN_COURS' ? 'bg-gold/20 text-navy-dark' : 'bg-navy/5 text-navy/50'
+                  }`}>
+                    {conv.status === 'RESOLUE' ? 'Résolue' : conv.status === 'EN_COURS' ? 'En cours' : 'Ouverte'}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+        </aside>
+        {/* Colonne droite : fil de discussion OU annuaire */}
+        <div className="flex-1 min-w-0">
+          {selectedExpertId ? (
+            <div>
+              <button
+                onClick={() => setSelectedExpertId(null)}
+                className="flex items-center gap-1.5 text-xs font-semibold text-navy/50 hover:text-navy mb-3 transition-colors"
+              >
+                <ArrowLeft size={14} /> Retour à l'annuaire
+              </button>
+              <h1 className="text-lg font-black text-navy mb-3">{selectedName}</h1>
+              <ExpertChatWidget
+                key={selectedExpertId}
+                expertId={selectedExpertId}
+              />
+            </div>
+          ) : (
+            <div>
+              <h1 className="text-2xl font-black text-navy mb-1">Service Juridique</h1>
+              <p className="text-sm text-navy/50 mb-6">
+                Retrouvez nos experts juridiques.
+              </p>
+              <div className="flex flex-wrap items-center gap-3 mb-5">
+                <div className="relative flex-1 min-w-[220px]">
+                  <Search size={16} className="absolute start-3 top-1/2 -translate-y-1/2 text-navy/30" />
+                  <input
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    placeholder="Rechercher un expert, une adresse..."
+                    className="w-full rounded-full border border-navy/15 bg-white ps-9 pe-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal/40 focus:border-teal"
+                  />
+                </div>
+                <select
+                  value={filterAdresse}
+                  onChange={(e) => setFilterAdresse(e.target.value)}
+                  className="rounded-full border border-navy/15 bg-white px-3.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal/40 focus:border-teal"
+                >
+                  <option value="">Toutes les adresses</option>
+                  {adresseOptions.map((a) => <option key={a} value={a}>{a}</option>)}
+                </select>
+              </div>
+              {error && <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2 mb-4">{error}</p>}
+              {loading ? (
+                <div className="grid place-items-center py-16"><Loader2 className="animate-spin text-navy/40" size={28} /></div>
+              ) : filtered.length === 0 ? (
+                <p className="text-navy/50 text-sm">
+                  {search || filterAdresse ? 'Aucun résultat pour ces critères.' : 'Aucun expert juridique pour le moment.'}
+                </p>
+              ) : (
+                <div className="flex flex-col gap-2.5">
+                  {filtered.map((c) => (
+                    <ExpertRow key={c.id} card={c} />
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+===== FILE: frontend\src\pages\ExpertJuridiqueDashboardPage.tsx =====
+import { useEffect, useState } from 'react';
+import {
+  LayoutDashboard, MessageSquareWarning, LogOut, Camera, Image as ImageIcon, Loader2, User as UserIcon,
+  UserCog, Check, X, Pencil, FileText, Paperclip, Inbox, Clock, CheckCircle2, MessagesSquare, Newspaper, ChevronsLeft, ChevronsRight, Calendar,
+} from 'lucide-react';
+import { getMyUserProfile, updateMyUserProfile, uploadMyPhotoProfil, uploadMyPhotoCouverture, uploadDiplomeDocument, uploadCarteServiceDocument } from '../services/userProfileService';
+import { getMyConversations } from '../services/expertConversationService';
+import ExpertConversationThread from '../components/ExpertConversationThread';
+import ActualitesPage from './ActualitesPage';
+import ChangePasswordForm from '../components/ChangePasswordForm';
+import EvenementsPage from './EvenementsPage';
+import type { ExpertConversationSummary } from '../types/expertConversation';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { useAuthStore } from '../store/authStore';
+import { BRAND } from '../config/brand';
+import type { User } from '../types/auth';
+const API_ORIGIN = (import.meta.env.VITE_API_URL || 'http://localhost:8080/api').replace(/\/api\/?$/, '');
+function imageUrl(path?: string | null) {
+  if (!path) return '';
+  return path.startsWith('http') ? path : `${API_ORIGIN}${path}`;
+}
+type Tab = 'dashboard' | 'reclamation' | 'profil' | 'actualites' | 'evenements';
+const TABS: { key: Tab; label: string; icon: typeof LayoutDashboard }[] = [
+  { key: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { key: 'reclamation', label: 'Réclamation', icon: MessageSquareWarning },
+];
+const inputCls = "w-full rounded-lg border border-navy/15 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal/40 focus:border-teal";
+interface ProfilFormState {
+  nom: string;
+  prenom: string;
+  phone: string;
+  adresse: string;
+  bio: string;
+}
+function emptyForm(): ProfilFormState {
+  return { nom: '', prenom: '', phone: '', adresse: '', bio: '' };
+}
+function ProfilTab({ user, onSaved }: { user: User; onSaved: (u: User) => void }) {
+  const [editing, setEditing] = useState(false);
+  const [form, setForm] = useState<ProfilFormState>(emptyForm());
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [diplomeUploading, setDiplomeUploading] = useState(false);
+  const [carteServiceUploading, setCarteServiceUploading] = useState(false);
+  useEffect(() => {
+    setForm({
+      nom: user.nom ?? '',
+      prenom: user.prenom ?? '',
+      phone: user.phone ?? '',
+      adresse: user.adresse ?? '',
+      bio: user.bio ?? '',
+    });
+  }, [user]);
+  const startEdit = () => setEditing(true);
+  const cancel = () => {
+    setForm({
+      nom: user.nom ?? '',
+      prenom: user.prenom ?? '',
+      phone: user.phone ?? '',
+      adresse: user.adresse ?? '',
+      bio: user.bio ?? '',
+    });
+    setEditing(false);
+  };
+  const save = async () => {
+    setSaving(true);
+    setError(null);
+    try {
+      const updated = await updateMyUserProfile(form);
+      onSaved(updated);
+      setEditing(false);
+    } catch {
+      setError("Impossible d'enregistrer les modifications.");
+    } finally {
+      setSaving(false);
+    }
+  };
+  async function handleDiplomeUpload(file: File | null) {
+    if (!file) return;
+    setDiplomeUploading(true);
+    setError(null);
+    try {
+      const updated = await uploadDiplomeDocument(file);
+      onSaved(updated);
+    } catch {
+      setError("Échec de l'envoi du document.");
+    } finally {
+      setDiplomeUploading(false);
+    }
+  }
+
+  async function handleCarteServiceUpload(file: File | null) {
+    if (!file) return;
+    setCarteServiceUploading(true);
+    setError(null);
+    try {
+      const updated = await uploadCarteServiceDocument(file);
+      onSaved(updated);
+    } catch {
+      setError("Échec de l'envoi du document.");
+    } finally {
+      setCarteServiceUploading(false);
+    }
+  }
+  const fields: { key: keyof ProfilFormState; label: string; textarea?: boolean }[] = [
+    { key: 'nom', label: 'Nom' },
+    { key: 'prenom', label: 'Prénom' },
+    { key: 'phone', label: 'Téléphone (contact)' },
+    { key: 'adresse', label: 'Adresse du cabinet' },
+    { key: 'bio', label: 'Bio', textarea: true },
+  ];
+  return (
+    <div className="flex flex-col gap-5">
+      <div className="bg-white rounded-xl shadow-sm p-6">
+        <div className="flex items-center justify-between mb-5">
+          <h3 className="text-sm font-bold text-teal uppercase tracking-wide">Mes informations</h3>
+          {!editing ? (
+            <button onClick={startEdit} className="text-navy/40 hover:text-teal transition-colors p-1.5 rounded-full hover:bg-teal/5">
+              <Pencil size={15} />
+            </button>
+          ) : (
+            <div className="flex gap-1.5">
+              <button onClick={cancel} className="text-navy/40 hover:text-red-500 transition-colors p-1.5 rounded-full hover:bg-red-50">
+                <X size={15} />
+              </button>
+              <button onClick={save} disabled={saving} className="text-teal hover:text-teal/80 transition-colors p-1.5 rounded-full hover:bg-teal/5 disabled:opacity-50">
+                {saving ? <Loader2 size={15} className="animate-spin" /> : <Check size={15} />}
+              </button>
+            </div>
+          )}
+        </div>
+        {error && <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2 mb-4">{error}</p>}
+        {!editing ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3">
+            {fields.map((f) => (
+              <div key={f.key} className={f.textarea ? 'sm:col-span-2' : ''}>
+                <p className="text-[11px] text-navy/40 font-semibold uppercase tracking-wide">{f.label}</p>
+                <p className="text-sm text-navy mt-0.5 whitespace-pre-line">{form[f.key] || '—'}</p>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {fields.map((f) => (
+              <div key={f.key} className={f.textarea ? 'sm:col-span-2' : ''}>
+                <label className="block text-[11px] font-medium text-navy/60 mb-1">{f.label}</label>
+                {f.textarea ? (
+                  <textarea
+                    value={form[f.key]}
+                    onChange={(e) => setForm((s) => ({ ...s, [f.key]: e.target.value }))}
+                    rows={3}
+                    className={inputCls}
+                  />
+                ) : (
+                  <input
+                    value={form[f.key]}
+                    onChange={(e) => setForm((s) => ({ ...s, [f.key]: e.target.value }))}
+                    className={inputCls}
+                  />
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+      <div className="bg-white rounded-xl shadow-sm p-6">
+        <h3 className="text-sm font-bold text-teal uppercase tracking-wide mb-4">Diplôme</h3>
+        {user.diplomeDocumentPath ? (
+          <div className="flex items-center justify-between gap-3 rounded-lg border border-navy/10 bg-teal/5 px-4 py-3">
+            <a
+              href={imageUrl(user.diplomeDocumentPath)}
+              target="_blank"
+              rel="noreferrer"
+              className="flex items-center gap-2 text-sm text-teal hover:underline"
+            >
+              <FileText size={16} /> Voir le document envoyé
+            </a>
+            <label className="shrink-0 inline-flex items-center gap-1.5 text-xs font-semibold text-teal hover:text-teal/80 cursor-pointer transition-colors">
+              {diplomeUploading ? <Loader2 size={13} className="animate-spin" /> : <Paperclip size={13} />}
+              Remplacer
+              <input
+                type="file"
+                accept="image/jpeg,image/png,image/webp,application/pdf"
+                className="hidden"
+                onChange={(e) => handleDiplomeUpload(e.target.files?.[0] ?? null)}
+              />
+            </label>
+          </div>
+        ) : (
+          <label className="flex items-center justify-center gap-2 rounded-lg border-2 border-dashed border-navy/15 px-4 py-6 text-sm text-navy/50 hover:border-teal hover:bg-teal/5 cursor-pointer transition-colors">
+            {diplomeUploading ? <Loader2 size={16} className="animate-spin" /> : <Paperclip size={16} />}
+            Choisir un fichier (JPG, PNG, WEBP ou PDF)
+            <input
+              type="file"
+              accept="image/jpeg,image/png,image/webp,application/pdf"
+              className="hidden"
+              onChange={(e) => handleDiplomeUpload(e.target.files?.[0] ?? null)}
+            />
+          </label>
+        )}
+      </div>
+      <div className="bg-white rounded-xl shadow-sm p-6">
+        <h3 className="text-sm font-bold text-teal uppercase tracking-wide mb-4">Carte de service</h3>
+        {user.carteServiceDocumentPath ? (
+          <div className="flex items-center justify-between gap-3 rounded-lg border border-navy/10 bg-teal/5 px-4 py-3">
+            <a
+              href={imageUrl(user.carteServiceDocumentPath)}
+              target="_blank"
+              rel="noreferrer"
+              className="flex items-center gap-2 text-sm text-teal hover:underline"
+            >
+              <FileText size={16} /> Voir le document envoyé
+            </a>
+            <label className="shrink-0 inline-flex items-center gap-1.5 text-xs font-semibold text-teal hover:text-teal/80 cursor-pointer transition-colors">
+              {carteServiceUploading ? <Loader2 size={13} className="animate-spin" /> : <Paperclip size={13} />}
+              Remplacer
+              <input
+                type="file"
+                accept="image/jpeg,image/png,image/webp,application/pdf"
+                className="hidden"
+                onChange={(e) => handleCarteServiceUpload(e.target.files?.[0] ?? null)}
+              />
+            </label>
+          </div>
+        ) : (
+          <label className="flex items-center justify-center gap-2 rounded-lg border-2 border-dashed border-navy/15 px-4 py-6 text-sm text-navy/50 hover:border-teal hover:bg-teal/5 cursor-pointer transition-colors">
+            {carteServiceUploading ? <Loader2 size={16} className="animate-spin" /> : <Paperclip size={16} />}
+            Choisir un fichier (JPG, PNG, WEBP ou PDF)
+            <input
+              type="file"
+              accept="image/jpeg,image/png,image/webp,application/pdf"
+              className="hidden"
+              onChange={(e) => handleCarteServiceUpload(e.target.files?.[0] ?? null)}
+            />
+          </label>
+        )}
+      </div>
+      <ChangePasswordForm />
+    </div>
+  );
+}
+function timeAgo(dateStr: string): string {
+  const diffMs = Date.now() - new Date(dateStr).getTime();
+  const mins = Math.floor(diffMs / 60000);
+  if (mins < 1) return "À l'instant";
+  if (mins < 60) return `${mins} min`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `${hours} h`;
+  const days = Math.floor(hours / 24);
+  return `${days} j`;
+}
+type Period = 'jour' | 'semaine' | 'mois';
+function buildChartData(conversations: ExpertConversationSummary[], period: Period) {
+  const now = new Date();
+  const buckets: { label: string; count: number }[] = [];
+  if (period === 'jour') {
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() - i);
+      const label = d.toLocaleDateString('fr-FR', { weekday: 'short' });
+      const count = conversations.filter((c) => new Date(c.createdAt).toDateString() === d.toDateString()).length;
+      buckets.push({ label, count });
+    }
+  } else if (period === 'semaine') {
+    for (let i = 7; i >= 0; i--) {
+      const end = new Date(now.getFullYear(), now.getMonth(), now.getDate() - i * 7);
+      const start = new Date(end);
+      start.setDate(start.getDate() - 6);
+      const label = `${start.getDate()}/${start.getMonth() + 1}`;
+      const count = conversations.filter((c) => {
+        const cd = new Date(c.createdAt);
+        return cd >= start && cd <= end;
+      }).length;
+      buckets.push({ label, count });
+    }
+  } else {
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const label = d.toLocaleDateString('fr-FR', { month: 'short' });
+      const count = conversations.filter((c) => {
+        const cd = new Date(c.createdAt);
+        return cd.getFullYear() === d.getFullYear() && cd.getMonth() === d.getMonth();
+      }).length;
+      buckets.push({ label, count });
+    }
+  }
+  return buckets;
+}
+function ReclamationsChart({ conversations }: { conversations: ExpertConversationSummary[] }) {
+  const [period, setPeriod] = useState<Period>('jour');
+  const data = buildChartData(conversations, period);
+  const PERIOD_LABELS: Record<Period, string> = { jour: 'Jour', semaine: 'Semaine', mois: 'Mois' };
+  return (
+    <div className="bg-white rounded-xl shadow-sm p-5">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-sm font-bold text-teal uppercase tracking-wide">Réclamations reçues</h3>
+        <div className="flex gap-1 rounded-full bg-navy/5 p-1">
+          {(['jour', 'semaine', 'mois'] as Period[]).map((p) => (
+            <button
+              key={p}
+              onClick={() => setPeriod(p)}
+              className={`px-3 py-1 rounded-full text-xs font-semibold transition-colors ${
+                period === p ? 'bg-navy text-white' : 'text-navy/50 hover:text-navy'
+              }`}
+            >
+              {PERIOD_LABELS[p]}
+            </button>
+          ))}
+        </div>
+      </div>
+      <ResponsiveContainer width="100%" height={220}>
+        <BarChart data={data} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
+          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
+          <XAxis dataKey="label" tick={{ fontSize: 11, fill: '#64748b' }} axisLine={false} tickLine={false} />
+          <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: '#64748b' }} axisLine={false} tickLine={false} width={30} />
+          

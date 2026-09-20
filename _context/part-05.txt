@@ -1,0 +1,358 @@
+inkedin?: string;
+  entrepriseTelephone?: string;
+  entrepriseEmail?: string;
+  adresse?: string;
+  horaires?: string;
+  formationsProposees?: string;
+  connectionStatus: ConnectionStatusValue | 'SELF';
+  connectionId?: number;
+}
+export interface PagedUserCards {
+  content: UserCard[];
+  totalElements: number;
+  totalPages: number;
+  number: number;
+}
+
+===== FILE: frontend\src\types\notification.ts =====
+import type { Role } from './auth';
+export interface NotificationActor {
+  id: number;
+  nom: string;
+  prenom: string;
+  role: Role;
+  photoProfilPath?: string | null;
+}
+export type NotificationType = 'LIKE_POST' | 'COMMENT_POST' | 'REPLY_COMMENT' | 'LIKE_COMMENT' | 'NEW_POST';
+export interface AppNotification {
+  id: number;
+  type: NotificationType;
+  actor: NotificationActor;
+  postId: number | null;
+  commentId: number | null;
+  message: string;
+  read: boolean;
+  createdAt: string;
+}
+export interface PagedNotifications {
+  content: AppNotification[];
+  totalElements: number;
+  totalPages: number;
+  number: number;
+}
+
+===== FILE: frontend\src\types\post.ts =====
+import type { Role } from './auth';
+export type ReactionType = 'LIKE' | 'BRAVO' | 'SOUTIEN' | 'COUP_DE_COEUR' | 'INSTRUCTIF';
+export interface PostAuthor {
+  id: number;
+  nom: string;
+  prenom: string;
+  role: Role;
+  photoProfilPath?: string;
+}
+export interface Post {
+  id: number;
+  author: PostAuthor;
+  content: string;
+  imagePath?: string;
+  createdAt: string;
+  reactionsCount: Partial<Record<ReactionType, number>>;
+  totalReactions: number;
+  totalComments: number;
+  myReaction: ReactionType | null;
+  pinned: boolean;
+  savedByMe: boolean;
+  canEdit: boolean;
+}
+export interface Comment {
+  id: number;
+  author: PostAuthor;
+  content: string;
+  createdAt: string;
+  parentCommentId: number | null;
+  reactionsCount: Partial<Record<ReactionType, number>>;
+  totalReactions: number;
+  myReaction: ReactionType | null;
+  replies: Comment[] | null;
+}
+export interface PagedPosts {
+  content: Post[];
+  totalElements: number;
+  totalPages: number;
+  number: number;
+}
+
+===== FILE: frontend\src\types\reclamation.ts =====
+export type ReclamationType = 'ADMINISTRATIVE' | 'JURIDIQUE';
+export type ReclamationStatus = 'OUVERTE' | 'EN_COURS' | 'RESOLUE' | 'REJETEE';
+export interface Reclamation {
+  id: number;
+  type: ReclamationType;
+  subject: string;
+  description: string;
+  attachmentPath: string | null;
+  status: ReclamationStatus;
+  adminResponse: string | null;
+  createdAt: string;
+  updatedAt: string;
+  userId: number;
+  userNom: string;
+  userPrenom: string;
+  userEmail: string;
+  userRole: string;
+}
+export interface PagedResponse<T> {
+  content: T[];
+  page: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
+}
+export const RECLAMATION_TYPE_LABELS: Record<ReclamationType, string> = {
+  ADMINISTRATIVE: 'Administrative',
+  JURIDIQUE: 'Juridique',
+};
+export const RECLAMATION_STATUS_LABELS: Record<ReclamationStatus, string> = {
+  OUVERTE: 'Ouverte',
+  EN_COURS: 'En cours',
+  RESOLUE: 'Résolue',
+  REJETEE: 'Rejetée',
+};
+export const RECLAMATION_STATUS_COLORS: Record<ReclamationStatus, string> = {
+  OUVERTE: 'bg-amber-100 text-amber-700',
+  EN_COURS: 'bg-blue-100 text-blue-700',
+  RESOLUE: 'bg-green-100 text-green-700',
+  REJETEE: 'bg-red-100 text-red-700',
+};
+
+
+===== FILE: frontend\src\types\technicienProfile.ts =====
+export type GroupeSanguin =
+  | 'A_POSITIF' | 'A_NEGATIF'
+  | 'B_POSITIF' | 'B_NEGATIF'
+  | 'AB_POSITIF' | 'AB_NEGATIF'
+  | 'O_POSITIF' | 'O_NEGATIF';
+export const GROUPE_SANGUIN_LABELS: Record<GroupeSanguin, string> = {
+  A_POSITIF: 'A+',
+  A_NEGATIF: 'A-',
+  B_POSITIF: 'B+',
+  B_NEGATIF: 'B-',
+  AB_POSITIF: 'AB+',
+  AB_NEGATIF: 'AB-',
+  O_POSITIF: 'O+',
+  O_NEGATIF: 'O-',
+};
+export interface TechnicienProfile {
+  id: number;
+  userId: number;
+  userEmail: string;
+  nom: string | null;
+  prenom: string | null;
+  dateNaissance: string | null;
+  cin: string | null;
+  nomParent: string | null;
+  adresse: string | null;
+  gsm: string | null;
+  gsmParent: string | null;
+  gsmBinome: string | null;
+  email: string | null;
+  facebook: string | null;
+  tiktok: string | null;
+  instagram: string | null;
+  diplome: string | null;
+  specialite: string | null;
+  niveauScolaire: string | null;
+  permisConduite: boolean;
+  datePermis: string | null;
+  typeContrat: string | null;
+  numeroCnss: string | null;
+  numeroD17: string | null;
+  numeroBanquePoste: string | null;
+  groupeSanguin: GroupeSanguin | null;
+  poidsKg: number | null;
+  hauteurCm: number | null;
+  pointureChaussure: string | null;
+  tailleVetements: string | null;
+  maladiesChroniques: string | null;
+  allergies: string | null;
+  operations: string | null;
+  tatouage: boolean;
+  dateEmbauche: string | null;
+  experience: string | null;
+  societesEtPeriodes: string | null;
+  salaireDepart: number | null;
+  nombreJoursConge: number | null;
+  gsmSociete: string | null;
+  photoProfilPath: string | null;
+  photoCouverturePath: string | null;
+  copieCinPath: string | null;
+  copieExtraitNaissancePath: string | null;
+  copieDiplomePath: string | null;
+  copiePermisPath: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+export interface TechnicienProfileFormData {
+  nom: string;
+  prenom: string;
+  dateNaissance: string | null;
+  cin: string | null;
+  nomParent: string | null;
+  adresse: string | null;
+  gsm: string | null;
+  gsmParent: string | null;
+  gsmBinome: string | null;
+  email: string | null;
+  facebook: string | null;
+  tiktok: string | null;
+  instagram: string | null;
+  diplome: string | null;
+  specialite: string | null;
+  niveauScolaire: string | null;
+  permisConduite: boolean;
+  datePermis: string | null;
+  typeContrat: string | null;
+  numeroCnss: string | null;
+  numeroD17: string | null;
+  numeroBanquePoste: string | null;
+  groupeSanguin: GroupeSanguin | null;
+  poidsKg: number | null;
+  hauteurCm: number | null;
+  pointureChaussure: string | null;
+  tailleVetements: string | null;
+  maladiesChroniques: string | null;
+  allergies: string | null;
+  operations: string | null;
+  tatouage: boolean;
+  dateEmbauche: string | null;
+  experience: string | null;
+  societesEtPeriodes: string | null;
+  salaireDepart: number | null;
+  nombreJoursConge: number | null;
+  gsmSociete: string | null;
+}
+
+===== FILE: frontend\src\App.tsx =====
+import { Routes, Route } from 'react-router-dom';
+import Layout from './components/layout/Layout';
+import HomePage from './pages/HomePage';
+import LoginPage from './pages/LoginPage';
+import RegisterPage from './pages/RegisterPage';
+import JuridiquePage from './pages/JuridiquePage';
+import ReclamationPage from './pages/ReclamationPage';
+import EvenementsPage from './pages/EvenementsPage';
+import ProfilPage from './pages/ProfilPage';
+import NotFoundPage from './pages/NotFoundPage';
+import NetworkSpacePage from './pages/NetworkSpacePage';
+import PublicProfilePage from './pages/PublicProfilePage';
+import ActualitesPage from './pages/ActualitesPage';
+import NotificationsPage from './pages/NotificationsPage';
+import AdminDashboardPage from './pages/admin/AdminDashboardPage';
+import ProtectedRoute from './components/admin/ProtectedRoute';
+import ExpertJuridiqueDashboardPage from './pages/ExpertJuridiqueDashboardPage';
+import ServiceJuridiquePage from './pages/ServiceJuridiquePage';
+function App() {
+  return (
+    <Routes>
+      <Route element={<Layout />}>
+        <Route index element={<HomePage />} />
+        {/* Authentification (TASK-F006) — connectees aux vraies APIs backend */}
+        <Route path="login" element={<LoginPage />} />
+        <Route path="register" element={<RegisterPage />} />
+        {/* Espace admin (protege, role ADMIN uniquement) */}
+        <Route
+          path="admin"
+          element={
+            <ProtectedRoute allowedRoles={['ADMIN']}>
+              <AdminDashboardPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="expert-juridique"
+          element={
+            <ProtectedRoute allowedRoles={['EXPERT_JURIDIQUE']}>
+              <ExpertJuridiqueDashboardPage />
+            </ProtectedRoute>
+          }
+        />
+        {/* Fil d'actualite : posts, reactions, commentaires (tous roles) */}
+        <Route
+          path="actualites"
+          element={
+            <ProtectedRoute>
+              <ActualitesPage />
+            </ProtectedRoute>
+          }
+        />
+        {/* Notifications (tous roles) */}
+        <Route
+          path="notifications"
+          element={
+            <ProtectedRoute>
+              <NotificationsPage />
+            </ProtectedRoute>
+          }
+        />
+        {/* Profil personnel (technicien connecte) */}
+        <Route
+          path="profil"
+          element={
+            <ProtectedRoute>
+              <ProfilPage />
+            </ProtectedRoute>
+          }
+        />
+        {/* Espaces connectes (TASK-F007/F008) */}
+        <Route
+          path="espace/technicien"
+          element={
+            <ProtectedRoute>
+              <NetworkSpacePage role="TECHNICIEN" />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="espace/entreprise"
+          element={
+            <ProtectedRoute>
+              <NetworkSpacePage role="ENTREPRISE" />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="espace/centre-formation"
+          element={
+            <ProtectedRoute>
+              <NetworkSpacePage role="CENTRE_FORMATION" />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="espace/beneficiel"
+          element={
+            <ProtectedRoute>
+              <NetworkSpacePage role="BENEFICIEL" />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="profil/:id"
+          element={
+            <ProtectedRoute>
+              <PublicProfilePage />
+            </ProtectedRoute>
+          }
+        />
+        <Route path="juridique" element={<JuridiquePage />} />
+        <Route path="services/juridique" element={<ServiceJuridiquePage />} />
+        <Route path="reclamation" element={<ReclamationPage />} />
+        <Route path="evenements" element={<EvenementsPage />} />
+        <Route path="*" element={<NotFoundPage />} />
+      </Route>
+    </Routes>
+  );
+}
+export default App;
+

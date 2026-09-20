@@ -1,0 +1,2637 @@
+
+===== FILE: frontend\src\pages\ServiceJuridiquePage.tsx =====
+import { useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Loader2, Search, MapPin, User as UserIcon, ArrowLeft, Star } from 'lucide-react';
+import { browseByRole } from '../services/networkService';
+import { getExpertRatings } from '../services/expertRatingService';
+import { getMyConversations } from '../services/expertConversationService';
+import { imageUrl } from '../components/UserCardTile';
+import ExpertChatWidget from '../components/ExpertChatWidget';
+import type { UserCard } from '../types/network';
+import type { ExpertConversationSummary } from '../types/expertConversation';
+function ExpertRow({ card }: { card: UserCard }) {
+  const navigate = useNavigate();
+  const fullName = `${card.prenom} ${card.nom}`.trim();
+  const [rating, setRating] = useState<{ average: number; count: number } | null>(null);
+  useEffect(() => {
+    getExpertRatings(card.id).then((res) => setRating({ average: res.average, count: res.count })).catch(() => {});
+  }, [card.id]);
+  return (
+    <div
+      onClick={() => navigate(`/profil/${card.id}`)}
+      className="bg-white rounded-xl border border-navy/10 px-4 py-3 flex items-center gap-4 hover:shadow-sm hover:border-teal/30 transition-all cursor-pointer"
+    >
+      <div className="h-11 w-11 rounded-full bg-navy/10 overflow-hidden shrink-0">
+        {card.photoProfilPath ? (
+          <img src={imageUrl(card.photoProfilPath)} alt={fullName} className="w-full h-full object-cover" />
+        ) : (
+          <div className="w-full h-full grid place-items-center text-navy/30"><UserIcon size={18} /></div>
+        )}
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-bold text-navy truncate">{fullName}</p>
+        <div className="flex items-center gap-1.5">
+          <p className="text-xs text-navy/50 truncate">{card.subtitle || 'Expert Juridique'}</p>
+          {rating && rating.count > 0 && (
+            <span className="flex items-center gap-0.5 text-xs text-navy/50 shrink-0">
+              <Star size={11} className="fill-gold text-gold" /> {rating.average.toFixed(1)}
+            </span>
+          )}
+        </div>
+      </div>
+      <div className="hidden sm:flex items-center gap-1.5 text-xs text-navy/50 w-40 shrink-0 truncate">
+        {card.adresse && (
+          <>
+            <MapPin size={12} className="text-teal shrink-0" />
+            <span className="truncate">{card.adresse}</span>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+export default function ServiceJuridiquePage() {
+  const [cards, setCards] = useState<UserCard[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [search, setSearch] = useState('');
+  const [filterAdresse, setFilterAdresse] = useState('');
+  const [conversations, setConversations] = useState<ExpertConversationSummary[]>([]);
+  const [conversationsLoading, setConversationsLoading] = useState(true);
+  const [selectedExpertId, setSelectedExpertId] = useState<number | null>(null);
+  useEffect(() => {
+    setLoading(true);
+    setError(null);
+    browseByRole('EXPERT_JURIDIQUE', 0, 100)
+      .then((res) => setCards(res.content))
+      .catch(() => setError('Impossible de charger les experts juridiques.'))
+      .finally(() => setLoading(false));
+  }, []);
+  function loadConversations() {
+    setConversationsLoading(true);
+    getMyConversations()
+      .then(setConversations)
+      .catch(() => {})
+      .finally(() => setConversationsLoading(false));
+  }
+  useEffect(loadConversations, []);
+  const adresseOptions = useMemo(() => {
+    const set = new Set<string>();
+    cards.forEach((c) => { if (c.adresse?.trim()) set.add(c.adresse.trim()); });
+    return Array.from(set).sort((a, b) => a.localeCompare(b, 'fr'));
+  }, [cards]);
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return cards
+      .filter((c) => !filterAdresse || c.adresse === filterAdresse)
+      .filter((c) => {
+        if (!q) return true;
+        return `${c.prenom} ${c.nom}`.toLowerCase().includes(q)
+          || (c.bio ?? '').toLowerCase().includes(q)
+          || (c.adresse ?? '').toLowerCase().includes(q);
+      })
+      .sort((a, b) => `${a.prenom} ${a.nom}`.localeCompare(`${b.prenom} ${b.nom}`, 'fr'));
+  }, [cards, search, filterAdresse]);
+  const selectedConversation = conversations.find((c) => c.otherUser.id === selectedExpertId);
+  const selectedExpertCard = cards.find((c) => c.id === selectedExpertId);
+  const selectedName = selectedConversation
+    ? `${selectedConversation.otherUser.prenom} ${selectedConversation.otherUser.nom}`
+    : selectedExpertCard
+    ? `${selectedExpertCard.prenom} ${selectedExpertCard.nom}`
+    : '';
+  return (
+    <div className="min-h-[70vh] bg-navy/[0.02] pt-24 pb-16 px-4">
+      <div className="mx-auto max-w-6xl flex gap-5">
+        {/* Colonne gauche : mes conversations */}
+        <aside className="w-72 shrink-0 hidden md:block">
+          <h2 className="text-sm font-bold text-teal uppercase tracking-wide mb-3 px-1">Mes conversations</h2>
+          {conversationsLoading ? (
+            <div className="grid place-items-center py-10"><Loader2 className="animate-spin text-navy/40" size={20} /></div>
+          ) : conversations.length === 0 ? (
+            <p className="text-xs text-navy/40 px-1">Aucune conversation pour le moment.</p>
+          ) : (
+            <div className="flex flex-col gap-2">
+              {conversations.map((conv) => (
+                <div
+                  key={conv.id}
+                  onClick={() => setSelectedExpertId(conv.otherUser.id)}
+                  className={`bg-white rounded-xl border px-3 py-2.5 flex items-center gap-2.5 cursor-pointer transition-all ${
+                    selectedExpertId === conv.otherUser.id ? 'border-teal shadow-sm' : 'border-navy/10 hover:border-teal/30 hover:shadow-sm'
+                  }`}
+                >
+                  <div className="h-9 w-9 rounded-full bg-navy/10 overflow-hidden shrink-0">
+                    {conv.otherUser.photoProfilPath ? (
+                      <img src={imageUrl(conv.otherUser.photoProfilPath)} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full grid place-items-center text-navy/30"><UserIcon size={14} /></div>
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-semibold text-navy truncate">{conv.otherUser.prenom} {conv.otherUser.nom}</p>
+                    <p className="text-[11px] text-navy/50 truncate">{conv.lastMessagePreview || conv.subject}</p>
+                  </div>
+                  <span className={`shrink-0 text-[9px] font-semibold rounded-full px-1.5 py-0.5 ${
+                    conv.status === 'RESOLUE' ? 'bg-teal/10 text-teal' : conv.status === 'EN_COURS' ? 'bg-gold/20 text-navy-dark' : 'bg-navy/5 text-navy/50'
+                  }`}>
+                    {conv.status === 'RESOLUE' ? 'Résolue' : conv.status === 'EN_COURS' ? 'En cours' : 'Ouverte'}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+        </aside>
+        {/* Colonne droite : fil de discussion OU annuaire */}
+        <div className="flex-1 min-w-0">
+          {selectedExpertId ? (
+            <div>
+              <button
+                onClick={() => setSelectedExpertId(null)}
+                className="flex items-center gap-1.5 text-xs font-semibold text-navy/50 hover:text-navy mb-3 transition-colors"
+              >
+                <ArrowLeft size={14} /> Retour à l'annuaire
+              </button>
+              <h1 className="text-lg font-black text-navy mb-3">{selectedName}</h1>
+              <ExpertChatWidget
+                key={selectedExpertId}
+                expertId={selectedExpertId}
+              />
+            </div>
+          ) : (
+            <div>
+              <h1 className="text-2xl font-black text-navy mb-1">Service Juridique</h1>
+              <p className="text-sm text-navy/50 mb-6">
+                Retrouvez nos experts juridiques.
+              </p>
+              <div className="flex flex-wrap items-center gap-3 mb-5">
+                <div className="relative flex-1 min-w-[220px]">
+                  <Search size={16} className="absolute start-3 top-1/2 -translate-y-1/2 text-navy/30" />
+                  <input
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    placeholder="Rechercher un expert, une adresse..."
+                    className="w-full rounded-full border border-navy/15 bg-white ps-9 pe-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal/40 focus:border-teal"
+                  />
+                </div>
+                <select
+                  value={filterAdresse}
+                  onChange={(e) => setFilterAdresse(e.target.value)}
+                  className="rounded-full border border-navy/15 bg-white px-3.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal/40 focus:border-teal"
+                >
+                  <option value="">Toutes les adresses</option>
+                  {adresseOptions.map((a) => <option key={a} value={a}>{a}</option>)}
+                </select>
+              </div>
+              {error && <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2 mb-4">{error}</p>}
+              {loading ? (
+                <div className="grid place-items-center py-16"><Loader2 className="animate-spin text-navy/40" size={28} /></div>
+              ) : filtered.length === 0 ? (
+                <p className="text-navy/50 text-sm">
+                  {search || filterAdresse ? 'Aucun résultat pour ces critères.' : 'Aucun expert juridique pour le moment.'}
+                </p>
+              ) : (
+                <div className="flex flex-col gap-2.5">
+                  {filtered.map((c) => (
+                    <ExpertRow key={c.id} card={c} />
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+===== FILE: frontend\src\pages\ExpertJuridiqueDashboardPage.tsx =====
+import { useEffect, useState } from 'react';
+import {
+  LayoutDashboard, MessageSquareWarning, LogOut, Camera, Image as ImageIcon, Loader2, User as UserIcon,
+  UserCog, Check, X, Pencil, FileText, Paperclip, Inbox, Clock, CheckCircle2, MessagesSquare, Newspaper, ChevronsLeft, ChevronsRight, Calendar,
+} from 'lucide-react';
+import { getMyUserProfile, updateMyUserProfile, uploadMyPhotoProfil, uploadMyPhotoCouverture, uploadDiplomeDocument, uploadCarteServiceDocument } from '../services/userProfileService';
+import { getMyConversations } from '../services/expertConversationService';
+import ExpertConversationThread from '../components/ExpertConversationThread';
+import ActualitesPage from './ActualitesPage';
+import ChangePasswordForm from '../components/ChangePasswordForm';
+import EvenementsPage from './EvenementsPage';
+import type { ExpertConversationSummary } from '../types/expertConversation';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { useAuthStore } from '../store/authStore';
+import { BRAND } from '../config/brand';
+import type { User } from '../types/auth';
+const API_ORIGIN = (import.meta.env.VITE_API_URL || 'http://localhost:8080/api').replace(/\/api\/?$/, '');
+function imageUrl(path?: string | null) {
+  if (!path) return '';
+  return path.startsWith('http') ? path : `${API_ORIGIN}${path}`;
+}
+type Tab = 'dashboard' | 'reclamation' | 'profil' | 'actualites' | 'evenements';
+const TABS: { key: Tab; label: string; icon: typeof LayoutDashboard }[] = [
+  { key: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { key: 'reclamation', label: 'Réclamation', icon: MessageSquareWarning },
+];
+const inputCls = "w-full rounded-lg border border-navy/15 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal/40 focus:border-teal";
+interface ProfilFormState {
+  nom: string;
+  prenom: string;
+  phone: string;
+  adresse: string;
+  bio: string;
+}
+function emptyForm(): ProfilFormState {
+  return { nom: '', prenom: '', phone: '', adresse: '', bio: '' };
+}
+function ProfilTab({ user, onSaved }: { user: User; onSaved: (u: User) => void }) {
+  const [editing, setEditing] = useState(false);
+  const [form, setForm] = useState<ProfilFormState>(emptyForm());
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [diplomeUploading, setDiplomeUploading] = useState(false);
+  const [carteServiceUploading, setCarteServiceUploading] = useState(false);
+  useEffect(() => {
+    setForm({
+      nom: user.nom ?? '',
+      prenom: user.prenom ?? '',
+      phone: user.phone ?? '',
+      adresse: user.adresse ?? '',
+      bio: user.bio ?? '',
+    });
+  }, [user]);
+  const startEdit = () => setEditing(true);
+  const cancel = () => {
+    setForm({
+      nom: user.nom ?? '',
+      prenom: user.prenom ?? '',
+      phone: user.phone ?? '',
+      adresse: user.adresse ?? '',
+      bio: user.bio ?? '',
+    });
+    setEditing(false);
+  };
+  const save = async () => {
+    setSaving(true);
+    setError(null);
+    try {
+      const updated = await updateMyUserProfile(form);
+      onSaved(updated);
+      setEditing(false);
+    } catch {
+      setError("Impossible d'enregistrer les modifications.");
+    } finally {
+      setSaving(false);
+    }
+  };
+  async function handleDiplomeUpload(file: File | null) {
+    if (!file) return;
+    setDiplomeUploading(true);
+    setError(null);
+    try {
+      const updated = await uploadDiplomeDocument(file);
+      onSaved(updated);
+    } catch {
+      setError("Échec de l'envoi du document.");
+    } finally {
+      setDiplomeUploading(false);
+    }
+  }
+
+  async function handleCarteServiceUpload(file: File | null) {
+    if (!file) return;
+    setCarteServiceUploading(true);
+    setError(null);
+    try {
+      const updated = await uploadCarteServiceDocument(file);
+      onSaved(updated);
+    } catch {
+      setError("Échec de l'envoi du document.");
+    } finally {
+      setCarteServiceUploading(false);
+    }
+  }
+  const fields: { key: keyof ProfilFormState; label: string; textarea?: boolean }[] = [
+    { key: 'nom', label: 'Nom' },
+    { key: 'prenom', label: 'Prénom' },
+    { key: 'phone', label: 'Téléphone (contact)' },
+    { key: 'adresse', label: 'Adresse du cabinet' },
+    { key: 'bio', label: 'Bio', textarea: true },
+  ];
+  return (
+    <div className="flex flex-col gap-5">
+      <div className="bg-white rounded-xl shadow-sm p-6">
+        <div className="flex items-center justify-between mb-5">
+          <h3 className="text-sm font-bold text-teal uppercase tracking-wide">Mes informations</h3>
+          {!editing ? (
+            <button onClick={startEdit} className="text-navy/40 hover:text-teal transition-colors p-1.5 rounded-full hover:bg-teal/5">
+              <Pencil size={15} />
+            </button>
+          ) : (
+            <div className="flex gap-1.5">
+              <button onClick={cancel} className="text-navy/40 hover:text-red-500 transition-colors p-1.5 rounded-full hover:bg-red-50">
+                <X size={15} />
+              </button>
+              <button onClick={save} disabled={saving} className="text-teal hover:text-teal/80 transition-colors p-1.5 rounded-full hover:bg-teal/5 disabled:opacity-50">
+                {saving ? <Loader2 size={15} className="animate-spin" /> : <Check size={15} />}
+              </button>
+            </div>
+          )}
+        </div>
+        {error && <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2 mb-4">{error}</p>}
+        {!editing ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3">
+            {fields.map((f) => (
+              <div key={f.key} className={f.textarea ? 'sm:col-span-2' : ''}>
+                <p className="text-[11px] text-navy/40 font-semibold uppercase tracking-wide">{f.label}</p>
+                <p className="text-sm text-navy mt-0.5 whitespace-pre-line">{form[f.key] || '—'}</p>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {fields.map((f) => (
+              <div key={f.key} className={f.textarea ? 'sm:col-span-2' : ''}>
+                <label className="block text-[11px] font-medium text-navy/60 mb-1">{f.label}</label>
+                {f.textarea ? (
+                  <textarea
+                    value={form[f.key]}
+                    onChange={(e) => setForm((s) => ({ ...s, [f.key]: e.target.value }))}
+                    rows={3}
+                    className={inputCls}
+                  />
+                ) : (
+                  <input
+                    value={form[f.key]}
+                    onChange={(e) => setForm((s) => ({ ...s, [f.key]: e.target.value }))}
+                    className={inputCls}
+                  />
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+      <div className="bg-white rounded-xl shadow-sm p-6">
+        <h3 className="text-sm font-bold text-teal uppercase tracking-wide mb-4">Diplôme</h3>
+        {user.diplomeDocumentPath ? (
+          <div className="flex items-center justify-between gap-3 rounded-lg border border-navy/10 bg-teal/5 px-4 py-3">
+            <a
+              href={imageUrl(user.diplomeDocumentPath)}
+              target="_blank"
+              rel="noreferrer"
+              className="flex items-center gap-2 text-sm text-teal hover:underline"
+            >
+              <FileText size={16} /> Voir le document envoyé
+            </a>
+            <label className="shrink-0 inline-flex items-center gap-1.5 text-xs font-semibold text-teal hover:text-teal/80 cursor-pointer transition-colors">
+              {diplomeUploading ? <Loader2 size={13} className="animate-spin" /> : <Paperclip size={13} />}
+              Remplacer
+              <input
+                type="file"
+                accept="image/jpeg,image/png,image/webp,application/pdf"
+                className="hidden"
+                onChange={(e) => handleDiplomeUpload(e.target.files?.[0] ?? null)}
+              />
+            </label>
+          </div>
+        ) : (
+          <label className="flex items-center justify-center gap-2 rounded-lg border-2 border-dashed border-navy/15 px-4 py-6 text-sm text-navy/50 hover:border-teal hover:bg-teal/5 cursor-pointer transition-colors">
+            {diplomeUploading ? <Loader2 size={16} className="animate-spin" /> : <Paperclip size={16} />}
+            Choisir un fichier (JPG, PNG, WEBP ou PDF)
+            <input
+              type="file"
+              accept="image/jpeg,image/png,image/webp,application/pdf"
+              className="hidden"
+              onChange={(e) => handleDiplomeUpload(e.target.files?.[0] ?? null)}
+            />
+          </label>
+        )}
+      </div>
+      <div className="bg-white rounded-xl shadow-sm p-6">
+        <h3 className="text-sm font-bold text-teal uppercase tracking-wide mb-4">Carte de service</h3>
+        {user.carteServiceDocumentPath ? (
+          <div className="flex items-center justify-between gap-3 rounded-lg border border-navy/10 bg-teal/5 px-4 py-3">
+            <a
+              href={imageUrl(user.carteServiceDocumentPath)}
+              target="_blank"
+              rel="noreferrer"
+              className="flex items-center gap-2 text-sm text-teal hover:underline"
+            >
+              <FileText size={16} /> Voir le document envoyé
+            </a>
+            <label className="shrink-0 inline-flex items-center gap-1.5 text-xs font-semibold text-teal hover:text-teal/80 cursor-pointer transition-colors">
+              {carteServiceUploading ? <Loader2 size={13} className="animate-spin" /> : <Paperclip size={13} />}
+              Remplacer
+              <input
+                type="file"
+                accept="image/jpeg,image/png,image/webp,application/pdf"
+                className="hidden"
+                onChange={(e) => handleCarteServiceUpload(e.target.files?.[0] ?? null)}
+              />
+            </label>
+          </div>
+        ) : (
+          <label className="flex items-center justify-center gap-2 rounded-lg border-2 border-dashed border-navy/15 px-4 py-6 text-sm text-navy/50 hover:border-teal hover:bg-teal/5 cursor-pointer transition-colors">
+            {carteServiceUploading ? <Loader2 size={16} className="animate-spin" /> : <Paperclip size={16} />}
+            Choisir un fichier (JPG, PNG, WEBP ou PDF)
+            <input
+              type="file"
+              accept="image/jpeg,image/png,image/webp,application/pdf"
+              className="hidden"
+              onChange={(e) => handleCarteServiceUpload(e.target.files?.[0] ?? null)}
+            />
+          </label>
+        )}
+      </div>
+      <ChangePasswordForm />
+    </div>
+  );
+}
+function timeAgo(dateStr: string): string {
+  const diffMs = Date.now() - new Date(dateStr).getTime();
+  const mins = Math.floor(diffMs / 60000);
+  if (mins < 1) return "À l'instant";
+  if (mins < 60) return `${mins} min`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `${hours} h`;
+  const days = Math.floor(hours / 24);
+  return `${days} j`;
+}
+type Period = 'jour' | 'semaine' | 'mois';
+function buildChartData(conversations: ExpertConversationSummary[], period: Period) {
+  const now = new Date();
+  const buckets: { label: string; count: number }[] = [];
+  if (period === 'jour') {
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() - i);
+      const label = d.toLocaleDateString('fr-FR', { weekday: 'short' });
+      const count = conversations.filter((c) => new Date(c.createdAt).toDateString() === d.toDateString()).length;
+      buckets.push({ label, count });
+    }
+  } else if (period === 'semaine') {
+    for (let i = 7; i >= 0; i--) {
+      const end = new Date(now.getFullYear(), now.getMonth(), now.getDate() - i * 7);
+      const start = new Date(end);
+      start.setDate(start.getDate() - 6);
+      const label = `${start.getDate()}/${start.getMonth() + 1}`;
+      const count = conversations.filter((c) => {
+        const cd = new Date(c.createdAt);
+        return cd >= start && cd <= end;
+      }).length;
+      buckets.push({ label, count });
+    }
+  } else {
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const label = d.toLocaleDateString('fr-FR', { month: 'short' });
+      const count = conversations.filter((c) => {
+        const cd = new Date(c.createdAt);
+        return cd.getFullYear() === d.getFullYear() && cd.getMonth() === d.getMonth();
+      }).length;
+      buckets.push({ label, count });
+    }
+  }
+  return buckets;
+}
+function ReclamationsChart({ conversations }: { conversations: ExpertConversationSummary[] }) {
+  const [period, setPeriod] = useState<Period>('jour');
+  const data = buildChartData(conversations, period);
+  const PERIOD_LABELS: Record<Period, string> = { jour: 'Jour', semaine: 'Semaine', mois: 'Mois' };
+  return (
+    <div className="bg-white rounded-xl shadow-sm p-5">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-sm font-bold text-teal uppercase tracking-wide">Réclamations reçues</h3>
+        <div className="flex gap-1 rounded-full bg-navy/5 p-1">
+          {(['jour', 'semaine', 'mois'] as Period[]).map((p) => (
+            <button
+              key={p}
+              onClick={() => setPeriod(p)}
+              className={`px-3 py-1 rounded-full text-xs font-semibold transition-colors ${
+                period === p ? 'bg-navy text-white' : 'text-navy/50 hover:text-navy'
+              }`}
+            >
+              {PERIOD_LABELS[p]}
+            </button>
+          ))}
+        </div>
+      </div>
+      <ResponsiveContainer width="100%" height={220}>
+        <BarChart data={data} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
+          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
+          <XAxis dataKey="label" tick={{ fontSize: 11, fill: '#64748b' }} axisLine={false} tickLine={false} />
+          <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: '#64748b' }} axisLine={false} tickLine={false} width={30} />
+          <Tooltip
+            cursor={{ fill: 'rgba(20, 184, 166, 0.08)' }}
+            contentStyle={{ borderRadius: 8, border: '1px solid #e5e7eb', fontSize: 12 }}
+            labelStyle={{ fontWeight: 600, color: '#0f172a' }}
+          />
+          <Bar dataKey="count" name="Réclamations" fill="#14b8a6" radius={[4, 4, 0, 0]} maxBarSize={36} />
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
+  );
+}
+export default function ExpertJuridiqueDashboardPage() {
+  const [tab, setTab] = useState<Tab>('dashboard');
+  const [user, setUser] = useState<User | null>(null);
+  const [uploadingKey, setUploadingKey] = useState<string | null>(null);
+  const [conversations, setConversations] = useState<ExpertConversationSummary[]>([]);
+  const [conversationsLoading, setConversationsLoading] = useState(true);
+  const [selectedConversationId, setSelectedConversationId] = useState<number | null>(null);
+  const [collapsed, setCollapsed] = useState(false);
+  const { logout } = useAuthStore();
+  useEffect(() => {
+    getMyUserProfile().then(setUser).catch(() => {});
+  }, []);
+  function loadConversations() {
+    setConversationsLoading(true);
+    getMyConversations()
+      .then((list) => {
+        setConversations(list);
+        if (list.length > 0 && selectedConversationId === null) {
+          setSelectedConversationId(list[0].id);
+        }
+      })
+      .catch(() => {})
+      .finally(() => setConversationsLoading(false));
+  }
+  useEffect(() => {
+    loadConversations();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  useEffect(() => {
+    if (tab === 'reclamation') loadConversations();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tab]);
+  async function handlePhotoProfil(file: File | null) {
+    if (!file) return;
+    setUploadingKey('photoProfil');
+    try {
+      const updated = await uploadMyPhotoProfil(file);
+      setUser(updated);
+    } finally {
+      setUploadingKey(null);
+    }
+  }
+  async function handlePhotoCouverture(file: File | null) {
+    if (!file) return;
+    setUploadingKey('photoCouverture');
+    try {
+      const updated = await uploadMyPhotoCouverture(file);
+      setUser(updated);
+    } finally {
+      setUploadingKey(null);
+    }
+  }
+  const fullName = user ? `${user.prenom} ${user.nom}`.trim() : 'Expert Juridique';
+  const TAB_TITLES: Record<Tab, string> = {
+    dashboard: 'Dashboard',
+    reclamation: 'Réclamation',
+    profil: 'Profil',
+    actualites: 'Actualités',
+    evenements: 'Événements',
+  };
+  function statusBadgeCls(status: string) {
+    if (status === 'RESOLUE') return 'bg-teal/10 text-teal';
+    if (status === 'EN_COURS') return 'bg-gold/20 text-navy-dark';
+    return 'bg-navy/5 text-navy/50';
+  }
+  function statusLabel(status: string) {
+    if (status === 'RESOLUE') return 'Résolue';
+    if (status === 'EN_COURS') return 'En cours';
+    return 'Ouverte';
+  }
+  return (
+    <div className="min-h-screen bg-navy/[0.02] flex">
+      {/* Sidebar */}
+      <aside className={`fixed top-0 left-0 h-screen bg-navy text-white flex flex-col shrink-0 z-40 transition-all duration-200 ${collapsed ? 'w-20' : 'w-64'}`}>
+        <div className="flex items-center gap-3 px-5 h-20 shrink-0 bg-navy-dark border-b border-white/10">
+          <div className="h-11 w-11 rounded-xl bg-white/10 ring-1 ring-white/10 flex items-center justify-center shrink-0">
+            <img src={BRAND.logoSrc} alt={BRAND.nameAr} className="h-8 w-8 object-contain" />
+          </div>
+          {!collapsed && (
+            <div className="min-w-0">
+              <p className="text-[15px] font-black tracking-tight text-white truncate">CTTEERA</p>
+              <p className="text-[10px] font-semibold text-gold uppercase tracking-widest truncate">Expert Juridique</p>
+            </div>
+          )}
+        </div>
+        <nav className="flex-1 overflow-y-auto py-3 px-2 flex flex-col gap-1">
+          {TABS.map(({ key, label, icon: Icon }) => (
+            <button
+              key={key}
+              onClick={() => setTab(key)}
+              className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
+                tab === key ? 'bg-gold text-navy-dark font-semibold' : 'text-white/70 hover:bg-white/10 hover:text-white'
+              }`}
+            >
+              <Icon size={18} className="shrink-0" />
+              {!collapsed && <span className="truncate">{label}</span>}
+            </button>
+          ))}
+          <button
+            onClick={() => setTab('actualites')}
+            className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
+              tab === 'actualites' ? 'bg-gold text-navy-dark font-semibold' : 'text-white/70 hover:bg-white/10 hover:text-white'
+            }`}
+          >
+            <Newspaper size={18} className="shrink-0" />
+            {!collapsed && <span className="truncate">Actualités</span>}
+          </button>
+          <button
+            onClick={() => setTab('evenements')}
+            className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
+              tab === 'evenements' ? 'bg-gold text-navy-dark font-semibold' : 'text-white/70 hover:bg-white/10 hover:text-white'
+            }`}
+          >
+            <Calendar size={18} className="shrink-0" />
+            {!collapsed && <span className="truncate">Événements</span>}
+          </button>
+        </nav>
+        <div className="border-t border-white/10 p-2 flex flex-col gap-1">
+          <button
+            onClick={() => setTab('profil')}
+            className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
+              tab === 'profil' ? 'bg-gold text-navy-dark font-semibold' : 'text-white/70 hover:bg-white/10 hover:text-white'
+            }`}
+          >
+            {user?.photoProfilPath ? (
+              <span className="h-[18px] w-[18px] rounded-full overflow-hidden shrink-0 ring-1 ring-white/30">
+                <img src={imageUrl(user.photoProfilPath)} alt="" className="w-full h-full object-cover" />
+              </span>
+            ) : (
+              <UserCog size={18} className="shrink-0" />
+            )}
+            {!collapsed && <span>Profil</span>}
+          </button>
+          <button
+            onClick={() => logout?.()}
+            className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-white/70 hover:bg-white/10 hover:text-red-300 transition-colors w-full"
+          >
+            <LogOut size={18} className="shrink-0" />
+            {!collapsed && <span>Se déconnecter</span>}
+          </button>
+          <button
+            onClick={() => setCollapsed((v) => !v)}
+            className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-white/70 hover:bg-white/10 hover:text-white transition-colors w-full"
+          >
+            {collapsed ? <ChevronsRight size={18} className="shrink-0" /> : <ChevronsLeft size={18} className="shrink-0" />}
+            {!collapsed && <span>Réduire</span>}
+          </button>
+        </div>
+      </aside>
+      {/* Main content */}
+      <main className={`flex-1 min-h-screen transition-all duration-200 ${collapsed ? 'ml-20' : 'ml-64'}`}>
+        {tab === 'actualites' ? (
+          <ActualitesPage />
+        ) : tab === 'evenements' ? (
+          <EvenementsPage />
+        ) : (
+        <>
+        {/* Profil header */}
+        <div className="relative h-40 w-full bg-gradient-to-br from-navy to-navy-dark overflow-hidden">
+          {user?.photoCouverturePath && (
+            <img src={imageUrl(user.photoCouverturePath)} alt="Couverture" className="w-full h-full object-cover" />
+          )}
+          <label className="absolute bottom-3 end-4 grid place-items-center h-9 w-9 rounded-full bg-white/90 hover:bg-white cursor-pointer shadow transition-colors">
+            {uploadingKey === 'photoCouverture' ? (
+              <Loader2 size={15} className="animate-spin text-teal" />
+            ) : (
+              <ImageIcon size={15} className="text-teal" />
+            )}
+            <input type="file" accept="image/jpeg,image/png,image/webp" className="hidden"
+              onChange={(e) => handlePhotoCouverture(e.target.files?.[0] ?? null)} />
+          </label>
+        </div>
+        <div className="px-8 -mt-10 mb-6 flex items-end gap-4">
+          <div className="relative h-24 w-24 rounded-full border-4 border-white bg-navy/10 overflow-hidden shrink-0">
+            {user?.photoProfilPath ? (
+              <img src={imageUrl(user.photoProfilPath)} alt="Profil" className="w-full h-full object-cover" />
+            ) : (
+              <div className="w-full h-full grid place-items-center text-navy/30"><UserIcon size={30} /></div>
+            )}
+            <label className="absolute inset-0 grid place-items-center bg-black/0 hover:bg-black/30 transition-colors cursor-pointer group">
+              {uploadingKey === 'photoProfil' ? (
+                <Loader2 size={14} className="animate-spin text-white" />
+              ) : (
+                <Camera size={14} className="text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+              )}
+              <input type="file" accept="image/jpeg,image/png,image/webp" className="hidden"
+                onChange={(e) => handlePhotoProfil(e.target.files?.[0] ?? null)} />
+            </label>
+          </div>
+          <div className="pb-1">
+            <h1 className="text-xl font-black text-navy">{fullName}</h1>
+            <p className="text-sm text-navy/50">{user?.gouvernorat ?? ''} — Expert Juridique CTTEERA</p>
+          </div>
+        </div>
+        {/* Contenu */}
+        <div className="px-8 pb-16">
+          <h2 className="text-lg font-bold text-navy mb-4">{TAB_TITLES[tab]}</h2>
+          {tab === 'dashboard' ? (
+            <div className="flex flex-col gap-6">
+              <ReclamationsChart conversations={conversations} />
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                <div className="bg-white rounded-2xl shadow-sm border-l-4 border-navy p-4 flex items-center gap-3 hover:shadow-md transition-shadow">
+                  <div className="h-11 w-11 rounded-full bg-navy/10 grid place-items-center shrink-0">
+                    <Inbox size={20} className="text-navy" />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-black text-navy leading-none">{conversations.length}</p>
+                    <p className="text-[11px] text-navy/50 mt-1">Total</p>
+                  </div>
+                </div>
+                <div className="bg-white rounded-2xl shadow-sm border-l-4 border-amber-500 p-4 flex items-center gap-3 hover:shadow-md transition-shadow">
+                  <div className="h-11 w-11 rounded-full bg-amber-50 grid place-items-center shrink-0">
+                    <MessagesSquare size={20} className="text-amber-600" />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-black text-navy leading-none">{conversations.filter((c) => c.status === 'OUVERTE').length}</p>
+                    <p className="text-[11px] text-navy/50 mt-1">Ouvertes</p>
+                  </div>
+                </div>
+                <div className="bg-white rounded-2xl shadow-sm border-l-4 border-gold p-4 flex items-center gap-3 hover:shadow-md transition-shadow">
+                  <div className="h-11 w-11 rounded-full bg-gold/15 grid place-items-center shrink-0">
+                    <Clock size={20} className="text-navy-dark" />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-black text-navy leading-none">{conversations.filter((c) => c.status === 'EN_COURS').length}</p>
+                    <p className="text-[11px] text-navy/50 mt-1">En cours</p>
+                  </div>
+                </div>
+                <div className="bg-white rounded-2xl shadow-sm border-l-4 border-teal p-4 flex items-center gap-3 hover:shadow-md transition-shadow">
+                  <div className="h-11 w-11 rounded-full bg-teal/10 grid place-items-center shrink-0">
+                    <CheckCircle2 size={20} className="text-teal" />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-black text-navy leading-none">{conversations.filter((c) => c.status === 'RESOLUE').length}</p>
+                    <p className="text-[11px] text-navy/50 mt-1">Résolues</p>
+                  </div>
+                </div>
+              </div>
+              <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+                <div className="flex items-center justify-between px-5 py-3.5 border-b border-navy/10">
+                  <h3 className="text-sm font-bold text-teal uppercase tracking-wide">Dernières conversations</h3>
+                  {conversations.length > 0 && (
+                    <button onClick={() => setTab('reclamation')} className="text-xs font-semibold text-navy/50 hover:text-teal transition-colors">
+                      Voir tout
+                    </button>
+                  )}
+                </div>
+                {conversationsLoading ? (
+                  <div className="p-10 grid place-items-center"><Loader2 className="animate-spin text-navy/40" size={20} /></div>
+                ) : conversations.length === 0 ? (
+                  <p className="p-6 text-center text-sm text-navy/40">Aucune conversation pour le moment.</p>
+                ) : (
+                  <div className="flex flex-col">
+                    {conversations.slice(0, 5).map((conv) => (
+                      <button
+                        key={conv.id}
+                        onClick={() => { setSelectedConversationId(conv.id); setTab('reclamation'); }}
+                        className="text-left px-5 py-3.5 border-b border-navy/5 last:border-b-0 flex items-center gap-3.5 hover:bg-navy/[0.03] transition-colors group"
+                      >
+                        <div className="h-11 w-11 rounded-full bg-navy/10 overflow-hidden shrink-0 ring-2 ring-white shadow-sm">
+                          {conv.otherUser.photoProfilPath ? (
+                            <img src={imageUrl(conv.otherUser.photoProfilPath)} alt="" className="w-full h-full object-cover" />
+                          ) : (
+                            <div className="w-full h-full grid place-items-center text-navy/30"><UserIcon size={18} /></div>
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-semibold text-navy truncate group-hover:text-teal transition-colors">{conv.otherUser.prenom} {conv.otherUser.nom}</p>
+                          <p className="text-xs text-navy/50 truncate">{conv.lastMessagePreview || conv.subject}</p>
+                        </div>
+                        <div className="shrink-0 flex flex-col items-end gap-1">
+                          <span className="text-[10px] text-navy/35">{timeAgo(conv.updatedAt)}</span>
+                          <span className={`text-[9px] font-semibold rounded-full px-1.5 py-0.5 ${statusBadgeCls(conv.status)}`}>
+                            {statusLabel(conv.status)}
+                          </span>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          ) : tab === 'profil' && user ? (
+            <ProfilTab user={user} onSaved={setUser} />
+          ) : tab === 'reclamation' ? (
+            conversationsLoading ? (
+              <div className="bg-white rounded-xl shadow-sm p-10 grid place-items-center">
+                <Loader2 className="animate-spin text-navy/40" size={22} />
+              </div>
+            ) : conversations.length === 0 ? (
+              <div className="bg-white rounded-xl shadow-sm p-10 text-center text-navy/40 text-sm">
+                Aucun message pour le moment.
+              </div>
+            ) : (
+              <div className="flex gap-4" style={{ height: '600px' }}>
+                <div className="w-80 shrink-0 bg-white rounded-xl shadow-sm overflow-y-auto flex flex-col">
+                  {conversations.map((conv) => (
+                    <button
+                      key={conv.id}
+                      onClick={() => setSelectedConversationId(conv.id)}
+                      className={`text-left px-3 py-3 border-b border-navy/5 flex items-center gap-3 transition-colors ${
+                        selectedConversationId === conv.id ? 'bg-teal/5' : 'hover:bg-navy/5'
+                      }`}
+                    >
+                      <div className="h-12 w-12 rounded-full bg-navy/10 overflow-hidden shrink-0">
+                        {conv.otherUser.photoProfilPath ? (
+                          <img src={imageUrl(conv.otherUser.photoProfilPath)} alt="" className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full grid place-items-center text-navy/30"><UserIcon size={20} /></div>
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between gap-2">
+                          <p className="text-sm font-bold text-navy truncate">{conv.otherUser.prenom} {conv.otherUser.nom}</p>
+                          <span className="shrink-0 text-[10px] text-navy/40">
+                            {new Date(conv.updatedAt).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between gap-2 mt-0.5">
+                          <p className="text-xs text-navy/50 truncate">{conv.lastMessagePreview || conv.subject}</p>
+                          <span className={`shrink-0 text-[9px] font-semibold rounded-full px-1.5 py-0.5 ${statusBadgeCls(conv.status)}`}>
+                            {statusLabel(conv.status)}
+                          </span>
+                        </div>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+                <div className="flex-1 min-w-0">
+                  {selectedConversationId && (
+                    <ExpertConversationThread conversationId={selectedConversationId} onStatusChanged={loadConversations} />
+                  )}
+                </div>
+              </div>
+            )
+          ) : (
+            <div className="bg-white rounded-xl shadow-sm p-10 text-center text-navy/40 text-sm">
+              Cette page est en cours de construction.
+            </div>
+          )}
+        </div>
+        </>
+        )}
+      </main>
+    </div>
+  );
+}
+
+
+===== FILE: frontend\src\components\ExpertChatWidget.tsx =====
+import { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Loader2, Send, Paperclip, Mic, Square, FileText, X, User as UserIcon } from 'lucide-react';
+import { getConversationWithExpert, sendToExpert, replyToConversation } from '../services/expertConversationService';
+import type { ExpertConversationDetail, ExpertMessageItem } from '../types/expertConversation';
+const API_ORIGIN = (import.meta.env.VITE_API_URL || 'http://localhost:8080/api').replace(/\/api\/?$/, '');
+function fileUrl(path?: string) {
+  if (!path) return '';
+  return path.startsWith('http') ? path : `${API_ORIGIN}${path}`;
+}
+function isImage(path: string) { return /\.(jpe?g|png|webp|gif)$/i.test(path); }
+function AttachmentPreview({ path }: { path: string }) {
+  const url = fileUrl(path);
+  if (isImage(path)) {
+    return <img src={url} alt="Pièce jointe" className="mt-1.5 max-w-full rounded-lg max-h-48 object-cover" />;
+  }
+  // Heuristique simple : si le navigateur peut décoder l'extension comme média audio connu ET que ça vient
+  // d'un enregistrement vocal, on ne peut pas distinguer webm-audio de webm-video par l'extension seule ;
+  // on affiche donc un lecteur audio par défaut pour webm/ogg si aucune image, et video pour mp4.
+  const ext = path.split('.').pop()?.toLowerCase();
+  if (ext === 'mp4') {
+    return <video src={url} controls className="mt-1.5 max-w-full rounded-lg max-h-56" />;
+  }
+  if (ext === 'webm' || ext === 'ogg' || ext === 'mp3' || ext === 'wav' || ext === 'm4a') {
+    return <audio src={url} controls className="mt-1.5 max-w-full" />;
+  }
+  return (
+    <a href={url} target="_blank" rel="noreferrer" className="mt-1.5 flex items-center gap-1.5 text-xs underline">
+      <FileText size={13} /> Voir le document
+    </a>
+  );
+}
+const STATUS_LABELS: Record<string, string> = {
+  OUVERTE: 'Ouverte',
+  EN_COURS: 'En cours',
+  RESOLUE: 'Résolue',
+};
+export default function ExpertChatWidget({ expertId }: { expertId: number }) {
+  const navigate = useNavigate();
+  const [conversation, setConversation] = useState<ExpertConversationDetail | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [subject, setSubject] = useState('');
+  const [message, setMessage] = useState('');
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
+  const [sending, setSending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [recording, setRecording] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const recordedChunksRef = useRef<Blob[]>([]);
+  function load() {
+    setLoading(true);
+    getConversationWithExpert(expertId)
+      .then(setConversation)
+      .catch(() => setError("Impossible de charger la conversation."))
+      .finally(() => setLoading(false));
+  }
+  useEffect(load, [expertId]);
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [conversation?.messages.length]);
+  async function handleSend() {
+    if (!message.trim() && !pendingFile) return;
+    alert(`DEBUG envoi: pendingFile=${pendingFile ? pendingFile.name + ' (' + pendingFile.size + ' octets)' : 'AUCUN FICHIER'}`);
+    setSending(true);
+    setError(null);
+    try {
+      let updated: ExpertConversationDetail;
+      if (conversation?.id) {
+        updated = await replyToConversation(conversation.id, message.trim(), pendingFile ?? undefined);
+      } else {
+        updated = await sendToExpert(expertId, subject.trim(), message.trim(), pendingFile ?? undefined);
+      }
+      setConversation(updated);
+      setMessage('');
+      setSubject('');
+      setPendingFile(null);
+    } catch {
+      setError("Échec de l'envoi du message.");
+    } finally {
+      setSending(false);
+    }
+  }
+  function handleFilePick(file: File | null) {
+    if (!file) return;
+    alert(`DEBUG selection: nom=${file.name}, taille=${file.size} octets, type=${file.type}`);
+    setPendingFile(file);
+  }
+  async function startRecording() {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const recorder = new MediaRecorder(stream);
+      recordedChunksRef.current = [];
+      recorder.ondataavailable = (e) => { if (e.data.size > 0) recordedChunksRef.current.push(e.data); };
+      recorder.onstop = () => {
+        const blob = new Blob(recordedChunksRef.current, { type: 'audio/webm' });
+        const file = new File([blob], `vocal-${Date.now()}.webm`, { type: 'audio/webm' });
+        setPendingFile(file);
+        stream.getTracks().forEach((t) => t.stop());
+      };
+      mediaRecorderRef.current = recorder;
+      recorder.start();
+      setRecording(true);
+    } catch {
+      setError("Impossible d'accéder au microphone.");
+    }
+  }
+  function stopRecording() {
+    mediaRecorderRef.current?.stop();
+    setRecording(false);
+  }
+  if (loading) {
+    return (
+      <div className="bg-white rounded-xl shadow-sm p-6 grid place-items-center">
+        <Loader2 className="animate-spin text-navy/40" size={22} />
+      </div>
+    );
+  }
+  const hasStarted = !!conversation?.id;
+  return (
+    <div className="bg-white rounded-xl shadow-sm overflow-hidden flex flex-col" style={{ maxHeight: '640px' }}>
+      <div className="px-5 py-3 border-b border-navy/10 flex items-center justify-between gap-2 shrink-0">
+        <div
+          onClick={() => navigate(`/profil/${expertId}`)}
+          className="flex items-center gap-2.5 min-w-0 cursor-pointer group"
+        >
+          <div className="h-8 w-8 rounded-full bg-navy/10 overflow-hidden shrink-0">
+            {conversation?.otherUser.photoProfilPath ? (
+              <img src={fileUrl(conversation.otherUser.photoProfilPath)} alt="" className="w-full h-full object-cover" />
+            ) : (
+              <div className="w-full h-full grid place-items-center text-navy/30"><UserIcon size={14} /></div>
+            )}
+          </div>
+          <h2 className="text-sm font-bold text-navy truncate group-hover:text-teal transition-colors">
+            {conversation?.otherUser ? `${conversation.otherUser.prenom} ${conversation.otherUser.nom}` : "Contacter l'expert"}
+          </h2>
+        </div>
+        {conversation?.status && (
+          <span className="shrink-0 text-[11px] font-semibold text-navy/50 bg-navy/5 rounded-full px-2.5 py-1">
+            {STATUS_LABELS[conversation.status] || conversation.status}
+          </span>
+        )}
+      </div>
+      <div className="flex-1 overflow-y-auto px-5 py-4 flex flex-col gap-3" style={{ minHeight: '260px' }}>
+        {!hasStarted ? (
+          <p className="text-sm text-navy/40 italic m-auto text-center">
+            Posez votre question, l'expert vous répondra ici.
+          </p>
+        ) : (
+          conversation!.messages.map((m: ExpertMessageItem) => (
+            <div key={m.id} className={`flex ${m.mine ? 'justify-end' : 'justify-start'}`}>
+              <div
+                className={`max-w-[80%] rounded-2xl px-3.5 py-2 text-sm ${
+                  m.mine ? 'bg-teal text-white rounded-br-sm' : 'bg-navy/5 text-navy rounded-bl-sm'
+                }`}
+              >
+                {m.content && <p className="whitespace-pre-line">{m.content}</p>}
+                {m.attachmentPath && <AttachmentPreview path={m.attachmentPath} />}
+                <p className={`mt-1 text-[10px] ${m.mine ? 'text-white/70' : 'text-navy/40'}`}>
+                  {new Date(m.createdAt).toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}
+                </p>
+              </div>
+            </div>
+          ))
+        )}
+        <div ref={messagesEndRef} />
+      </div>
+      {error && <p className="px-5 text-xs text-red-600">{error}</p>}
+      {pendingFile && (
+        <div className="px-5 pb-1 flex items-center gap-2">
+          <span className="flex-1 truncate text-xs text-navy/60 bg-navy/5 rounded-full px-3 py-1">{pendingFile.name}</span>
+          <button onClick={() => setPendingFile(null)} className="text-navy/40 hover:text-red-500 transition-colors">
+            <X size={14} />
+          </button>
+        </div>
+      )}
+      <div className="border-t border-navy/10 p-3 shrink-0 flex flex-col gap-2">
+        {!hasStarted && (
+          <input
+            value={subject}
+            onChange={(e) => setSubject(e.target.value)}
+            placeholder="Sujet (optionnel)"
+            className="w-full rounded-full border border-navy/15 bg-white px-3.5 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-teal/40 focus:border-teal"
+          />
+        )}
+        <div className="flex items-center gap-2">
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/jpeg,image/png,image/webp,application/pdf,video/mp4,video/webm,video/ogg"
+            className="hidden"
+            onChange={(e) => handleFilePick(e.target.files?.[0] ?? null)}
+          />
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            className="shrink-0 grid place-items-center h-9 w-9 rounded-full text-navy/50 hover:bg-navy/5 transition-colors"
+            title="Joindre un fichier"
+          >
+            <Paperclip size={17} />
+          </button>
+          <button
+            onClick={recording ? stopRecording : startRecording}
+            className={`shrink-0 grid place-items-center h-9 w-9 rounded-full transition-colors ${
+              recording ? 'bg-red-500 text-white animate-pulse' : 'text-navy/50 hover:bg-navy/5'
+            }`}
+            title={recording ? 'Arrêter l\'enregistrement' : 'Message vocal'}
+          >
+            {recording ? <Square size={15} /> : <Mic size={17} />}
+          </button>
+          <input
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            onKeyDown={(e) => { if (e.key === 'Enter' && !sending) handleSend(); }}
+            placeholder="Écrire un message..."
+            className="flex-1 rounded-full border border-navy/15 bg-white px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal/40 focus:border-teal"
+          />
+          <button
+            onClick={handleSend}
+            disabled={sending || (!message.trim() && !pendingFile)}
+            className="shrink-0 grid place-items-center h-9 w-9 rounded-full bg-teal text-white hover:bg-teal/90 disabled:opacity-50 transition-colors"
+          >
+            {sending ? <Loader2 size={15} className="animate-spin" /> : <Send size={15} />}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+===== FILE: frontend\src\components\ExpertConversationThread.tsx =====
+import { useEffect, useRef, useState } from 'react';
+import { Loader2, Send, User as UserIcon, Paperclip, Mic, Square, FileText, X } from 'lucide-react';
+import { getConversationById, replyToConversation, updateConversationStatus } from '../services/expertConversationService';
+import type { ConversationStatus, ExpertConversationDetail } from '../types/expertConversation';
+const API_ORIGIN = (import.meta.env.VITE_API_URL || 'http://localhost:8080/api').replace(/\/api\/?$/, '');
+function fileUrl(path?: string) {
+  if (!path) return '';
+  return path.startsWith('http') ? path : `${API_ORIGIN}${path}`;
+}
+function AttachmentPreview({ path }: { path: string }) {
+  const url = fileUrl(path);
+  const ext = path.split('.').pop()?.toLowerCase();
+  if (ext === 'jpg' || ext === 'jpeg' || ext === 'png' || ext === 'webp' || ext === 'gif') {
+    return <img src={url} alt="Pièce jointe" className="mt-1.5 max-w-full rounded-lg max-h-56 object-cover" />;
+  }
+  if (ext === 'mp4') {
+    return <video src={url} controls className="mt-1.5 max-w-full rounded-lg max-h-64" />;
+  }
+  if (ext === 'webm' || ext === 'ogg' || ext === 'mp3' || ext === 'wav' || ext === 'm4a') {
+    return <audio src={url} controls className="mt-1.5 max-w-full" />;
+  }
+  return (
+    <a href={url} target="_blank" rel="noreferrer" className="mt-1.5 flex items-center gap-1.5 text-xs underline">
+      <FileText size={13} /> Voir le document
+    </a>
+  );
+}
+const STATUS_OPTIONS: { value: ConversationStatus; label: string }[] = [
+  { value: 'OUVERTE', label: 'Ouverte' },
+  { value: 'EN_COURS', label: 'En cours' },
+  { value: 'RESOLUE', label: 'Résolue' },
+];
+export default function ExpertConversationThread({ conversationId, onStatusChanged }: { conversationId: number; onStatusChanged?: () => void }) {
+  const [conversation, setConversation] = useState<ExpertConversationDetail | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [message, setMessage] = useState('');
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
+  const [sending, setSending] = useState(false);
+  const [updatingStatus, setUpdatingStatus] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [recording, setRecording] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const recordedChunksRef = useRef<Blob[]>([]);
+  function load() {
+    setLoading(true);
+    getConversationById(conversationId)
+      .then(setConversation)
+      .catch(() => setError('Impossible de charger la conversation.'))
+      .finally(() => setLoading(false));
+  }
+  useEffect(load, [conversationId]);
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [conversation?.messages.length]);
+  async function handleSend() {
+    if (!message.trim() && !pendingFile) return;
+    setSending(true);
+    setError(null);
+    try {
+      const updated = await replyToConversation(conversationId, message.trim(), pendingFile ?? undefined);
+      setConversation(updated);
+      setMessage('');
+      setPendingFile(null);
+      onStatusChanged?.();
+    } catch {
+      setError("Échec de l'envoi du message.");
+    } finally {
+      setSending(false);
+    }
+  }
+  function handleFilePick(file: File | null) {
+    if (!file) return;
+    setPendingFile(file);
+  }
+  async function startRecording() {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const recorder = new MediaRecorder(stream);
+      recordedChunksRef.current = [];
+      recorder.ondataavailable = (e) => { if (e.data.size > 0) recordedChunksRef.current.push(e.data); };
+      recorder.onstop = () => {
+        const blob = new Blob(recordedChunksRef.current, { type: 'audio/webm' });
+        const file = new File([blob], `vocal-${Date.now()}.webm`, { type: 'audio/webm' });
+        setPendingFile(file);
+        stream.getTracks().forEach((t) => t.stop());
+      };
+      mediaRecorderRef.current = recorder;
+      recorder.start();
+      setRecording(true);
+    } catch {
+      setError("Impossible d'accéder au microphone.");
+    }
+  }
+  function stopRecording() {
+    mediaRecorderRef.current?.stop();
+    setRecording(false);
+  }
+  async function handleStatusChange(status: ConversationStatus) {
+    setUpdatingStatus(true);
+    try {
+      const updated = await updateConversationStatus(conversationId, status);
+      setConversation(updated);
+      onStatusChanged?.();
+    } finally {
+      setUpdatingStatus(false);
+    }
+  }
+  if (loading) {
+    return <div className="bg-white rounded-xl shadow-sm p-6 grid place-items-center"><Loader2 className="animate-spin text-navy/40" size={22} /></div>;
+  }
+  if (!conversation) {
+    return <p className="text-sm text-red-600">{error ?? 'Conversation introuvable.'}</p>;
+  }
+  return (
+    <div className="bg-white rounded-xl shadow-sm overflow-hidden flex flex-col" style={{ maxHeight: '700px' }}>
+      <div className="px-5 py-3 border-b border-navy/10 flex items-center justify-between gap-3 shrink-0">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <div className="h-9 w-9 rounded-full bg-navy/10 overflow-hidden shrink-0">
+            {conversation.otherUser.photoProfilPath ? (
+              <img src={fileUrl(conversation.otherUser.photoProfilPath)} alt="" className="w-full h-full object-cover" />
+            ) : (
+              <div className="w-full h-full grid place-items-center text-navy/30"><UserIcon size={14} /></div>
+            )}
+          </div>
+          <div className="min-w-0">
+            <p className="text-sm font-bold text-navy truncate">{conversation.otherUser.prenom} {conversation.otherUser.nom}</p>
+            <p className="text-xs text-navy/50 truncate">{conversation.subject}</p>
+          </div>
+        </div>
+        <select
+          value={conversation.status ?? 'OUVERTE'}
+          onChange={(e) => handleStatusChange(e.target.value as ConversationStatus)}
+          disabled={updatingStatus}
+          className="shrink-0 rounded-full border border-navy/15 bg-white px-3 py-1.5 text-xs font-semibold text-navy focus:outline-none focus:ring-2 focus:ring-teal/40"
+        >
+          {STATUS_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+        </select>
+      </div>
+      <div className="flex-1 overflow-y-auto px-5 py-4 flex flex-col gap-3" style={{ minHeight: '280px' }}>
+        {conversation.messages.map((m) => (
+          <div key={m.id} className={`flex ${m.mine ? 'justify-end' : 'justify-start'}`}>
+            <div
+              className={`max-w-[80%] rounded-2xl px-3.5 py-2 text-sm ${
+                m.mine ? 'bg-teal text-white rounded-br-sm' : 'bg-navy/5 text-navy rounded-bl-sm'
+              }`}
+            >
+              {m.content && <p className="whitespace-pre-line">{m.content}</p>}
+              {m.attachmentPath && <AttachmentPreview path={m.attachmentPath} />}
+              <p className={`mt-1 text-[10px] ${m.mine ? 'text-white/70' : 'text-navy/40'}`}>
+                {new Date(m.createdAt).toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}
+              </p>
+            </div>
+          </div>
+        ))}
+        <div ref={messagesEndRef} />
+      </div>
+      {error && <p className="px-5 text-xs text-red-600">{error}</p>}
+      {pendingFile && (
+        <div className="px-5 pb-1 flex items-center gap-2">
+          <span className="flex-1 truncate text-xs text-navy/60 bg-navy/5 rounded-full px-3 py-1">{pendingFile.name}</span>
+          <button onClick={() => setPendingFile(null)} className="text-navy/40 hover:text-red-500 transition-colors">
+            <X size={14} />
+          </button>
+        </div>
+      )}
+      <div className="border-t border-navy/10 p-3 shrink-0 flex items-center gap-2">
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/jpeg,image/png,image/webp,application/pdf,video/mp4,video/webm,video/ogg"
+          className="hidden"
+          onChange={(e) => handleFilePick(e.target.files?.[0] ?? null)}
+        />
+        <button
+          onClick={() => fileInputRef.current?.click()}
+          className="shrink-0 grid place-items-center h-9 w-9 rounded-full text-navy/50 hover:bg-navy/5 transition-colors"
+          title="Joindre un fichier"
+        >
+          <Paperclip size={17} />
+        </button>
+        <button
+          onClick={recording ? stopRecording : startRecording}
+          className={`shrink-0 grid place-items-center h-9 w-9 rounded-full transition-colors ${
+            recording ? 'bg-red-500 text-white animate-pulse' : 'text-navy/50 hover:bg-navy/5'
+          }`}
+          title={recording ? "Arrêter l'enregistrement" : 'Message vocal'}
+        >
+          {recording ? <Square size={15} /> : <Mic size={17} />}
+        </button>
+        <input
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+          onKeyDown={(e) => { if (e.key === 'Enter' && !sending) handleSend(); }}
+          placeholder="Répondre..."
+          className="flex-1 rounded-full border border-navy/15 bg-white px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal/40"
+        />
+        <button
+          onClick={handleSend}
+          disabled={sending || (!message.trim() && !pendingFile)}
+          className="shrink-0 grid place-items-center h-9 w-9 rounded-full bg-teal text-white hover:bg-teal/80 disabled:opacity-50 transition-colors"
+        >
+          {sending ? <Loader2 size={15} className="animate-spin" /> : <Send size={15} />}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+===== FILE: frontend\src\components\ExpertRatingWidget.tsx =====
+import { useEffect, useState } from 'react';
+import { Star, Loader2, User as UserIcon } from 'lucide-react';
+import { getExpertRatings, submitExpertRating, deleteExpertRating } from '../services/expertRatingService';
+import type { ExpertRatingSummary } from '../types/expertRating';
+const API_ORIGIN = (import.meta.env.VITE_API_URL || 'http://localhost:8080/api').replace(/\/api\/?$/, '');
+function imageUrl(path?: string) {
+  if (!path) return '';
+  return path.startsWith('http') ? path : `${API_ORIGIN}${path}`;
+}
+function StarRow({ value, onChange, size = 20 }: { value: number; onChange?: (v: number) => void; size?: number }) {
+  const [hover, setHover] = useState(0);
+  return (
+    <div className="flex items-center gap-0.5">
+      {[1, 2, 3, 4, 5].map((n) => {
+        const filled = n <= (hover || value);
+        return (
+          <button
+            key={n}
+            type="button"
+            disabled={!onChange}
+            onClick={() => onChange?.(n)}
+            onMouseEnter={() => onChange && setHover(n)}
+            onMouseLeave={() => onChange && setHover(0)}
+            className={onChange ? 'cursor-pointer' : 'cursor-default'}
+          >
+            <Star size={size} className={filled ? 'fill-gold text-gold' : 'text-navy/20'} />
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+export default function ExpertRatingWidget({ expertId, isSelf }: { expertId: number; isSelf?: boolean }) {
+  const [summary, setSummary] = useState<ExpertRatingSummary | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [myRating, setMyRating] = useState(0);
+  const [myComment, setMyComment] = useState('');
+  const [editing, setEditing] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  function load() {
+    setLoading(true);
+    getExpertRatings(expertId)
+      .then((res) => {
+        setSummary(res);
+        const mine = res.ratings.find((r) => r.mine);
+        if (mine) {
+          setMyRating(mine.rating);
+          setMyComment(mine.comment ?? '');
+        }
+      })
+      .catch(() => setError('Impossible de charger les avis.'))
+      .finally(() => setLoading(false));
+  }
+  useEffect(load, [expertId]);
+  async function submit() {
+    if (myRating < 1) return;
+    setSaving(true);
+    setError(null);
+    try {
+      await submitExpertRating(expertId, myRating, myComment.trim());
+      setEditing(false);
+      load();
+    } catch {
+      setError("Échec de l'envoi de votre avis.");
+    } finally {
+      setSaving(false);
+    }
+  }
+  async function remove() {
+    setSaving(true);
+    try {
+      await deleteExpertRating(expertId);
+      setMyRating(0);
+      setMyComment('');
+      setEditing(false);
+      load();
+    } finally {
+      setSaving(false);
+    }
+  }
+  if (loading) {
+    return <div className="bg-white rounded-xl shadow-sm p-5 grid place-items-center"><Loader2 className="animate-spin text-navy/40" size={20} /></div>;
+  }
+  const mine = summary?.ratings.find((r) => r.mine);
+  return (
+    <div className="bg-white rounded-xl shadow-sm p-5">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-sm font-bold text-teal uppercase tracking-wide">Avis</h2>
+        {summary && summary.count > 0 && (
+          <div className="flex items-center gap-1.5">
+            <Star size={15} className="fill-gold text-gold" />
+            <span className="text-sm font-bold text-navy">{summary.average.toFixed(1)}</span>
+            <span className="text-xs text-navy/40">({summary.count})</span>
+          </div>
+        )}
+      </div>
+      {!isSelf && (
+        <div className="mb-5 pb-5 border-b border-navy/10">
+          {!editing && mine ? (
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <StarRow value={mine.rating} />
+                {mine.comment && <p className="mt-1.5 text-sm text-navy/70 italic">"{mine.comment}"</p>}
+              </div>
+              <div className="flex gap-1 shrink-0">
+                <button onClick={() => setEditing(true)} className="text-xs font-semibold text-teal hover:underline">Modifier</button>
+                <span className="text-navy/20">·</span>
+                <button onClick={remove} disabled={saving} className="text-xs font-semibold text-red-500 hover:underline">Supprimer</button>
+              </div>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-2.5">
+              <p className="text-xs font-semibold text-navy/60">{mine ? 'Modifier votre avis' : 'Laisser un avis'}</p>
+              <StarRow value={myRating} onChange={setMyRating} size={24} />
+              <textarea
+                value={myComment}
+                onChange={(e) => setMyComment(e.target.value)}
+                placeholder="Votre commentaire (optionnel)"
+                rows={2}
+                className="w-full rounded-lg border border-navy/15 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal/40 focus:border-teal resize-none"
+              />
+              <div className="flex gap-2 self-end">
+                {editing && (
+                  <button onClick={() => setEditing(false)} className="text-xs font-semibold text-navy/50 hover:text-navy px-2">
+                    Annuler
+                  </button>
+                )}
+                <button
+                  onClick={submit}
+                  disabled={saving || myRating < 1}
+                  className="flex items-center gap-1.5 rounded-full bg-teal px-4 py-1.5 text-xs font-semibold text-white hover:bg-teal/90 disabled:opacity-50 transition-colors"
+                >
+                  {saving ? <Loader2 size={13} className="animate-spin" /> : null}
+                  Envoyer
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+      {error && <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2 mb-3">{error}</p>}
+      {!summary || summary.ratings.length === 0 ? (
+        <p className="text-sm text-navy/40">Aucun avis pour le moment.</p>
+      ) : (
+        <div className="flex flex-col gap-4">
+          {summary.ratings.filter((r) => !r.mine).map((r) => (
+            <div key={r.id} className="flex gap-2.5">
+              <div className="h-8 w-8 rounded-full bg-navy/10 overflow-hidden shrink-0">
+                {r.authorPhotoProfilPath ? (
+                  <img src={imageUrl(r.authorPhotoProfilPath)} alt="" className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full grid place-items-center text-navy/30"><UserIcon size={14} /></div>
+                )}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2">
+                  <p className="text-sm font-semibold text-navy">{r.authorPrenom} {r.authorNom}</p>
+                  <StarRow value={r.rating} size={13} />
+                </div>
+                {r.comment && <p className="text-sm text-navy/70 mt-0.5">{r.comment}</p>}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+===== FILE: frontend\src\services\adminService.ts =====
+import api from './api';
+import type { User } from '../types/auth';
+import type { AdminStats, PagedUsers, ContentImage, ContentSection, SiteVideo, UserGrowthPoint } from '../types/admin';
+export async function getStats(): Promise<AdminStats> {
+  const { data } = await api.get<AdminStats>('/admin/stats');
+  return data;
+}
+export async function getUserGrowth(): Promise<UserGrowthPoint[]> {
+  const { data } = await api.get<UserGrowthPoint[]>('/admin/stats/user-growth');
+  return data;
+}
+export async function getUsers(page = 0, size = 20): Promise<PagedUsers> {
+  const { data } = await api.get<PagedUsers>('/admin/users', { params: { page, size } });
+  return data;
+}
+export async function enableUser(id: number): Promise<User> {
+  const { data } = await api.put<User>(`/admin/users/${id}/enable`);
+  return data;
+}
+export async function disableUser(id: number): Promise<User> {
+  const { data } = await api.put<User>(`/admin/users/${id}/disable`);
+  return data;
+}
+export async function deleteUser(id: number): Promise<void> {
+  await api.delete(`/admin/users/${id}`);
+}
+export async function getContentImages(section: ContentSection): Promise<ContentImage[]> {
+  const { data } = await api.get<ContentImage[]>(`/admin/content/images/${section}`);
+  return data;
+}
+export async function uploadContentImage(params: {
+  file: File;
+  section: ContentSection;
+  title: string;
+  description?: string;
+  displayOrder: number;
+}): Promise<ContentImage> {
+  const formData = new FormData();
+  formData.append('file', params.file);
+  formData.append('section', params.section);
+  formData.append('title', params.title);
+  if (params.description) formData.append('description', params.description);
+  formData.append('displayOrder', String(params.displayOrder));
+  const { data } = await api.post<ContentImage>('/admin/content/images', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  return data;
+}
+export async function enableContentImage(id: number): Promise<ContentImage> {
+  const { data } = await api.put<ContentImage>(`/admin/content/images/${id}/enable`);
+  return data;
+}
+export async function disableContentImage(id: number): Promise<ContentImage> {
+  const { data } = await api.put<ContentImage>(`/admin/content/images/${id}/disable`);
+  return data;
+}
+export async function deleteContentImage(id: number): Promise<void> {
+  await api.delete(`/admin/content/images/${id}`);
+}
+export async function getSiteVideo(): Promise<SiteVideo | null> {
+  const { data } = await api.get<SiteVideo | null>('/admin/content/video');
+  return data;
+}
+export async function uploadSiteVideo(file: File): Promise<SiteVideo> {
+  const formData = new FormData();
+  formData.append('file', file);
+  const { data } = await api.post<SiteVideo>('/admin/content/video', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  return data;
+}
+
+
+===== FILE: frontend\src\services\api.ts =====
+import axios from 'axios';
+
+export const api = axios.create({
+  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8080/api',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+// Attache automatiquement le token JWT (stocké par le store d'auth) sur chaque requête.
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('tawiniya-token');
+  if (token && config.headers) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
+export default api;
+
+
+===== FILE: frontend\src\services\authService.ts =====
+import api from './api';
+import type { AuthResponse, LoginPayload, RegisterPayload } from '../types/auth';
+export async function login(payload: LoginPayload): Promise<AuthResponse> {
+  const { data } = await api.post<AuthResponse>('/auth/login', payload);
+  return data;
+}
+export async function register(payload: RegisterPayload): Promise<AuthResponse> {
+  const { data } = await api.post<AuthResponse>('/auth/register', payload);
+  return data;
+}
+
+
+===== FILE: frontend\src\services\contentService.ts =====
+import api from './api';
+import type { ContentImage, ContentSection } from '../types/admin';
+export async function getPublicImages(section: ContentSection): Promise<ContentImage[]> {
+  const { data } = await api.get<ContentImage[]>(`/content/images/${section}`);
+  return data;
+}
+const API_ORIGIN = (import.meta.env.VITE_API_URL || 'http://localhost:8080/api').replace(/\/api\/?$/, '');
+export function resolveImageUrl(path: string): string {
+  if (!path) return '';
+  return path.startsWith('http') ? path : `${API_ORIGIN}${path.startsWith('/') ? '' : '/'}${path}`;
+}
+
+
+===== FILE: frontend\src\services\eventService.ts =====
+import api from './api';
+import type { EventItem } from '../types/event';
+interface PagedResponse<T> {
+  content: T[];
+  totalElements: number;
+  totalPages: number;
+  number: number;
+  size: number;
+}
+export async function getUpcomingEvents(page = 0, size = 20): Promise<PagedResponse<EventItem>> {
+  const { data } = await api.get<PagedResponse<EventItem>>('/events', { params: { page, size } });
+  return data;
+}
+export async function getAllEventsAdmin(page = 0, size = 20): Promise<PagedResponse<EventItem>> {
+  const { data } = await api.get<PagedResponse<EventItem>>('/admin/events', { params: { page, size } });
+  return data;
+}
+export async function createEvent(params: {
+  title: string;
+  description: string;
+  eventDate: string;
+  location: string;
+  image?: File | null;
+}): Promise<EventItem> {
+  const formData = new FormData();
+  formData.append('title', params.title);
+  formData.append('description', params.description);
+  formData.append('eventDate', params.eventDate);
+  formData.append('location', params.location);
+  if (params.image) formData.append('image', params.image);
+  const { data } = await api.post<EventItem>('/admin/events', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  return data;
+}
+export async function deleteEvent(id: number): Promise<void> {
+  await api.delete(`/admin/events/${id}`);
+}
+
+===== FILE: frontend\src\services\expertConversationService.ts =====
+import api from './api';
+import type { ExpertConversationDetail, ExpertConversationSummary, ConversationStatus } from '../types/expertConversation';
+export async function getMyConversations(): Promise<ExpertConversationSummary[]> {
+  const { data } = await api.get<ExpertConversationSummary[]>('/expert-conversations/mine');
+  return data;
+}
+export async function getConversationWithExpert(expertId: number): Promise<ExpertConversationDetail> {
+  const { data } = await api.get<ExpertConversationDetail>(`/expert-conversations/with/${expertId}`);
+  return data;
+}
+export async function getConversationById(id: number): Promise<ExpertConversationDetail> {
+  const { data } = await api.get<ExpertConversationDetail>(`/expert-conversations/${id}`);
+  return data;
+}
+export async function sendToExpert(expertId: number, subject: string, content: string, attachment?: File): Promise<ExpertConversationDetail> {
+  const form = new FormData();
+  if (subject) form.append('subject', subject);
+  form.append('content', content);
+  if (attachment) form.append('attachment', attachment);
+  console.log('DEBUG FormData sendToExpert:', Array.from(form.entries()));
+  const { data } = await api.post<ExpertConversationDetail>(`/expert-conversations/with/${expertId}`, form, {
+    headers: { 'Content-Type': undefined },
+  });
+  return data;
+}
+export async function replyToConversation(id: number, content: string, attachment?: File): Promise<ExpertConversationDetail> {
+  const form = new FormData();
+  form.append('content', content);
+  if (attachment) form.append('attachment', attachment);
+  console.log('DEBUG FormData replyToConversation:', Array.from(form.entries()));
+  const { data } = await api.post<ExpertConversationDetail>(`/expert-conversations/${id}/messages`, form, {
+    headers: { 'Content-Type': undefined },
+  });
+  return data;
+}
+export async function updateConversationStatus(id: number, status: ConversationStatus): Promise<ExpertConversationDetail> {
+  const { data } = await api.put<ExpertConversationDetail>(`/expert-conversations/${id}/status`, { status });
+  return data;
+}
+
+===== FILE: frontend\src\services\expertRatingService.ts =====
+import api from './api';
+import type { ExpertRatingSummary, ExpertRatingItem } from '../types/expertRating';
+export async function getExpertRatings(expertId: number): Promise<ExpertRatingSummary> {
+  const { data } = await api.get<ExpertRatingSummary>(`/expert-ratings/${expertId}`);
+  return data;
+}
+export async function submitExpertRating(expertId: number, rating: number, comment: string): Promise<ExpertRatingItem> {
+  const { data } = await api.post<ExpertRatingItem>(`/expert-ratings/${expertId}`, { rating, comment });
+  return data;
+}
+export async function deleteExpertRating(expertId: number): Promise<void> {
+  await api.delete(`/expert-ratings/${expertId}`);
+}
+
+===== FILE: frontend\src\services\juridiqueService.ts =====
+import api from './api';
+import type { LegalSection, LegalSectionInput } from '../types/juridique';
+export const adminJuridiqueService = {
+  getAll: () => api.get<LegalSection[]>('/admin/juridique').then((r) => r.data),
+  create: (data: LegalSectionInput) => api.post<LegalSection>('/admin/juridique', data).then((r) => r.data),
+  update: (id: number, data: LegalSectionInput) =>
+    api.put<LegalSection>(`/admin/juridique/${id}`, data).then((r) => r.data),
+  remove: (id: number) => api.delete(`/admin/juridique/${id}`),
+  reorder: (orderedIds: number[]) => api.put('/admin/juridique/reorder', { orderedIds }),
+};
+export const juridiqueService = {
+  getActive: () => api.get<LegalSection[]>('/juridique').then((r) => r.data),
+};
+
+===== FILE: frontend\src\services\networkService.ts =====
+import api from './api';
+import type { Role } from '../types/auth';
+import type { PagedUserCards, ConnectionItem, UserPublicProfile } from '../types/network';
+export async function getPublicProfile(userId: number): Promise<UserPublicProfile> {
+  const { data } = await api.get<UserPublicProfile>(`/network/profile/${userId}`);
+  return data;
+}
+export async function browseByRole(role: Role, page = 0, size = 20): Promise<PagedUserCards> {
+  const { data } = await api.get<PagedUserCards>(`/network/browse/${role}`, { params: { page, size } });
+  return data;
+}
+export async function sendConnectionRequest(targetUserId: number): Promise<ConnectionItem> {
+  const { data } = await api.post<ConnectionItem>(`/network/connect/${targetUserId}`);
+  return data;
+}
+export async function acceptConnection(connectionId: number): Promise<ConnectionItem> {
+  const { data } = await api.post<ConnectionItem>(`/network/${connectionId}/accept`);
+  return data;
+}
+export async function rejectConnection(connectionId: number): Promise<ConnectionItem> {
+  const { data } = await api.post<ConnectionItem>(`/network/${connectionId}/reject`);
+  return data;
+}
+export async function removeConnection(connectionId: number): Promise<void> {
+  await api.delete(`/network/${connectionId}`);
+}
+export async function getMyConnections(): Promise<ConnectionItem[]> {
+  const { data } = await api.get<ConnectionItem[]>('/network/connections');
+  return data;
+}
+export async function getReceivedInvitations(): Promise<ConnectionItem[]> {
+  const { data } = await api.get<ConnectionItem[]>('/network/invitations/received');
+  return data;
+}
+export async function getSentInvitations(): Promise<ConnectionItem[]> {
+  const { data } = await api.get<ConnectionItem[]>('/network/invitations/sent');
+  return data;
+}
+
+===== FILE: frontend\src\services\notificationService.ts =====
+import api from './api';
+import type { AppNotification, PagedNotifications } from '../types/notification';
+export async function getNotifications(page = 0, size = 20): Promise<PagedNotifications> {
+  const { data } = await api.get<PagedNotifications>('/notifications', { params: { page, size } });
+  return data;
+}
+export async function getUnreadCount(): Promise<number> {
+  const { data } = await api.get<{ count: number }>('/notifications/unread-count');
+  return data.count;
+}
+export async function markNotificationAsRead(id: number): Promise<void> {
+  await api.post(`/notifications/${id}/read`);
+}
+export async function markAllNotificationsAsRead(): Promise<void> {
+  await api.post('/notifications/read-all');
+}
+export type { AppNotification };
+
+===== FILE: frontend\src\services\postService.ts =====
+import api from './api';
+import type { PagedPosts, Post, Comment, ReactionType } from '../types/post';
+export async function getFeed(page = 0, size = 20): Promise<PagedPosts> {
+  const { data } = await api.get<PagedPosts>('/posts', { params: { page, size } });
+  return data;
+}
+export async function createPost(content: string, image: File | null): Promise<Post> {
+  const formData = new FormData();
+  formData.append('content', content);
+  if (image) formData.append('image', image);
+  const { data } = await api.post<Post>('/posts', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  return data;
+}
+export async function updatePost(postId: number, content: string): Promise<Post> {
+  const { data } = await api.put<Post>(`/posts/${postId}`, { content });
+  return data;
+}
+export async function deletePost(postId: number): Promise<void> {
+  await api.delete(`/posts/${postId}`);
+}
+export async function togglePin(postId: number): Promise<Post> {
+  const { data } = await api.post<Post>(`/posts/${postId}/pin`);
+  return data;
+}
+export async function toggleSave(postId: number): Promise<Post> {
+  const { data } = await api.post<Post>(`/posts/${postId}/save`);
+  return data;
+}
+export async function getPostsByAuthor(authorId: number, page = 0, size = 20): Promise<PagedPosts> {
+  const { data } = await api.get<PagedPosts>(`/posts/by-user/${authorId}`, { params: { page, size } });
+  return data;
+}
+export async function getSavedPosts(): Promise<Post[]> {
+  const { data } = await api.get<Post[]>('/posts/saved');
+  return data;
+}
+export async function reactToPost(postId: number, type: ReactionType): Promise<Post> {
+  const { data } = await api.post<Post>(`/posts/${postId}/react`, { type });
+  return data;
+}
+export async function getComments(postId: number): Promise<Comment[]> {
+  const { data } = await api.get<Comment[]>(`/posts/${postId}/comments`);
+  return data;
+}
+export async function addComment(postId: number, content: string, parentCommentId?: number): Promise<Comment> {
+  const { data } = await api.post<Comment>(`/posts/${postId}/comments`, { content, parentCommentId });
+  return data;
+}
+export async function reactToComment(commentId: number, type: ReactionType): Promise<Comment> {
+  const { data } = await api.post<Comment>(`/posts/comments/${commentId}/react`, { type });
+  return data;
+}
+export async function deleteComment(commentId: number): Promise<void> {
+  await api.delete(`/posts/comments/${commentId}`);
+}
+
+===== FILE: frontend\src\services\reclamationService.ts =====
+import api from './api';
+import type { PagedResponse, Reclamation, ReclamationStatus, ReclamationType } from '../types/reclamation';
+export interface CreateReclamationPayload {
+  subject: string;
+  description: string;
+  type?: ReclamationType;
+  attachment?: File | null;
+}
+export interface ReclamationAnalysis {
+  suggestedType: ReclamationType;
+  suggestedSubject: string;
+  summary: string;
+}
+export async function createReclamation(payload: CreateReclamationPayload): Promise<Reclamation> {
+  const form = new FormData();
+  form.append('subject', payload.subject);
+  form.append('description', payload.description);
+  if (payload.type) {
+    form.append('type', payload.type);
+  }
+  if (payload.attachment) {
+    form.append('attachment', payload.attachment);
+  }
+  const { data } = await api.post<Reclamation>('/reclamations', form, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  return data;
+}
+export async function analyzeReclamation(description: string): Promise<ReclamationAnalysis> {
+  const { data } = await api.post<ReclamationAnalysis>('/reclamations/analyze', { description });
+  return data;
+}
+export async function getMyReclamations(page = 0, size = 20): Promise<PagedResponse<Reclamation>> {
+  const { data } = await api.get<PagedResponse<Reclamation>>('/reclamations/mine', {
+    params: { page, size, sort: 'createdAt,desc' },
+  });
+  return data;
+}
+// ----- Admin -----
+export async function getAllReclamations(
+  status?: ReclamationStatus | '',
+  page = 0,
+  size = 20
+): Promise<PagedResponse<Reclamation>> {
+  const { data } = await api.get<PagedResponse<Reclamation>>('/admin/reclamations', {
+    params: { status: status || undefined, page, size, sort: 'createdAt,desc' },
+  });
+  return data;
+}
+export async function updateReclamationStatus(
+  id: number,
+  status: ReclamationStatus,
+  adminResponse?: string
+): Promise<Reclamation> {
+  const { data } = await api.put<Reclamation>(`/admin/reclamations/${id}/status`, {
+    status,
+    adminResponse,
+  });
+  return data;
+}
+
+===== FILE: frontend\src\services\technicienProfileService.ts =====
+import api from './api';
+import type { TechnicienProfile, TechnicienProfileFormData } from '../types/technicienProfile';
+export async function getMyProfile(): Promise<TechnicienProfile | null> {
+  const res = await api.get<TechnicienProfile>('/technicien-profile/mine', {
+    validateStatus: (status) => status === 200 || status === 204,
+  });
+  return res.status === 204 ? null : res.data;
+}
+export async function saveMyProfile(data: TechnicienProfileFormData): Promise<TechnicienProfile> {
+  const { data: result } = await api.put<TechnicienProfile>('/technicien-profile', data);
+  return result;
+}
+export async function uploadPhotoProfil(file: File): Promise<TechnicienProfile> {
+  const formData = new FormData();
+  formData.append('file', file);
+  const { data } = await api.post<TechnicienProfile>('/technicien-profile/photo-profil', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  return data;
+}
+export async function uploadPhotoCouverture(file: File): Promise<TechnicienProfile> {
+  const formData = new FormData();
+  formData.append('file', file);
+  const { data } = await api.post<TechnicienProfile>('/technicien-profile/photo-couverture', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  return data;
+}
+export type DocumentType = 'cin' | 'extraitNaissance' | 'diplome' | 'permis';
+export async function uploadDocument(type: DocumentType, file: File): Promise<TechnicienProfile> {
+  const formData = new FormData();
+  formData.append('file', file);
+  const { data } = await api.post<TechnicienProfile>(`/technicien-profile/document/${type}`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  return data;
+}
+
+===== FILE: frontend\src\services\userProfileService.ts =====
+import api from './api';
+import type { User, RegisterPayload } from '../types/auth';
+export type UpdateProfilePayload = Partial<RegisterPayload>;
+export async function getMyUserProfile(): Promise<User> {
+  const { data } = await api.get<User>('/users/me');
+  return data;
+}
+export async function updateMyUserProfile(payload: UpdateProfilePayload): Promise<User> {
+  const { data } = await api.put<User>('/users/me', payload);
+  return data;
+}
+export async function changeMyPassword(currentPassword: string, newPassword: string): Promise<void> {
+  await api.put('/users/me/password', { currentPassword, newPassword });
+}
+export async function uploadMyPhotoProfil(file: File): Promise<User> {
+  const formData = new FormData();
+  formData.append('file', file);
+  const { data } = await api.post<User>('/users/me/photo-profil', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  return data;
+}
+export async function uploadMyPhotoCouverture(file: File): Promise<User> {
+  const formData = new FormData();
+  formData.append('file', file);
+  const { data } = await api.post<User>('/users/me/photo-couverture', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  return data;
+}
+export async function uploadDiplomeDocument(file: File): Promise<User> {
+  const formData = new FormData();
+  formData.append('file', file);
+  const { data } = await api.post<User>('/users/me/diplome-document', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  return data;
+}
+
+export async function uploadCarteServiceDocument(file: File): Promise<User> {
+  const formData = new FormData();
+  formData.append('file', file);
+  const { data } = await api.post<User>('/users/me/carte-service-document', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  return data;
+}
+
+===== FILE: frontend\src\types\admin.ts =====
+import type { Role, User } from './auth';
+export interface AdminStats {
+  totalUsers: number;
+  usersByRole: Record<Role, number>;
+  failedLoginAttempts: number;
+}
+export interface UserGrowthPoint {
+  month: string;
+  totalUsers: number;
+}
+export interface PagedUsers {
+  content: User[];
+  totalElements: number;
+  totalPages: number;
+  number: number;
+  size: number;
+}
+export type ContentSection = 'HERO' | 'SPONSOR';
+export interface SiteVideo {
+  videoPath: string;
+  updatedAt: string;
+}
+export interface ContentImage {
+  id: number;
+  section: ContentSection;
+  title: string;
+  description: string | null;
+  imagePath: string;
+  displayOrder: number;
+  active: boolean;
+  createdAt: string;
+}
+
+
+===== FILE: frontend\src\types\auth.ts =====
+export type Role = 'ADMIN' | 'TECHNICIEN' | 'ENTREPRISE' | 'CENTRE_FORMATION' | 'BENEFICIEL' | 'EXPERT_JURIDIQUE';
+export interface ExperiencePro {
+  societe: string;
+  periode: string;
+}
+export interface TechnicienProfil {
+  dateNaissance?: string;
+  cin?: string;
+  nomParent?: string;
+  adresse?: string;
+  gsmParent?: string;
+  gsmBinome?: string;
+  facebook?: string;
+  tiktok?: string;
+  instagram?: string;
+  diplome?: string;
+  diplomeDocumentPath?: string;
+  carteServiceDocumentPath?: string;
+  specialite?: string;
+  niveauScolaire?: string;
+  permisConduire?: 'OUI' | 'NON' | null;
+  typeContrat?: string;
+  numCnss?: string;
+  numD17?: string;
+  numeroBanque?: string;
+  groupeSanguin?: string;
+  poids?: number;
+  hauteur?: number;
+  pointureChaussure?: string;
+  tailleVetements?: string;
+  tatouage?: 'OUI' | 'NON' | null;
+  maladiesChroniques?: string;
+  allergies?: string;
+  operations?: string;
+  dateEmbauche?: string;
+  experienceAnnees?: number;
+  salaireDepart?: number;
+  joursCongeAutorises?: number;
+  gsmSocieteMSD?: string;
+  experiencesPro?: ExperiencePro[];
+}
+export interface EntrepriseProfil {
+  raisonSociale?: string;
+  matriculeFiscal?: string;
+  registreCommerce?: string;
+  secteurActivite?: string;
+  descriptionEntreprise?: string;
+  anneeCreation?: number | string;
+  tailleEntreprise?: string;
+  entrepriseAdresse?: string;
+  gouvernorat?: string;
+  ville?: string;
+  entrepriseTelephone?: string;
+  entrepriseEmail?: string;
+  siteWeb?: string;
+  linkedin?: string;
+  nomResponsable?: string;
+  fonctionResponsable?: string;
+  telephoneResponsable?: string;
+  emailResponsable?: string;
+  domainesActivite?: string;
+  technologiesUtilisees?: string;
+  servicesProposes?: string;
+  nombreTechniciens?: number | string;
+  nombreStagiaires?: number | string;
+  nombreEmployes?: number | string;
+}
+export interface CentreFormationProfil {
+  horaires?: string;
+  formationsProposees?: string;
+}
+export interface User extends TechnicienProfil, EntrepriseProfil, CentreFormationProfil {
+  id: number;
+  nom: string;
+  prenom: string;
+  email: string;
+  phone: string;
+  role: Role;
+  enabled: boolean;
+  createdAt: string;
+  bio?: string;
+  photoProfilPath?: string;
+  photoCouverturePath?: string;
+}
+export interface AuthResponse {
+  token: string;
+  user: User;
+}
+export interface LoginPayload {
+  email: string;
+  password: string;
+}
+export interface RegisterPayload extends TechnicienProfil, EntrepriseProfil, CentreFormationProfil {
+  nom: string;
+  prenom: string;
+  email: string;
+  phone: string;
+  password: string;
+  role: Role;
+}
+export interface ApiError {
+  timestamp: string;
+  status: number;
+  error: string;
+  message: string;
+  fieldErrors: Record<string, string> | null;
+}
+
+===== FILE: frontend\src\types\event.ts =====
+export interface EventItem {
+  id: number;
+  title: string;
+  description: string;
+  eventDate: string;
+  location: string;
+  imagePath: string | null;
+  createdAt: string;
+}
+
+===== FILE: frontend\src\types\expertConversation.ts =====
+export type ConversationStatus = 'OUVERTE' | 'EN_COURS' | 'RESOLUE';
+export interface ConversationParticipant {
+  id: number;
+  nom: string;
+  prenom: string;
+  photoProfilPath?: string;
+}
+export interface ExpertMessageItem {
+  id: number;
+  senderId: number;
+  senderNom: string;
+  senderPrenom: string;
+  content: string;
+  attachmentPath?: string;
+  createdAt: string;
+  mine: boolean;
+}
+export interface ExpertConversationSummary {
+  id: number;
+  subject: string;
+  status: ConversationStatus;
+  updatedAt: string;
+  createdAt: string;
+  otherUser: ConversationParticipant;
+  lastMessagePreview?: string;
+  isExpertSide: boolean;
+}
+export interface ExpertConversationDetail {
+  id: number | null;
+  subject: string | null;
+  status: ConversationStatus | null;
+  otherUser: ConversationParticipant;
+  isExpertSide: boolean;
+  messages: ExpertMessageItem[];
+}
+
+===== FILE: frontend\src\types\expertRating.ts =====
+export interface ExpertRatingItem {
+  id: number;
+  authorId: number;
+  authorNom: string;
+  authorPrenom: string;
+  authorPhotoProfilPath?: string;
+  rating: number;
+  comment?: string;
+  createdAt: string;
+  mine: boolean;
+}
+export interface ExpertRatingSummary {
+  average: number;
+  count: number;
+  ratings: ExpertRatingItem[];
+}
+
+===== FILE: frontend\src\types\juridique.ts =====
+export interface LegalSection {
+  id: number;
+  title: string;
+  content: string;
+  orderIndex: number;
+  active: boolean;
+}
+export interface LegalSectionInput {
+  title: string;
+  content: string;
+  orderIndex?: number;
+  active: boolean;
+}
+
+===== FILE: frontend\src\types\nav.ts =====
+export type LangCode = 'fr' | 'en' | 'ar';
+
+export interface NavLink {
+  labelKey: string;
+  path: string;
+}
+
+export interface NavGroup {
+  labelKey: string;
+  children: NavLink[];
+}
+
+
+===== FILE: frontend\src\types\network.ts =====
+import type { Role } from './auth';
+export type ConnectionStatusValue = 'NONE' | 'PENDING_SENT' | 'PENDING_RECEIVED' | 'ACCEPTED';
+export interface UserCard {
+  id: number;
+  nom: string;
+  prenom: string;
+  role: Role;
+  bio?: string;
+  photoProfilPath?: string;
+  photoCouverturePath?: string;
+  adresse?: string;
+  subtitle?: string;
+  connectionStatus: ConnectionStatusValue;
+  connectionId?: number;
+}
+export interface ConnectionItem {
+  id: number;
+  otherUser: UserCard;
+  status: 'PENDING' | 'ACCEPTED' | 'REJECTED';
+  createdAt: string;
+  sentByMe: boolean;
+}
+export interface UserPublicProfile {
+  id: number;
+  nom: string;
+  prenom: string;
+  role: Role;
+  bio?: string;
+  photoProfilPath?: string;
+  photoCouverturePath?: string;
+  phone?: string;
+  diplome?: string;
+  specialite?: string;
+  niveauScolaire?: string;
+  facebook?: string;
+  tiktok?: string;
+  instagram?: string;
+  raisonSociale?: string;
+  secteurActivite?: string;
+  descriptionEntreprise?: string;
+  ville?: string;
+  gouvernorat?: string;
+  siteWeb?: string;
+  linkedin?: string;
+  entrepriseTelephone?: string;
+  entrepriseEmail?: string;
+  adresse?: string;
+  horaires?: string;
+  formationsProposees?: string;
+  connectionStatus: ConnectionStatusValue | 'SELF';
+  connectionId?: number;
+}
+export interface PagedUserCards {
+  content: UserCard[];
+  totalElements: number;
+  totalPages: number;
+  number: number;
+}
+
+===== FILE: frontend\src\types\notification.ts =====
+import type { Role } from './auth';
+export interface NotificationActor {
+  id: number;
+  nom: string;
+  prenom: string;
+  role: Role;
+  photoProfilPath?: string | null;
+}
+export type NotificationType = 'LIKE_POST' | 'COMMENT_POST' | 'REPLY_COMMENT' | 'LIKE_COMMENT' | 'NEW_POST';
+export interface AppNotification {
+  id: number;
+  type: NotificationType;
+  actor: NotificationActor;
+  postId: number | null;
+  commentId: number | null;
+  message: string;
+  read: boolean;
+  createdAt: string;
+}
+export interface PagedNotifications {
+  content: AppNotification[];
+  totalElements: number;
+  totalPages: number;
+  number: number;
+}
+
+===== FILE: frontend\src\types\post.ts =====
+import type { Role } from './auth';
+export type ReactionType = 'LIKE' | 'BRAVO' | 'SOUTIEN' | 'COUP_DE_COEUR' | 'INSTRUCTIF';
+export interface PostAuthor {
+  id: number;
+  nom: string;
+  prenom: string;
+  role: Role;
+  photoProfilPath?: string;
+}
+export interface Post {
+  id: number;
+  author: PostAuthor;
+  content: string;
+  imagePath?: string;
+  createdAt: string;
+  reactionsCount: Partial<Record<ReactionType, number>>;
+  totalReactions: number;
+  totalComments: number;
+  myReaction: ReactionType | null;
+  pinned: boolean;
+  savedByMe: boolean;
+  canEdit: boolean;
+}
+export interface Comment {
+  id: number;
+  author: PostAuthor;
+  content: string;
+  createdAt: string;
+  parentCommentId: number | null;
+  reactionsCount: Partial<Record<ReactionType, number>>;
+  totalReactions: number;
+  myReaction: ReactionType | null;
+  replies: Comment[] | null;
+}
+export interface PagedPosts {
+  content: Post[];
+  totalElements: number;
+  totalPages: number;
+  number: number;
+}
+
+===== FILE: frontend\src\types\reclamation.ts =====
+export type ReclamationType = 'ADMINISTRATIVE' | 'JURIDIQUE';
+export type ReclamationStatus = 'OUVERTE' | 'EN_COURS' | 'RESOLUE' | 'REJETEE';
+export interface Reclamation {
+  id: number;
+  type: ReclamationType;
+  subject: string;
+  description: string;
+  attachmentPath: string | null;
+  status: ReclamationStatus;
+  adminResponse: string | null;
+  createdAt: string;
+  updatedAt: string;
+  userId: number;
+  userNom: string;
+  userPrenom: string;
+  userEmail: string;
+  userRole: string;
+}
+export interface PagedResponse<T> {
+  content: T[];
+  page: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
+}
+export const RECLAMATION_TYPE_LABELS: Record<ReclamationType, string> = {
+  ADMINISTRATIVE: 'Administrative',
+  JURIDIQUE: 'Juridique',
+};
+export const RECLAMATION_STATUS_LABELS: Record<ReclamationStatus, string> = {
+  OUVERTE: 'Ouverte',
+  EN_COURS: 'En cours',
+  RESOLUE: 'Résolue',
+  REJETEE: 'Rejetée',
+};
+export const RECLAMATION_STATUS_COLORS: Record<ReclamationStatus, string> = {
+  OUVERTE: 'bg-amber-100 text-amber-700',
+  EN_COURS: 'bg-blue-100 text-blue-700',
+  RESOLUE: 'bg-green-100 text-green-700',
+  REJETEE: 'bg-red-100 text-red-700',
+};
+
+
+===== FILE: frontend\src\types\technicienProfile.ts =====
+export type GroupeSanguin =
+  | 'A_POSITIF' | 'A_NEGATIF'
+  | 'B_POSITIF' | 'B_NEGATIF'
+  | 'AB_POSITIF' | 'AB_NEGATIF'
+  | 'O_POSITIF' | 'O_NEGATIF';
+export const GROUPE_SANGUIN_LABELS: Record<GroupeSanguin, string> = {
+  A_POSITIF: 'A+',
+  A_NEGATIF: 'A-',
+  B_POSITIF: 'B+',
+  B_NEGATIF: 'B-',
+  AB_POSITIF: 'AB+',
+  AB_NEGATIF: 'AB-',
+  O_POSITIF: 'O+',
+  O_NEGATIF: 'O-',
+};
+export interface TechnicienProfile {
+  id: number;
+  userId: number;
+  userEmail: string;
+  nom: string | null;
+  prenom: string | null;
+  dateNaissance: string | null;
+  cin: string | null;
+  nomParent: string | null;
+  adresse: string | null;
+  gsm: string | null;
+  gsmParent: string | null;
+  gsmBinome: string | null;
+  email: string | null;
+  facebook: string | null;
+  tiktok: string | null;
+  instagram: string | null;
+  diplome: string | null;
+  specialite: string | null;
+  niveauScolaire: string | null;
+  permisConduite: boolean;
+  datePermis: string | null;
+  typeContrat: string | null;
+  numeroCnss: string | null;
+  numeroD17: string | null;
+  numeroBanquePoste: string | null;
+  groupeSanguin: GroupeSanguin | null;
+  poidsKg: number | null;
+  hauteurCm: number | null;
+  pointureChaussure: string | null;
+  tailleVetements: string | null;
+  maladiesChroniques: string | null;
+  allergies: string | null;
+  operations: string | null;
+  tatouage: boolean;
+  dateEmbauche: string | null;
+  experience: string | null;
+  societesEtPeriodes: string | null;
+  salaireDepart: number | null;
+  nombreJoursConge: number | null;
+  gsmSociete: string | null;
+  photoProfilPath: string | null;
+  photoCouverturePath: string | null;
+  copieCinPath: string | null;
+  copieExtraitNaissancePath: string | null;
+  copieDiplomePath: string | null;
+  copiePermisPath: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+export interface TechnicienProfileFormData {
+  nom: string;
+  prenom: string;
+  dateNaissance: string | null;
+  cin: string | null;
+  nomParent: string | null;
+  adresse: string | null;
+  gsm: string | null;
+  gsmParent: string | null;
+  gsmBinome: string | null;
+  email: string | null;
+  facebook: string | null;
+  tiktok: string | null;
+  instagram: string | null;
+  diplome: string | null;
+  specialite: string | null;
+  niveauScolaire: string | null;
+  permisConduite: boolean;
+  datePermis: string | null;
+  typeContrat: string | null;
+  numeroCnss: string | null;
+  numeroD17: string | null;
+  numeroBanquePoste: string | null;
+  groupeSanguin: GroupeSanguin | null;
+  poidsKg: number | null;
+  hauteurCm: number | null;
+  pointureChaussure: string | null;
+  tailleVetements: string | null;
+  maladiesChroniques: string | null;
+  allergies: string | null;
+  operations: string | null;
+  tatouage: boolean;
+  dateEmbauche: string | null;
+  experience: string | null;
+  societesEtPeriodes: string | null;
+  salaireDepart: number | null;
+  nombreJoursConge: number | null;
+  gsmSociete: string | null;
+}
+
+===== FILE: frontend\src\App.tsx =====
+import { Routes, Route } from 'react-router-dom';
+import Layout from './components/layout/Layout';
+import HomePage from './pages/HomePage';
+import LoginPage from './pages/LoginPage';
+import RegisterPage from './pages/RegisterPage';
+import JuridiquePage from './pages/JuridiquePage';
+import ReclamationPage from './pages/ReclamationPage';
+import EvenementsPage from './pages/EvenementsPage';
+import ProfilPage from './pages/ProfilPage';
+import NotFoundPage from './pages/NotFoundPage';
+import NetworkSpacePage from './pages/NetworkSpacePage';
+import PublicProfilePage from './pages/PublicProfilePage';
+import ActualitesPage from './pages/ActualitesPage';
+import NotificationsPage from './pages/NotificationsPage';
+import AdminDashboardPage from './pages/admin/AdminDashboardPage';
+import ProtectedRoute from './components/admin/ProtectedRoute';
+import ExpertJuridiqueDashboardPage from './pages/ExpertJuridiqueDashboardPage';
+import ServiceJuridiquePage from './pages/ServiceJuridiquePage';
+function App() {
+  return (
+    <Routes>
+      <Route element={<Layout />}>
+        <Route index element={<HomePage />} />
+        {/* Authentification (TASK-F006) — connectees aux vraies APIs backend */}
+        <Route path="login" element={<LoginPage />} />
+        <Route path="register" element={<RegisterPage />} />
+        {/* Espace admin (protege, role ADMIN uniquement) */}
+        <Route
+          path="admin"
+          element={
+            <ProtectedRoute allowedRoles={['ADMIN']}>
+              <AdminDashboardPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="expert-juridique"
+          element={
+            <ProtectedRoute allowedRoles={['EXPERT_JURIDIQUE']}>
+              <ExpertJuridiqueDashboardPage />
+            </ProtectedRoute>
+          }
+        />
+        {/* Fil d'actualite : posts, reactions, commentaires (tous roles) */}
+        <Route
+          path="actualites"
+          element={
+            <ProtectedRoute>
+              <ActualitesPage />
+            </ProtectedRoute>
+          }
+        />
+        {/* Notifications (tous roles) */}
+        <Route
+          path="notifications"
+          element={
+            <ProtectedRoute>
+              <NotificationsPage />
+            </ProtectedRoute>
+          }
+        />
+        {/* Profil personnel (technicien connecte) */}
+        <Route
+          path="profil"
+          element={
+            <ProtectedRoute>
+              <ProfilPage />
+            </ProtectedRoute>
+          }
+        />
+        {/* Espaces connectes (TASK-F007/F008) */}
+        <Route
+          path="espace/technicien"
+          element={
+            <ProtectedRoute>
+              <NetworkSpacePage role="TECHNICIEN" />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="espace/entreprise"
+          element={
+            <ProtectedRoute>
+              <NetworkSpacePage role="ENTREPRISE" />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="espace/centre-formation"
+          element={
+            <ProtectedRoute>
+              <NetworkSpacePage role="CENTRE_FORMATION" />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="espace/beneficiel"
+          element={
+            <ProtectedRoute>
+              <NetworkSpacePage role="BENEFICIEL" />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="profil/:id"
+          element={
+            <ProtectedRoute>
+              <PublicProfilePage />
+            </ProtectedRoute>
+          }
+        />
+        <Route path="juridique" element={<JuridiquePage />} />
+        <Route path="services/juridique" element={<ServiceJuridiquePage />} />
+        <Route path="reclamation" element={<ReclamationPage />} />
+        <Route path="evenements" element={<EvenementsPage />} />
+        <Route path="*" element={<NotFoundPage />} />
+      </Route>
+    </Routes>
+  );
+}
+export default App;
+

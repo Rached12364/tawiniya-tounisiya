@@ -1,0 +1,720 @@
+ppend('file', file);
+  const { data } = await api.post<SiteVideo>('/admin/content/video', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  return data;
+}
+
+
+===== FILE: frontend\src\services\api.ts =====
+import axios from 'axios';
+
+export const api = axios.create({
+  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8080/api',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+// Attache automatiquement le token JWT (stocké par le store d'auth) sur chaque requête.
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('tawiniya-token');
+  if (token && config.headers) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
+export default api;
+
+
+===== FILE: frontend\src\services\authService.ts =====
+import api from './api';
+import type { AuthResponse, LoginPayload, RegisterPayload } from '../types/auth';
+export async function login(payload: LoginPayload): Promise<AuthResponse> {
+  const { data } = await api.post<AuthResponse>('/auth/login', payload);
+  return data;
+}
+export async function register(payload: RegisterPayload): Promise<AuthResponse> {
+  const { data } = await api.post<AuthResponse>('/auth/register', payload);
+  return data;
+}
+
+
+===== FILE: frontend\src\services\contentService.ts =====
+import api from './api';
+import type { ContentImage, ContentSection } from '../types/admin';
+export async function getPublicImages(section: ContentSection): Promise<ContentImage[]> {
+  const { data } = await api.get<ContentImage[]>(`/content/images/${section}`);
+  return data;
+}
+const API_ORIGIN = (import.meta.env.VITE_API_URL || 'http://localhost:8080/api').replace(/\/api\/?$/, '');
+export function resolveImageUrl(path: string): string {
+  if (!path) return '';
+  return path.startsWith('http') ? path : `${API_ORIGIN}${path.startsWith('/') ? '' : '/'}${path}`;
+}
+
+
+===== FILE: frontend\src\services\eventService.ts =====
+import api from './api';
+import type { EventItem } from '../types/event';
+interface PagedResponse<T> {
+  content: T[];
+  totalElements: number;
+  totalPages: number;
+  number: number;
+  size: number;
+}
+export async function getUpcomingEvents(page = 0, size = 20): Promise<PagedResponse<EventItem>> {
+  const { data } = await api.get<PagedResponse<EventItem>>('/events', { params: { page, size } });
+  return data;
+}
+export async function getAllEventsAdmin(page = 0, size = 20): Promise<PagedResponse<EventItem>> {
+  const { data } = await api.get<PagedResponse<EventItem>>('/admin/events', { params: { page, size } });
+  return data;
+}
+export async function createEvent(params: {
+  title: string;
+  description: string;
+  eventDate: string;
+  location: string;
+  image?: File | null;
+}): Promise<EventItem> {
+  const formData = new FormData();
+  formData.append('title', params.title);
+  formData.append('description', params.description);
+  formData.append('eventDate', params.eventDate);
+  formData.append('location', params.location);
+  if (params.image) formData.append('image', params.image);
+  const { data } = await api.post<EventItem>('/admin/events', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  return data;
+}
+export async function deleteEvent(id: number): Promise<void> {
+  await api.delete(`/admin/events/${id}`);
+}
+
+===== FILE: frontend\src\services\expertConversationService.ts =====
+import api from './api';
+import type { ExpertConversationDetail, ExpertConversationSummary, ConversationStatus } from '../types/expertConversation';
+export async function getMyConversations(): Promise<ExpertConversationSummary[]> {
+  const { data } = await api.get<ExpertConversationSummary[]>('/expert-conversations/mine');
+  return data;
+}
+export async function getConversationWithExpert(expertId: number): Promise<ExpertConversationDetail> {
+  const { data } = await api.get<ExpertConversationDetail>(`/expert-conversations/with/${expertId}`);
+  return data;
+}
+export async function getConversationById(id: number): Promise<ExpertConversationDetail> {
+  const { data } = await api.get<ExpertConversationDetail>(`/expert-conversations/${id}`);
+  return data;
+}
+export async function sendToExpert(expertId: number, subject: string, content: string, attachment?: File): Promise<ExpertConversationDetail> {
+  const form = new FormData();
+  if (subject) form.append('subject', subject);
+  form.append('content', content);
+  if (attachment) form.append('attachment', attachment);
+  console.log('DEBUG FormData sendToExpert:', Array.from(form.entries()));
+  const { data } = await api.post<ExpertConversationDetail>(`/expert-conversations/with/${expertId}`, form, {
+    headers: { 'Content-Type': undefined },
+  });
+  return data;
+}
+export async function replyToConversation(id: number, content: string, attachment?: File): Promise<ExpertConversationDetail> {
+  const form = new FormData();
+  form.append('content', content);
+  if (attachment) form.append('attachment', attachment);
+  console.log('DEBUG FormData replyToConversation:', Array.from(form.entries()));
+  const { data } = await api.post<ExpertConversationDetail>(`/expert-conversations/${id}/messages`, form, {
+    headers: { 'Content-Type': undefined },
+  });
+  return data;
+}
+export async function updateConversationStatus(id: number, status: ConversationStatus): Promise<ExpertConversationDetail> {
+  const { data } = await api.put<ExpertConversationDetail>(`/expert-conversations/${id}/status`, { status });
+  return data;
+}
+
+===== FILE: frontend\src\services\expertRatingService.ts =====
+import api from './api';
+import type { ExpertRatingSummary, ExpertRatingItem } from '../types/expertRating';
+export async function getExpertRatings(expertId: number): Promise<ExpertRatingSummary> {
+  const { data } = await api.get<ExpertRatingSummary>(`/expert-ratings/${expertId}`);
+  return data;
+}
+export async function submitExpertRating(expertId: number, rating: number, comment: string): Promise<ExpertRatingItem> {
+  const { data } = await api.post<ExpertRatingItem>(`/expert-ratings/${expertId}`, { rating, comment });
+  return data;
+}
+export async function deleteExpertRating(expertId: number): Promise<void> {
+  await api.delete(`/expert-ratings/${expertId}`);
+}
+
+===== FILE: frontend\src\services\juridiqueService.ts =====
+import api from './api';
+import type { LegalSection, LegalSectionInput } from '../types/juridique';
+export const adminJuridiqueService = {
+  getAll: () => api.get<LegalSection[]>('/admin/juridique').then((r) => r.data),
+  create: (data: LegalSectionInput) => api.post<LegalSection>('/admin/juridique', data).then((r) => r.data),
+  update: (id: number, data: LegalSectionInput) =>
+    api.put<LegalSection>(`/admin/juridique/${id}`, data).then((r) => r.data),
+  remove: (id: number) => api.delete(`/admin/juridique/${id}`),
+  reorder: (orderedIds: number[]) => api.put('/admin/juridique/reorder', { orderedIds }),
+};
+export const juridiqueService = {
+  getActive: () => api.get<LegalSection[]>('/juridique').then((r) => r.data),
+};
+
+===== FILE: frontend\src\services\networkService.ts =====
+import api from './api';
+import type { Role } from '../types/auth';
+import type { PagedUserCards, ConnectionItem, UserPublicProfile } from '../types/network';
+export async function getPublicProfile(userId: number): Promise<UserPublicProfile> {
+  const { data } = await api.get<UserPublicProfile>(`/network/profile/${userId}`);
+  return data;
+}
+export async function browseByRole(role: Role, page = 0, size = 20): Promise<PagedUserCards> {
+  const { data } = await api.get<PagedUserCards>(`/network/browse/${role}`, { params: { page, size } });
+  return data;
+}
+export async function sendConnectionRequest(targetUserId: number): Promise<ConnectionItem> {
+  const { data } = await api.post<ConnectionItem>(`/network/connect/${targetUserId}`);
+  return data;
+}
+export async function acceptConnection(connectionId: number): Promise<ConnectionItem> {
+  const { data } = await api.post<ConnectionItem>(`/network/${connectionId}/accept`);
+  return data;
+}
+export async function rejectConnection(connectionId: number): Promise<ConnectionItem> {
+  const { data } = await api.post<ConnectionItem>(`/network/${connectionId}/reject`);
+  return data;
+}
+export async function removeConnection(connectionId: number): Promise<void> {
+  await api.delete(`/network/${connectionId}`);
+}
+export async function getMyConnections(): Promise<ConnectionItem[]> {
+  const { data } = await api.get<ConnectionItem[]>('/network/connections');
+  return data;
+}
+export async function getReceivedInvitations(): Promise<ConnectionItem[]> {
+  const { data } = await api.get<ConnectionItem[]>('/network/invitations/received');
+  return data;
+}
+export async function getSentInvitations(): Promise<ConnectionItem[]> {
+  const { data } = await api.get<ConnectionItem[]>('/network/invitations/sent');
+  return data;
+}
+
+===== FILE: frontend\src\services\notificationService.ts =====
+import api from './api';
+import type { AppNotification, PagedNotifications } from '../types/notification';
+export async function getNotifications(page = 0, size = 20): Promise<PagedNotifications> {
+  const { data } = await api.get<PagedNotifications>('/notifications', { params: { page, size } });
+  return data;
+}
+export async function getUnreadCount(): Promise<number> {
+  const { data } = await api.get<{ count: number }>('/notifications/unread-count');
+  return data.count;
+}
+export async function markNotificationAsRead(id: number): Promise<void> {
+  await api.post(`/notifications/${id}/read`);
+}
+export async function markAllNotificationsAsRead(): Promise<void> {
+  await api.post('/notifications/read-all');
+}
+export type { AppNotification };
+
+===== FILE: frontend\src\services\postService.ts =====
+import api from './api';
+import type { PagedPosts, Post, Comment, ReactionType } from '../types/post';
+export async function getFeed(page = 0, size = 20): Promise<PagedPosts> {
+  const { data } = await api.get<PagedPosts>('/posts', { params: { page, size } });
+  return data;
+}
+export async function createPost(content: string, image: File | null): Promise<Post> {
+  const formData = new FormData();
+  formData.append('content', content);
+  if (image) formData.append('image', image);
+  const { data } = await api.post<Post>('/posts', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  return data;
+}
+export async function updatePost(postId: number, content: string): Promise<Post> {
+  const { data } = await api.put<Post>(`/posts/${postId}`, { content });
+  return data;
+}
+export async function deletePost(postId: number): Promise<void> {
+  await api.delete(`/posts/${postId}`);
+}
+export async function togglePin(postId: number): Promise<Post> {
+  const { data } = await api.post<Post>(`/posts/${postId}/pin`);
+  return data;
+}
+export async function toggleSave(postId: number): Promise<Post> {
+  const { data } = await api.post<Post>(`/posts/${postId}/save`);
+  return data;
+}
+export async function getPostsByAuthor(authorId: number, page = 0, size = 20): Promise<PagedPosts> {
+  const { data } = await api.get<PagedPosts>(`/posts/by-user/${authorId}`, { params: { page, size } });
+  return data;
+}
+export async function getSavedPosts(): Promise<Post[]> {
+  const { data } = await api.get<Post[]>('/posts/saved');
+  return data;
+}
+export async function reactToPost(postId: number, type: ReactionType): Promise<Post> {
+  const { data } = await api.post<Post>(`/posts/${postId}/react`, { type });
+  return data;
+}
+export async function getComments(postId: number): Promise<Comment[]> {
+  const { data } = await api.get<Comment[]>(`/posts/${postId}/comments`);
+  return data;
+}
+export async function addComment(postId: number, content: string, parentCommentId?: number): Promise<Comment> {
+  const { data } = await api.post<Comment>(`/posts/${postId}/comments`, { content, parentCommentId });
+  return data;
+}
+export async function reactToComment(commentId: number, type: ReactionType): Promise<Comment> {
+  const { data } = await api.post<Comment>(`/posts/comments/${commentId}/react`, { type });
+  return data;
+}
+export async function deleteComment(commentId: number): Promise<void> {
+  await api.delete(`/posts/comments/${commentId}`);
+}
+
+===== FILE: frontend\src\services\reclamationService.ts =====
+import api from './api';
+import type { PagedResponse, Reclamation, ReclamationStatus, ReclamationType } from '../types/reclamation';
+export interface CreateReclamationPayload {
+  subject: string;
+  description: string;
+  type?: ReclamationType;
+  attachment?: File | null;
+}
+export interface ReclamationAnalysis {
+  suggestedType: ReclamationType;
+  suggestedSubject: string;
+  summary: string;
+}
+export async function createReclamation(payload: CreateReclamationPayload): Promise<Reclamation> {
+  const form = new FormData();
+  form.append('subject', payload.subject);
+  form.append('description', payload.description);
+  if (payload.type) {
+    form.append('type', payload.type);
+  }
+  if (payload.attachment) {
+    form.append('attachment', payload.attachment);
+  }
+  const { data } = await api.post<Reclamation>('/reclamations', form, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  return data;
+}
+export async function analyzeReclamation(description: string): Promise<ReclamationAnalysis> {
+  const { data } = await api.post<ReclamationAnalysis>('/reclamations/analyze', { description });
+  return data;
+}
+export async function getMyReclamations(page = 0, size = 20): Promise<PagedResponse<Reclamation>> {
+  const { data } = await api.get<PagedResponse<Reclamation>>('/reclamations/mine', {
+    params: { page, size, sort: 'createdAt,desc' },
+  });
+  return data;
+}
+// ----- Admin -----
+export async function getAllReclamations(
+  status?: ReclamationStatus | '',
+  page = 0,
+  size = 20
+): Promise<PagedResponse<Reclamation>> {
+  const { data } = await api.get<PagedResponse<Reclamation>>('/admin/reclamations', {
+    params: { status: status || undefined, page, size, sort: 'createdAt,desc' },
+  });
+  return data;
+}
+export async function updateReclamationStatus(
+  id: number,
+  status: ReclamationStatus,
+  adminResponse?: string
+): Promise<Reclamation> {
+  const { data } = await api.put<Reclamation>(`/admin/reclamations/${id}/status`, {
+    status,
+    adminResponse,
+  });
+  return data;
+}
+
+===== FILE: frontend\src\services\technicienProfileService.ts =====
+import api from './api';
+import type { TechnicienProfile, TechnicienProfileFormData } from '../types/technicienProfile';
+export async function getMyProfile(): Promise<TechnicienProfile | null> {
+  const res = await api.get<TechnicienProfile>('/technicien-profile/mine', {
+    validateStatus: (status) => status === 200 || status === 204,
+  });
+  return res.status === 204 ? null : res.data;
+}
+export async function saveMyProfile(data: TechnicienProfileFormData): Promise<TechnicienProfile> {
+  const { data: result } = await api.put<TechnicienProfile>('/technicien-profile', data);
+  return result;
+}
+export async function uploadPhotoProfil(file: File): Promise<TechnicienProfile> {
+  const formData = new FormData();
+  formData.append('file', file);
+  const { data } = await api.post<TechnicienProfile>('/technicien-profile/photo-profil', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  return data;
+}
+export async function uploadPhotoCouverture(file: File): Promise<TechnicienProfile> {
+  const formData = new FormData();
+  formData.append('file', file);
+  const { data } = await api.post<TechnicienProfile>('/technicien-profile/photo-couverture', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  return data;
+}
+export type DocumentType = 'cin' | 'extraitNaissance' | 'diplome' | 'permis';
+export async function uploadDocument(type: DocumentType, file: File): Promise<TechnicienProfile> {
+  const formData = new FormData();
+  formData.append('file', file);
+  const { data } = await api.post<TechnicienProfile>(`/technicien-profile/document/${type}`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  return data;
+}
+
+===== FILE: frontend\src\services\userProfileService.ts =====
+import api from './api';
+import type { User, RegisterPayload } from '../types/auth';
+export type UpdateProfilePayload = Partial<RegisterPayload>;
+export async function getMyUserProfile(): Promise<User> {
+  const { data } = await api.get<User>('/users/me');
+  return data;
+}
+export async function updateMyUserProfile(payload: UpdateProfilePayload): Promise<User> {
+  const { data } = await api.put<User>('/users/me', payload);
+  return data;
+}
+export async function changeMyPassword(currentPassword: string, newPassword: string): Promise<void> {
+  await api.put('/users/me/password', { currentPassword, newPassword });
+}
+export async function uploadMyPhotoProfil(file: File): Promise<User> {
+  const formData = new FormData();
+  formData.append('file', file);
+  const { data } = await api.post<User>('/users/me/photo-profil', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  return data;
+}
+export async function uploadMyPhotoCouverture(file: File): Promise<User> {
+  const formData = new FormData();
+  formData.append('file', file);
+  const { data } = await api.post<User>('/users/me/photo-couverture', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  return data;
+}
+export async function uploadDiplomeDocument(file: File): Promise<User> {
+  const formData = new FormData();
+  formData.append('file', file);
+  const { data } = await api.post<User>('/users/me/diplome-document', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  return data;
+}
+
+export async function uploadCarteServiceDocument(file: File): Promise<User> {
+  const formData = new FormData();
+  formData.append('file', file);
+  const { data } = await api.post<User>('/users/me/carte-service-document', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  return data;
+}
+
+===== FILE: frontend\src\types\admin.ts =====
+import type { Role, User } from './auth';
+export interface AdminStats {
+  totalUsers: number;
+  usersByRole: Record<Role, number>;
+  failedLoginAttempts: number;
+}
+export interface UserGrowthPoint {
+  month: string;
+  totalUsers: number;
+}
+export interface PagedUsers {
+  content: User[];
+  totalElements: number;
+  totalPages: number;
+  number: number;
+  size: number;
+}
+export type ContentSection = 'HERO' | 'SPONSOR';
+export interface SiteVideo {
+  videoPath: string;
+  updatedAt: string;
+}
+export interface ContentImage {
+  id: number;
+  section: ContentSection;
+  title: string;
+  description: string | null;
+  imagePath: string;
+  displayOrder: number;
+  active: boolean;
+  createdAt: string;
+}
+
+
+===== FILE: frontend\src\types\auth.ts =====
+export type Role = 'ADMIN' | 'TECHNICIEN' | 'ENTREPRISE' | 'CENTRE_FORMATION' | 'BENEFICIEL' | 'EXPERT_JURIDIQUE';
+export interface ExperiencePro {
+  societe: string;
+  periode: string;
+}
+export interface TechnicienProfil {
+  dateNaissance?: string;
+  cin?: string;
+  nomParent?: string;
+  adresse?: string;
+  gsmParent?: string;
+  gsmBinome?: string;
+  facebook?: string;
+  tiktok?: string;
+  instagram?: string;
+  diplome?: string;
+  diplomeDocumentPath?: string;
+  carteServiceDocumentPath?: string;
+  specialite?: string;
+  niveauScolaire?: string;
+  permisConduire?: 'OUI' | 'NON' | null;
+  typeContrat?: string;
+  numCnss?: string;
+  numD17?: string;
+  numeroBanque?: string;
+  groupeSanguin?: string;
+  poids?: number;
+  hauteur?: number;
+  pointureChaussure?: string;
+  tailleVetements?: string;
+  tatouage?: 'OUI' | 'NON' | null;
+  maladiesChroniques?: string;
+  allergies?: string;
+  operations?: string;
+  dateEmbauche?: string;
+  experienceAnnees?: number;
+  salaireDepart?: number;
+  joursCongeAutorises?: number;
+  gsmSocieteMSD?: string;
+  experiencesPro?: ExperiencePro[];
+}
+export interface EntrepriseProfil {
+  raisonSociale?: string;
+  matriculeFiscal?: string;
+  registreCommerce?: string;
+  secteurActivite?: string;
+  descriptionEntreprise?: string;
+  anneeCreation?: number | string;
+  tailleEntreprise?: string;
+  entrepriseAdresse?: string;
+  gouvernorat?: string;
+  ville?: string;
+  entrepriseTelephone?: string;
+  entrepriseEmail?: string;
+  siteWeb?: string;
+  linkedin?: string;
+  nomResponsable?: string;
+  fonctionResponsable?: string;
+  telephoneResponsable?: string;
+  emailResponsable?: string;
+  domainesActivite?: string;
+  technologiesUtilisees?: string;
+  servicesProposes?: string;
+  nombreTechniciens?: number | string;
+  nombreStagiaires?: number | string;
+  nombreEmployes?: number | string;
+}
+export interface CentreFormationProfil {
+  horaires?: string;
+  formationsProposees?: string;
+}
+export interface User extends TechnicienProfil, EntrepriseProfil, CentreFormationProfil {
+  id: number;
+  nom: string;
+  prenom: string;
+  email: string;
+  phone: string;
+  role: Role;
+  enabled: boolean;
+  createdAt: string;
+  bio?: string;
+  photoProfilPath?: string;
+  photoCouverturePath?: string;
+}
+export interface AuthResponse {
+  token: string;
+  user: User;
+}
+export interface LoginPayload {
+  email: string;
+  password: string;
+}
+export interface RegisterPayload extends TechnicienProfil, EntrepriseProfil, CentreFormationProfil {
+  nom: string;
+  prenom: string;
+  email: string;
+  phone: string;
+  password: string;
+  role: Role;
+}
+export interface ApiError {
+  timestamp: string;
+  status: number;
+  error: string;
+  message: string;
+  fieldErrors: Record<string, string> | null;
+}
+
+===== FILE: frontend\src\types\event.ts =====
+export interface EventItem {
+  id: number;
+  title: string;
+  description: string;
+  eventDate: string;
+  location: string;
+  imagePath: string | null;
+  createdAt: string;
+}
+
+===== FILE: frontend\src\types\expertConversation.ts =====
+export type ConversationStatus = 'OUVERTE' | 'EN_COURS' | 'RESOLUE';
+export interface ConversationParticipant {
+  id: number;
+  nom: string;
+  prenom: string;
+  photoProfilPath?: string;
+}
+export interface ExpertMessageItem {
+  id: number;
+  senderId: number;
+  senderNom: string;
+  senderPrenom: string;
+  content: string;
+  attachmentPath?: string;
+  createdAt: string;
+  mine: boolean;
+}
+export interface ExpertConversationSummary {
+  id: number;
+  subject: string;
+  status: ConversationStatus;
+  updatedAt: string;
+  createdAt: string;
+  otherUser: ConversationParticipant;
+  lastMessagePreview?: string;
+  isExpertSide: boolean;
+}
+export interface ExpertConversationDetail {
+  id: number | null;
+  subject: string | null;
+  status: ConversationStatus | null;
+  otherUser: ConversationParticipant;
+  isExpertSide: boolean;
+  messages: ExpertMessageItem[];
+}
+
+===== FILE: frontend\src\types\expertRating.ts =====
+export interface ExpertRatingItem {
+  id: number;
+  authorId: number;
+  authorNom: string;
+  authorPrenom: string;
+  authorPhotoProfilPath?: string;
+  rating: number;
+  comment?: string;
+  createdAt: string;
+  mine: boolean;
+}
+export interface ExpertRatingSummary {
+  average: number;
+  count: number;
+  ratings: ExpertRatingItem[];
+}
+
+===== FILE: frontend\src\types\juridique.ts =====
+export interface LegalSection {
+  id: number;
+  title: string;
+  content: string;
+  orderIndex: number;
+  active: boolean;
+}
+export interface LegalSectionInput {
+  title: string;
+  content: string;
+  orderIndex?: number;
+  active: boolean;
+}
+
+===== FILE: frontend\src\types\nav.ts =====
+export type LangCode = 'fr' | 'en' | 'ar';
+
+export interface NavLink {
+  labelKey: string;
+  path: string;
+}
+
+export interface NavGroup {
+  labelKey: string;
+  children: NavLink[];
+}
+
+
+===== FILE: frontend\src\types\network.ts =====
+import type { Role } from './auth';
+export type ConnectionStatusValue = 'NONE' | 'PENDING_SENT' | 'PENDING_RECEIVED' | 'ACCEPTED';
+export interface UserCard {
+  id: number;
+  nom: string;
+  prenom: string;
+  role: Role;
+  bio?: string;
+  photoProfilPath?: string;
+  photoCouverturePath?: string;
+  adresse?: string;
+  subtitle?: string;
+  connectionStatus: ConnectionStatusValue;
+  connectionId?: number;
+}
+export interface ConnectionItem {
+  id: number;
+  otherUser: UserCard;
+  status: 'PENDING' | 'ACCEPTED' | 'REJECTED';
+  createdAt: string;
+  sentByMe: boolean;
+}
+export interface UserPublicProfile {
+  id: number;
+  nom: string;
+  prenom: string;
+  role: Role;
+  bio?: string;
+  photoProfilPath?: string;
+  photoCouverturePath?: string;
+  phone?: string;
+  diplome?: string;
+  specialite?: string;
+  niveauScolaire?: string;
+  facebook?: string;
+  tiktok?: string;
+  instagram?: string;
+  raisonSociale?: string;
+  secteurActivite?: string;
+  descriptionEntreprise?: string;
+  ville?: string;
+  gouvernorat?: string;
+  siteWeb?: string;
+  l

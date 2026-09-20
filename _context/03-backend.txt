@@ -1,0 +1,1114 @@
+
+===== FILE: backend\src\main\java\tn\tawiniya\tounisiya\entity\Role.java =====
+package tn.tawiniya.tounisiya.entity;
+/**
+ * Rôles disponibles sur la plateforme Tawiniya Tounisiya.
+ */
+public enum Role {
+    ADMIN,
+    TECHNICIEN,
+    ENTREPRISE,
+    CENTRE_FORMATION,
+    BENEFICIEL,
+    EXPERT_JURIDIQUE
+}
+
+===== FILE: backend\src\main\java\tn\tawiniya\tounisiya\controller\ExpertConversationController.java =====
+package tn.tawiniya.tounisiya.controller;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
+import tn.tawiniya.tounisiya.dto.*;
+import tn.tawiniya.tounisiya.entity.User;
+import tn.tawiniya.tounisiya.service.ExpertConversationService;
+import org.springframework.web.multipart.MultipartFile;
+import java.util.List;
+/**
+ * Messagerie entre un utilisateur (Technicien/Entreprise/Centre de formation/Beneficiaire)
+ * et un expert juridique. Acces : tout utilisateur authentifie.
+ */
+@RestController
+@RequestMapping("/api/expert-conversations")
+@RequiredArgsConstructor
+public class ExpertConversationController {
+    private final ExpertConversationService conversationService;
+    @GetMapping("/mine")
+    public List<ExpertConversationSummaryResponse> listMine(@AuthenticationPrincipal User currentUser) {
+        return conversationService.listMine(currentUser);
+    }
+    @GetMapping("/with/{expertId}")
+    public ExpertConversationDetailResponse getWithExpert(
+            @AuthenticationPrincipal User currentUser,
+            @PathVariable Long expertId
+    ) {
+        return conversationService.getWithExpert(currentUser, expertId);
+    }
+    @PostMapping(value = "/with/{expertId}", consumes = "multipart/form-data")
+    public ExpertConversationDetailResponse sendToExpert(
+            @AuthenticationPrincipal User currentUser,
+            @PathVariable Long expertId,
+            @RequestParam(required = false) String subject,
+            @RequestParam String content,
+            @RequestParam(value = "attachment", required = false) MultipartFile attachment
+    ) {
+        return conversationService.sendToExpert(currentUser, expertId, subject, content, attachment);
+    }
+    @GetMapping("/{id}")
+    public ExpertConversationDetailResponse getById(
+            @AuthenticationPrincipal User currentUser,
+            @PathVariable Long id
+    ) {
+        return conversationService.getById(currentUser, id);
+    }
+    @PostMapping(value = "/{id}/messages", consumes = "multipart/form-data")
+    public ExpertConversationDetailResponse reply(
+            @AuthenticationPrincipal User currentUser,
+            @PathVariable Long id,
+            @RequestParam String content,
+            @RequestParam(value = "attachment", required = false) MultipartFile attachment
+    ) {
+        return conversationService.reply(currentUser, id, content, attachment);
+    }
+    @PutMapping("/{id}/status")
+    public ExpertConversationDetailResponse updateStatus(
+            @AuthenticationPrincipal User currentUser,
+            @PathVariable Long id,
+            @RequestBody UpdateConversationStatusRequest request
+    ) {
+        return conversationService.updateStatus(currentUser, id, request.getStatus());
+    }
+}
+
+===== FILE: backend\src\main\java\tn\tawiniya\tounisiya\dto\ExpertConversationDetailResponse.java =====
+package tn.tawiniya.tounisiya.dto;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import tn.tawiniya.tounisiya.entity.ConversationStatus;
+import java.util.List;
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class ExpertConversationDetailResponse {
+    private Long id;
+    private String subject;
+    private ConversationStatus status;
+    private ConversationParticipant otherUser;
+    private boolean isExpertSide;
+    private List<ExpertMessageResponse> messages;
+}
+
+===== FILE: backend\src\main\java\tn\tawiniya\tounisiya\dto\ExpertConversationSummaryResponse.java =====
+package tn.tawiniya.tounisiya.dto;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import tn.tawiniya.tounisiya.entity.ConversationStatus;
+import java.time.LocalDateTime;
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class ExpertConversationSummaryResponse {
+    private Long id;
+    private String subject;
+    private ConversationStatus status;
+    private LocalDateTime updatedAt;
+    private LocalDateTime createdAt;
+    private ConversationParticipant otherUser;
+    private String lastMessagePreview;
+    private boolean isExpertSide;
+}
+
+===== FILE: backend\src\main\java\tn\tawiniya\tounisiya\entity\ExpertConversation.java =====
+package tn.tawiniya.tounisiya.entity;
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import java.time.LocalDateTime;
+@Entity
+@Table(name = "expert_conversations")
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class ExpertConversation {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "requester_id", nullable = false)
+    private User requester;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "expert_id", nullable = false)
+    private User expert;
+    @Column(nullable = false)
+    private String subject;
+    @Enumerated(EnumType.STRING)
+    @Builder.Default
+    @Column(nullable = false)
+    private ConversationStatus status = ConversationStatus.OUVERTE;
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+    @Column(name = "updated_at", nullable = false)
+    private LocalDateTime updatedAt;
+    @PrePersist
+    protected void onCreate() {
+        LocalDateTime now = LocalDateTime.now();
+        this.createdAt = now;
+        this.updatedAt = now;
+    }
+}
+
+===== FILE: backend\src\main\java\tn\tawiniya\tounisiya\repository\ExpertConversationRepository.java =====
+package tn.tawiniya.tounisiya.repository;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import tn.tawiniya.tounisiya.entity.ExpertConversation;
+import java.util.List;
+import java.util.Optional;
+public interface ExpertConversationRepository extends JpaRepository<ExpertConversation, Long> {
+    Optional<ExpertConversation> findByRequesterIdAndExpertId(Long requesterId, Long expertId);
+    @Query("SELECT c FROM ExpertConversation c WHERE c.requester.id = :userId OR c.expert.id = :userId ORDER BY c.updatedAt DESC")
+    List<ExpertConversation> findAllForUser(@Param("userId") Long userId);
+}
+
+===== FILE: backend\src\main\java\tn\tawiniya\tounisiya\service\ExpertConversationService.java =====
+package tn.tawiniya.tounisiya.service;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import tn.tawiniya.tounisiya.dto.*;
+import tn.tawiniya.tounisiya.entity.*;
+import tn.tawiniya.tounisiya.exception.ForbiddenOperationException;
+import tn.tawiniya.tounisiya.exception.ResourceNotFoundException;
+import tn.tawiniya.tounisiya.repository.ExpertConversationRepository;
+import tn.tawiniya.tounisiya.repository.ExpertMessageRepository;
+import tn.tawiniya.tounisiya.repository.UserRepository;
+import org.springframework.web.multipart.MultipartFile;
+import java.util.List;
+import java.util.stream.Collectors;
+@Service
+@RequiredArgsConstructor
+public class ExpertConversationService {
+    private final ExpertConversationRepository conversationRepository;
+    private final ExpertMessageRepository messageRepository;
+    private final UserRepository userRepository;
+    private final FileStorageService fileStorageService;
+    private ConversationParticipant toParticipant(User u) {
+        return ConversationParticipant.builder()
+                .id(u.getId())
+                .nom(u.getNom())
+                .prenom(u.getPrenom())
+                .photoProfilPath(u.getPhotoProfilPath())
+                .build();
+    }
+    private ExpertMessageResponse toMessageResponse(ExpertMessage m, Long currentUserId) {
+        User sender = m.getSender();
+        return ExpertMessageResponse.builder()
+                .id(m.getId())
+                .senderId(sender.getId())
+                .senderNom(sender.getNom())
+                .senderPrenom(sender.getPrenom())
+                .content(m.getContent())
+                .attachmentPath(m.getAttachmentPath())
+                .createdAt(m.getCreatedAt())
+                .mine(sender.getId().equals(currentUserId))
+                .build();
+    }
+    private void checkParticipant(ExpertConversation c, Long userId) {
+        boolean isParticipant = c.getRequester().getId().equals(userId) || c.getExpert().getId().equals(userId);
+        if (!isParticipant) {
+            throw new ForbiddenOperationException("Vous n'avez pas acces a cette conversation.");
+        }
+    }
+    @Transactional(readOnly = true)
+    public List<ExpertConversationSummaryResponse> listMine(User currentUser) {
+        return conversationRepository.findAllForUser(currentUser.getId()).stream()
+                .map(c -> {
+                    boolean isExpertSide = c.getExpert().getId().equals(currentUser.getId());
+                    User other = isExpertSide ? c.getRequester() : c.getExpert();
+                    ExpertMessage last = messageRepository.findFirstByConversationIdOrderByCreatedAtDesc(c.getId());
+                    return ExpertConversationSummaryResponse.builder()
+                            .id(c.getId())
+                            .subject(c.getSubject())
+                            .status(c.getStatus())
+                            .updatedAt(c.getUpdatedAt())
+                            .createdAt(c.getCreatedAt())
+                            .otherUser(toParticipant(other))
+                            .lastMessagePreview(last != null ? last.getContent() : null)
+                            .isExpertSide(isExpertSide)
+                            .build();
+                })
+                .collect(Collectors.toList());
+    }
+    @Transactional(readOnly = true)
+    public ExpertConversationDetailResponse getWithExpert(User currentUser, Long expertId) {
+        User expert = userRepository.findById(expertId)
+                .orElseThrow(() -> new ResourceNotFoundException("Expert introuvable : " + expertId));
+        var existing = conversationRepository.findByRequesterIdAndExpertId(currentUser.getId(), expertId);
+        if (existing.isEmpty()) {
+            return ExpertConversationDetailResponse.builder()
+                    .id(null)
+                    .subject(null)
+                    .status(null)
+                    .otherUser(toParticipant(expert))
+                    .isExpertSide(false)
+                    .messages(List.of())
+                    .build();
+        }
+        return toDetail(existing.get(), currentUser.getId());
+    }
+    @Transactional(readOnly = true)
+    public ExpertConversationDetailResponse getById(User currentUser, Long conversationId) {
+        ExpertConversation c = conversationRepository.findById(conversationId)
+                .orElseThrow(() -> new ResourceNotFoundException("Conversation introuvable : " + conversationId));
+        checkParticipant(c, currentUser.getId());
+        return toDetail(c, currentUser.getId());
+    }
+    private ExpertConversationDetailResponse toDetail(ExpertConversation c, Long currentUserId) {
+        boolean isExpertSide = c.getExpert().getId().equals(currentUserId);
+        User other = isExpertSide ? c.getRequester() : c.getExpert();
+        List<ExpertMessageResponse> messages = messageRepository.findByConversationIdOrderByCreatedAtAsc(c.getId())
+                .stream().map(m -> toMessageResponse(m, currentUserId)).collect(Collectors.toList());
+        return ExpertConversationDetailResponse.builder()
+                .id(c.getId())
+                .subject(c.getSubject())
+                .status(c.getStatus())
+                .otherUser(toParticipant(other))
+                .isExpertSide(isExpertSide)
+                .messages(messages)
+                .build();
+    }
+    @Transactional
+    public ExpertConversationDetailResponse sendToExpert(User currentUser, Long expertId, String subject, String content, MultipartFile file) {
+        if (currentUser.getId().equals(expertId)) {
+            throw new ForbiddenOperationException("Vous ne pouvez pas vous contacter vous-meme.");
+        }
+        User expert = userRepository.findById(expertId)
+                .orElseThrow(() -> new ResourceNotFoundException("Expert introuvable : " + expertId));
+        if (expert.getRole() != Role.EXPERT_JURIDIQUE) {
+            throw new ForbiddenOperationException("Cet utilisateur n'est pas un expert juridique.");
+        }
+        ExpertConversation c = conversationRepository.findByRequesterIdAndExpertId(currentUser.getId(), expertId)
+                .orElseGet(() -> conversationRepository.save(ExpertConversation.builder()
+                        .requester(currentUser)
+                        .expert(expert)
+                        .subject((subject == null || subject.isBlank()) ? "Question a " + expert.getPrenom() + " " + expert.getNom() : subject)
+                        .build()));
+        return appendMessage(c, currentUser, content, file);
+    }
+    @Transactional
+    public ExpertConversationDetailResponse reply(User currentUser, Long conversationId, String content, MultipartFile file) {
+        ExpertConversation c = conversationRepository.findById(conversationId)
+                .orElseThrow(() -> new ResourceNotFoundException("Conversation introuvable : " + conversationId));
+        checkParticipant(c, currentUser.getId());
+        return appendMessage(c, currentUser, content, file);
+    }
+    private ExpertConversationDetailResponse appendMessage(ExpertConversation c, User sender, String content, MultipartFile file) {
+        String attachmentPath = (file != null && !file.isEmpty()) ? fileStorageService.storeMessageAttachment(file) : null;
+        ExpertMessage message = ExpertMessage.builder()
+                .conversation(c)
+                .sender(sender)
+                .content(content)
+                .attachmentPath(attachmentPath)
+                .build();
+        messageRepository.save(message);
+        c.setUpdatedAt(java.time.LocalDateTime.now());
+        if (c.getStatus() == ConversationStatus.RESOLUE) {
+            c.setStatus(ConversationStatus.OUVERTE);
+        } else if (c.getExpert().getId().equals(sender.getId()) && c.getStatus() == ConversationStatus.OUVERTE) {
+            c.setStatus(ConversationStatus.EN_COURS);
+        }
+        conversationRepository.save(c);
+        return toDetail(c, sender.getId());
+    }
+    @Transactional
+    public ExpertConversationDetailResponse updateStatus(User currentUser, Long conversationId, ConversationStatus status) {
+        ExpertConversation c = conversationRepository.findById(conversationId)
+                .orElseThrow(() -> new ResourceNotFoundException("Conversation introuvable : " + conversationId));
+        if (!c.getExpert().getId().equals(currentUser.getId())) {
+            throw new ForbiddenOperationException("Seul l'expert peut changer le statut.");
+        }
+        c.setStatus(status);
+        conversationRepository.save(c);
+        return toDetail(c, currentUser.getId());
+    }
+}
+
+===== FILE: backend\src\main\java\tn\tawiniya\tounisiya\dto\ExpertMessageResponse.java =====
+package tn.tawiniya.tounisiya.dto;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import java.time.LocalDateTime;
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class ExpertMessageResponse {
+    private Long id;
+    private Long senderId;
+    private String senderNom;
+    private String senderPrenom;
+    private String content;
+    private String attachmentPath;
+    private LocalDateTime createdAt;
+    private boolean mine;
+}
+
+===== FILE: backend\src\main\java\tn\tawiniya\tounisiya\entity\ExpertMessage.java =====
+package tn.tawiniya.tounisiya.entity;
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import java.time.LocalDateTime;
+@Entity
+@Table(name = "expert_messages")
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class ExpertMessage {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "conversation_id", nullable = false)
+    private ExpertConversation conversation;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "sender_id", nullable = false)
+    private User sender;
+    @Column(nullable = false, columnDefinition = "TEXT")
+    private String content;
+    private String attachmentPath;
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = LocalDateTime.now();
+    }
+}
+
+===== FILE: backend\src\main\java\tn\tawiniya\tounisiya\repository\ExpertMessageRepository.java =====
+package tn.tawiniya.tounisiya.repository;
+import org.springframework.data.jpa.repository.JpaRepository;
+import tn.tawiniya.tounisiya.entity.ExpertMessage;
+import java.util.List;
+public interface ExpertMessageRepository extends JpaRepository<ExpertMessage, Long> {
+    List<ExpertMessage> findByConversationIdOrderByCreatedAtAsc(Long conversationId);
+    ExpertMessage findFirstByConversationIdOrderByCreatedAtDesc(Long conversationId);
+}
+
+===== FILE: backend\src\main\java\tn\tawiniya\tounisiya\controller\ExpertRatingController.java =====
+package tn.tawiniya.tounisiya.controller;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
+import tn.tawiniya.tounisiya.dto.ExpertRatingResponse;
+import tn.tawiniya.tounisiya.dto.ExpertRatingSummaryResponse;
+import tn.tawiniya.tounisiya.dto.SubmitExpertRatingRequest;
+import tn.tawiniya.tounisiya.entity.User;
+import tn.tawiniya.tounisiya.service.ExpertRatingService;
+/**
+ * Avis et notes sur les experts juridiques. Lecture publique, ecriture reservee
+ * aux utilisateurs authentifies (via .anyRequest().authenticated() dans SecurityConfig).
+ */
+@RestController
+@RequestMapping("/api/expert-ratings")
+@RequiredArgsConstructor
+public class ExpertRatingController {
+    private final ExpertRatingService ratingService;
+    @GetMapping("/{expertId}")
+    public ExpertRatingSummaryResponse getForExpert(
+            @AuthenticationPrincipal(errorOnInvalidType = false) User currentUser,
+            @PathVariable Long expertId
+    ) {
+        return ratingService.getForExpert(expertId, currentUser);
+    }
+    @PostMapping("/{expertId}")
+    public ExpertRatingResponse submit(
+            @AuthenticationPrincipal User currentUser,
+            @PathVariable Long expertId,
+            @RequestBody SubmitExpertRatingRequest request
+    ) {
+        return ratingService.submit(currentUser, expertId, request.getRating(), request.getComment());
+    }
+    @DeleteMapping("/{expertId}")
+    public void delete(
+            @AuthenticationPrincipal User currentUser,
+            @PathVariable Long expertId
+    ) {
+        ratingService.delete(currentUser, expertId);
+    }
+}
+
+===== FILE: backend\src\main\java\tn\tawiniya\tounisiya\dto\ExpertRatingResponse.java =====
+package tn.tawiniya.tounisiya.dto;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import java.time.LocalDateTime;
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class ExpertRatingResponse {
+    private Long id;
+    private Long authorId;
+    private String authorNom;
+    private String authorPrenom;
+    private String authorPhotoProfilPath;
+    private int rating;
+    private String comment;
+    private LocalDateTime createdAt;
+    private boolean mine;
+}
+
+===== FILE: backend\src\main\java\tn\tawiniya\tounisiya\dto\ExpertRatingSummaryResponse.java =====
+package tn.tawiniya.tounisiya.dto;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import java.util.List;
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class ExpertRatingSummaryResponse {
+    private double average;
+    private long count;
+    private List<ExpertRatingResponse> ratings;
+}
+
+===== FILE: backend\src\main\java\tn\tawiniya\tounisiya\entity\ExpertRating.java =====
+package tn.tawiniya.tounisiya.entity;
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import java.time.LocalDateTime;
+@Entity
+@Table(name = "expert_ratings", uniqueConstraints = @UniqueConstraint(columnNames = {"expert_id", "author_id"}))
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class ExpertRating {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "expert_id", nullable = false)
+    private User expert;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "author_id", nullable = false)
+    private User author;
+    @Column(nullable = false)
+    private int rating;
+    @Column(columnDefinition = "TEXT")
+    private String comment;
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+    @Column(name = "updated_at", nullable = false)
+    private LocalDateTime updatedAt;
+    @PrePersist
+    protected void onCreate() {
+        LocalDateTime now = LocalDateTime.now();
+        this.createdAt = now;
+        this.updatedAt = now;
+    }
+    @PreUpdate
+    protected void onUpdate() {
+        this.updatedAt = LocalDateTime.now();
+    }
+}
+
+===== FILE: backend\src\main\java\tn\tawiniya\tounisiya\repository\ExpertRatingRepository.java =====
+package tn.tawiniya.tounisiya.repository;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import tn.tawiniya.tounisiya.entity.ExpertRating;
+import java.util.List;
+import java.util.Optional;
+public interface ExpertRatingRepository extends JpaRepository<ExpertRating, Long> {
+    Optional<ExpertRating> findByExpertIdAndAuthorId(Long expertId, Long authorId);
+    List<ExpertRating> findByExpertIdOrderByCreatedAtDesc(Long expertId);
+    @Query("SELECT AVG(r.rating) FROM ExpertRating r WHERE r.expert.id = :expertId")
+    Double averageForExpert(@Param("expertId") Long expertId);
+    long countByExpertId(Long expertId);
+}
+
+===== FILE: backend\src\main\java\tn\tawiniya\tounisiya\service\ExpertRatingService.java =====
+package tn.tawiniya.tounisiya.service;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import tn.tawiniya.tounisiya.dto.ExpertRatingResponse;
+import tn.tawiniya.tounisiya.dto.ExpertRatingSummaryResponse;
+import tn.tawiniya.tounisiya.entity.ExpertRating;
+import tn.tawiniya.tounisiya.entity.Role;
+import tn.tawiniya.tounisiya.entity.User;
+import tn.tawiniya.tounisiya.exception.ForbiddenOperationException;
+import tn.tawiniya.tounisiya.exception.InvalidFileException;
+import tn.tawiniya.tounisiya.exception.ResourceNotFoundException;
+import tn.tawiniya.tounisiya.repository.ExpertRatingRepository;
+import tn.tawiniya.tounisiya.repository.UserRepository;
+import java.util.List;
+import java.util.stream.Collectors;
+@Service
+@RequiredArgsConstructor
+public class ExpertRatingService {
+    private final ExpertRatingRepository ratingRepository;
+    private final UserRepository userRepository;
+    private ExpertRatingResponse toResponse(ExpertRating r, Long currentUserId) {
+        User author = r.getAuthor();
+        return ExpertRatingResponse.builder()
+                .id(r.getId())
+                .authorId(author.getId())
+                .authorNom(author.getNom())
+                .authorPrenom(author.getPrenom())
+                .authorPhotoProfilPath(author.getPhotoProfilPath())
+                .rating(r.getRating())
+                .comment(r.getComment())
+                .createdAt(r.getCreatedAt())
+                .mine(currentUserId != null && author.getId().equals(currentUserId))
+                .build();
+    }
+    @Transactional(readOnly = true)
+    public ExpertRatingSummaryResponse getForExpert(Long expertId, User currentUser) {
+        List<ExpertRating> ratings = ratingRepository.findByExpertIdOrderByCreatedAtDesc(expertId);
+        Double avg = ratingRepository.averageForExpert(expertId);
+        Long currentUserId = currentUser != null ? currentUser.getId() : null;
+        List<ExpertRatingResponse> responses = ratings.stream()
+                .map(r -> toResponse(r, currentUserId))
+                .collect(Collectors.toList());
+        return ExpertRatingSummaryResponse.builder()
+                .average(avg != null ? Math.round(avg * 10.0) / 10.0 : 0.0)
+                .count(ratings.size())
+                .ratings(responses)
+                .build();
+    }
+    @Transactional
+    public ExpertRatingResponse submit(User currentUser, Long expertId, int rating, String comment) {
+        if (currentUser.getId().equals(expertId)) {
+            throw new ForbiddenOperationException("Vous ne pouvez pas vous noter vous-meme.");
+        }
+        if (rating < 1 || rating > 5) {
+            throw new InvalidFileException("La note doit etre comprise entre 1 et 5.");
+        }
+        User expert = userRepository.findById(expertId)
+                .orElseThrow(() -> new ResourceNotFoundException("Utilisateur introuvable : " + expertId));
+        if (expert.getRole() == Role.ADMIN) {
+            throw new ForbiddenOperationException("Ce compte ne peut pas etre note.");
+        }
+        ExpertRating r = ratingRepository.findByExpertIdAndAuthorId(expertId, currentUser.getId())
+                .orElseGet(() -> ExpertRating.builder().expert(expert).author(currentUser).build());
+        r.setRating(rating);
+        r.setComment(comment);
+        ratingRepository.save(r);
+        return toResponse(r, currentUser.getId());
+    }
+    @Transactional
+    public void delete(User currentUser, Long expertId) {
+        ExpertRating r = ratingRepository.findByExpertIdAndAuthorId(expertId, currentUser.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Avis introuvable."));
+        ratingRepository.delete(r);
+    }
+}
+
+===== FILE: backend\src\main\java\tn\tawiniya\tounisiya\security\SecurityConfig.java =====
+package tn.tawiniya.tounisiya.security;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import java.util.Arrays;
+import java.util.List;
+/**
+ * Configuration de sécurité : stateless + authentification JWT + CORS.
+ * - /actuator/health, /api/auth/**, /api/content/**, /api/events/** (lecture) et /uploads/** sont publics
+ * - /api/admin/** est réservé au rôle ADMIN
+ * - /api/reclamations/**, /api/technicien-profile/** nécessitent d'être connecté (n'importe quel rôle)
+ * - toute autre route nécessite un token JWT valide (JwtFilter)
+ */
+@Configuration
+@EnableWebSecurity
+@RequiredArgsConstructor
+public class SecurityConfig {
+    private final JwtFilter jwtFilter;
+    private final UserDetailsServiceImpl userDetailsService;
+    @Value("${app.cors.allowed-origins}")
+    private String allowedOrigins;
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        http
+            .csrf(csrf -> csrf.disable())
+            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                .requestMatchers("/actuator/health", "/actuator/info").permitAll()
+                .requestMatchers("/api/auth/**").permitAll()
+                .requestMatchers("/api/content/**").permitAll()
+                .requestMatchers("/api/events/**").permitAll()
+                .requestMatchers("/uploads/**").permitAll()
+                .requestMatchers("/ws-notifications/**").permitAll()
+                .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                .requestMatchers("/api/reclamations/**").authenticated()
+                .requestMatchers("/api/technicien-profile/**").authenticated()
+                .anyRequest().authenticated()
+            )
+            .authenticationProvider(authenticationProvider())
+            .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+        return http.build();
+    }
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration config = new CorsConfiguration();
+        config.setAllowCredentials(true);
+        config.setAllowedOrigins(Arrays.asList(allowedOrigins.split(",")));
+        config.setAllowedHeaders(List.of("Authorization", "Content-Type", "Accept", "Origin", "X-Requested-With"));
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+        config.setExposedHeaders(List.of("Authorization"));
+        config.setMaxAge(3600L);
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", config);
+        return source;
+    }
+    @Bean
+    public AuthenticationProvider authenticationProvider() {
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider(userDetailsService);
+        provider.setPasswordEncoder(passwordEncoder());
+        return provider;
+    }
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+        return config.getAuthenticationManager();
+    }
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+}
+
+===== FILE: backend\src\main\java\tn\tawiniya\tounisiya\service\FileStorageService.java =====
+package tn.tawiniya.tounisiya.service;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+import tn.tawiniya.tounisiya.exception.InvalidFileException;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+@Service
+public class FileStorageService {
+    private static final Set<String> ALLOWED_TYPES = Set.of("image/jpeg", "image/png", "image/webp");
+    private static final Set<String> ALLOWED_ATTACHMENT_TYPES = Set.of(
+            "image/jpeg", "image/png", "image/webp", "application/pdf");
+    private static final long MAX_SIZE_BYTES = 5L * 1024 * 1024; // 5 Mo
+    private static final Set<String> ALLOWED_VIDEO_TYPES = Set.of("video/mp4", "video/webm", "video/ogg");
+    private static final long MAX_VIDEO_SIZE_BYTES = 100L * 1024 * 1024; // 100 Mo
+    private static final Set<String> ALLOWED_AUDIO_TYPES = Set.of("audio/webm", "audio/ogg", "audio/mpeg", "audio/mp4", "audio/wav");
+    private static final Set<String> ALLOWED_MESSAGE_ATTACHMENT_TYPES = Set.of(
+            "image/jpeg", "image/png", "image/webp", "application/pdf",
+            "video/mp4", "video/webm", "video/ogg",
+            "audio/webm", "audio/ogg", "audio/mpeg", "audio/mp4", "audio/wav");
+    @Value("${app.upload-dir:uploads}")
+    private String uploadDir;
+    public String storeImage(MultipartFile file) {
+        if (file.isEmpty()) {
+            throw new InvalidFileException("Le fichier est vide.");
+        }
+        if (!ALLOWED_TYPES.contains(file.getContentType())) {
+            throw new InvalidFileException("Format non autorisé. Formats acceptés : JPG, PNG, WEBP.");
+        }
+        if (file.getSize() > MAX_SIZE_BYTES) {
+            throw new InvalidFileException("Le fichier dépasse la taille maximale de 5 Mo.");
+        }
+        try {
+            Path targetDir = Paths.get(uploadDir, "images");
+            Files.createDirectories(targetDir);
+            String extension = getExtension(file.getOriginalFilename());
+            String filename = UUID.randomUUID() + extension;
+            Path targetPath = targetDir.resolve(filename);
+            Files.copy(file.getInputStream(), targetPath, StandardCopyOption.REPLACE_EXISTING);
+            return "/uploads/images/" + filename;
+        } catch (IOException e) {
+            throw new InvalidFileException("Erreur lors de l'enregistrement du fichier.");
+        }
+    }
+    public void deleteImage(String publicPath) {
+        if (publicPath == null) return;
+        try {
+            String relative = publicPath.replaceFirst("^/uploads/", "");
+            Path target = Paths.get(uploadDir, relative);
+            Files.deleteIfExists(target);
+        } catch (IOException ignored) {
+        }
+    }
+    public String storeAttachment(MultipartFile file) {
+        if (file == null || file.isEmpty()) {
+            return null;
+        }
+        if (!ALLOWED_ATTACHMENT_TYPES.contains(file.getContentType())) {
+            throw new InvalidFileException("Format non autorisé. Formats acceptés : JPG, PNG, WEBP, PDF.");
+        }
+        if (file.getSize() > MAX_SIZE_BYTES) {
+            throw new InvalidFileException("Le fichier dépasse la taille maximale de 5 Mo.");
+        }
+        try {
+            Path targetDir = Paths.get(uploadDir, "reclamations");
+            Files.createDirectories(targetDir);
+            String extension = getExtension(file.getOriginalFilename());
+            String filename = UUID.randomUUID() + extension;
+            Path targetPath = targetDir.resolve(filename);
+            Files.copy(file.getInputStream(), targetPath, StandardCopyOption.REPLACE_EXISTING);
+            return "/uploads/reclamations/" + filename;
+        } catch (IOException e) {
+            throw new InvalidFileException("Erreur lors de l'enregistrement du fichier.");
+        }
+    }
+    /** Photo de profil ou de couverture d'un technicien (image uniquement). */
+    public String storeTechnicienPhoto(MultipartFile file) {
+        if (file == null || file.isEmpty()) {
+            return null;
+        }
+        if (!ALLOWED_TYPES.contains(file.getContentType())) {
+            throw new InvalidFileException("Format non autorisé. Formats acceptés : JPG, PNG, WEBP.");
+        }
+        if (file.getSize() > MAX_SIZE_BYTES) {
+            throw new InvalidFileException("Le fichier dépasse la taille maximale de 5 Mo.");
+        }
+        try {
+            Path targetDir = Paths.get(uploadDir, "techniciens", "photos");
+            Files.createDirectories(targetDir);
+            String extension = getExtension(file.getOriginalFilename());
+            String filename = UUID.randomUUID() + extension;
+            Path targetPath = targetDir.resolve(filename);
+            Files.copy(file.getInputStream(), targetPath, StandardCopyOption.REPLACE_EXISTING);
+            return "/uploads/techniciens/photos/" + filename;
+        } catch (IOException e) {
+            throw new InvalidFileException("Erreur lors de l'enregistrement du fichier.");
+        }
+    }
+    /** Document justificatif d'un technicien (CIN, diplôme, permis, extrait de naissance) : image ou PDF. */
+    public String storeTechnicienDocument(MultipartFile file) {
+        if (file == null || file.isEmpty()) {
+            return null;
+        }
+        if (!ALLOWED_ATTACHMENT_TYPES.contains(file.getContentType())) {
+            throw new InvalidFileException("Format non autorisé. Formats acceptés : JPG, PNG, WEBP, PDF.");
+        }
+        if (file.getSize() > MAX_SIZE_BYTES) {
+            throw new InvalidFileException("Le fichier dépasse la taille maximale de 5 Mo.");
+        }
+        try {
+            Path targetDir = Paths.get(uploadDir, "techniciens", "documents");
+            Files.createDirectories(targetDir);
+            String extension = getExtension(file.getOriginalFilename());
+            String filename = UUID.randomUUID() + extension;
+            Path targetPath = targetDir.resolve(filename);
+            Files.copy(file.getInputStream(), targetPath, StandardCopyOption.REPLACE_EXISTING);
+            return "/uploads/techniciens/documents/" + filename;
+        } catch (IOException e) {
+            throw new InvalidFileException("Erreur lors de l'enregistrement du fichier.");
+        }
+    }
+    /** Video de presentation institutionnelle (page d'accueil). */
+    public String storeVideo(MultipartFile file) {
+        if (file == null || file.isEmpty()) {
+            throw new InvalidFileException("Le fichier est vide.");
+        }
+        if (!ALLOWED_VIDEO_TYPES.contains(file.getContentType())) {
+            throw new InvalidFileException("Format non autorise. Formats acceptes : MP4, WEBM, OGG.");
+        }
+        if (file.getSize() > MAX_VIDEO_SIZE_BYTES) {
+            throw new InvalidFileException("Le fichier depasse la taille maximale de 100 Mo.");
+        }
+        try {
+            Path targetDir = Paths.get(uploadDir, "videos");
+            Files.createDirectories(targetDir);
+            String extension = getExtension(file.getOriginalFilename());
+            String filename = UUID.randomUUID() + extension;
+            Path targetPath = targetDir.resolve(filename);
+            Files.copy(file.getInputStream(), targetPath, StandardCopyOption.REPLACE_EXISTING);
+            return "/uploads/videos/" + filename;
+        } catch (IOException e) {
+            throw new InvalidFileException("Erreur lors de l'enregistrement du fichier.");
+        }
+    }
+    /** Piece jointe dans une conversation avec un expert juridique : image, PDF, video ou audio (vocal). */
+    public String storeMessageAttachment(MultipartFile file) {
+        if (file == null || file.isEmpty()) {
+            return null;
+        }
+        if (!ALLOWED_MESSAGE_ATTACHMENT_TYPES.contains(file.getContentType())) {
+            throw new InvalidFileException("Format non autorise. Formats acceptes : images, PDF, video (MP4/WEBM/OGG), audio.");
+        }
+        long maxSize = file.getContentType() != null && file.getContentType().startsWith("video/") ? MAX_VIDEO_SIZE_BYTES : MAX_SIZE_BYTES;
+        if (file.getSize() > maxSize) {
+            throw new InvalidFileException("Le fichier depasse la taille maximale autorisee.");
+        }
+        try {
+            Path targetDir = Paths.get(uploadDir, "expert-messages");
+            Files.createDirectories(targetDir);
+            String extension = getExtension(file.getOriginalFilename());
+            String filename = UUID.randomUUID() + extension;
+            Path targetPath = targetDir.resolve(filename);
+            Files.copy(file.getInputStream(), targetPath, StandardCopyOption.REPLACE_EXISTING);
+            return "/uploads/expert-messages/" + filename;
+        } catch (IOException e) {
+            throw new InvalidFileException("Erreur lors de l'enregistrement du fichier.");
+        }
+    }
+    private String getExtension(String originalFilename) {
+        if (originalFilename == null || !originalFilename.contains(".")) {
+            return "";
+        }
+        return originalFilename.substring(originalFilename.lastIndexOf('.'));
+    }
+    public List<String> allowedTypes() {
+        return List.copyOf(ALLOWED_TYPES);
+    }
+}
+
+===== FILE: backend\src\main\java\tn\tawiniya\tounisiya\entity\User.java =====
+package tn.tawiniya.tounisiya.entity;
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+/**
+ * Entité utilisateur. Implémente UserDetails pour s'intégrer directement
+ * au mécanisme d'authentification de Spring Security.
+ */
+@Entity
+@Table(name = "users", uniqueConstraints = @UniqueConstraint(columnNames = "email"))
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class User implements UserDetails {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    @Column(nullable = false)
+    private String nom;
+    @Column(nullable = false)
+    private String prenom;
+    @Column(nullable = false, unique = true)
+    private String email;
+    private String phone;
+    @Column(nullable = false)
+    private String password;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Role role;
+    @Builder.Default
+    @Column(nullable = false)
+    private boolean enabled = true;
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+    @Column(name = "photo_profil_path")
+    private String photoProfilPath;
+    @Column(name = "photo_couverture_path")
+    private String photoCouverturePath;
+    @Column(columnDefinition = "TEXT")
+    private String bio;
+    // ================== Profil Technicien ==================
+    // Tous ces champs restent null pour les rôles qui ne les utilisent pas.
+    // ----- Identité -----
+    @Column(name = "date_naissance")
+    private LocalDate dateNaissance;
+    private String cin;
+    @Column(name = "nom_parent")
+    private String nomParent;
+    private String adresse;
+    // ----- Contacts -----
+    @Column(name = "gsm_parent")
+    private String gsmParent;
+    @Column(name = "gsm_binome")
+    private String gsmBinome;
+    private String facebook;
+    private String tiktok;
+    private String instagram;
+    // ----- Formation -----
+    private String diplome;
+    private String diplomeDocumentPath;
+    private String carteServiceDocumentPath;
+    private String specialite;
+    @Column(name = "niveau_scolaire")
+    private String niveauScolaire;
+    @Column(name = "permis_conduire")
+    private String permisConduire; // "OUI" / "NON"
+    // ----- Contrat & administratif -----
+    @Column(name = "type_contrat")
+    private String typeContrat;
+    @Column(name = "num_cnss")
+    private String numCnss;
+    @Column(name = "num_d17")
+    private String numD17;
+    @Column(name = "numero_banque")
+    private String numeroBanque;
+    // ----- Santé -----
+    @Column(name = "groupe_sanguin")
+    private String groupeSanguin;
+    private Double poids;
+    private Double hauteur;
+    @Column(name = "pointure_chaussure")
+    private String pointureChaussure;
+    @Column(name = "taille_vetements")
+    private String tailleVetements;
+    private String tatouage; // "OUI" / "NON"
+    @Column(name = "maladies_chroniques", columnDefinition = "TEXT")
+    private String maladiesChroniques;
+    @Column(columnDefinition = "TEXT")
+    private String allergies;
+    @Column(columnDefinition = "TEXT")
+    private String operations;
+    // ----- Emploi -----
+    @Column(name = "date_embauche")
+    private LocalDate dateEmbauche;
+    @Column(name = "experience_annees")
+    private Integer experienceAnnees;
+    @Column(name = "salaire_depart")
+    private Double salaireDepart;
+    @Column(name = "jours_conge_autorises")
+    private Integer joursCongeAutorises;
+    @Column(name = "gsm_societe_msd")
+    private String gsmSocieteMSD;
+    @ElementCollection
+    @CollectionTable(name = "technicien_experiences", joinColumns = @JoinColumn(name = "user_id"))
+    @Builder.Default
+    private List<TechnicienExperience> experiencesPro = new ArrayList<>();
+    // ================== Profil Entreprise ==================
+    // Rempli uniquement quand role == ENTREPRISE ; null sinon.
+    // ----- Informations générales -----
+    @Column(name = "raison_sociale")
+    private String raisonSociale;
+    @Column(name = "matricule_fiscal")
+    private String matriculeFiscal;
+    @Column(name = "registre_commerce")
+    private String registreCommerce;
+    @Column(name = "secteur_activite")
+    private String secteurActivite;
+    @Column(name = "description_entreprise", columnDefinition = "TEXT")
+    private String descriptionEntreprise;
+    @Column(name = "annee_creation")
+    private Integer anneeCreation;
+    @Column(name = "taille_entreprise")
+    private String tailleEntreprise;
+    // ----- Coordonnées -----
+    @Column(name = "entreprise_adresse")
+    private String entrepriseAdresse;
+    private String gouvernorat;
+    private String ville;
+    @Column(name = "entreprise_telephone")
+    private String entrepriseTelephone;
+    @Column(name = "entreprise_email")
+    private String entrepriseEmail;
+    @Column(name = "site_web")
+    private String siteWeb;
+    private String linkedin;
+    // ----- Contact responsable -----
+    @Column(name = "nom_responsable")
+    private String nomResponsable;
+    @Column(name = "fonction_responsable")
+    private String fonctionResponsable;
+    @Column(name = "telephone_responsable")
+    private String telephoneResponsable;
+    @Column(name = "email_responsable")
+    private String emailResponsable;
+    // ----- Informations professionnelles -----
+    @Column(name = "domaines_activite", columnDefinition = "TEXT")
+    private String domainesActivite;
+    @Column(name = "technologies_utilisees", columnDefinition = "TEXT")
+    private String technologiesUtilisees;
+    @Column(name = "services_proposes", columnDefinition = "TEXT")
+    private String servicesProposes;
+    @Column(name = "nombre_techniciens")
+    private Integer nombreTechniciens;
+    @Column(name = "nombre_stagiaires")
+    private Integer nombreStagiaires;
+    @Column(name = "nombre_employes")
+    private Integer nombreEmployes;
+    // ================== Profil Centre de formation ==================
+    // Rempli uniquement quand role == CENTRE_FORMATION ; null sinon.
+    // (nom = nom du centre, prenom = nom du contact/responsable,
+    //  adresse/siteWeb/photoProfilPath ci-dessus sont réutilisés : adresse du centre, site web, logo)
+    private String horaires;
+    @Column(name = "formations_proposees", columnDefinition = "TEXT")
+    private String formationsProposees;
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = LocalDateTime.now();
+    }
+    // ----- Implémentation UserDetails -----
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));
+    }
+    @Override
+    public String getUsername() {
+        return email;
+    }
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+    @Override
+    public boolean isEnabled() {
+        return enabled;
+    }
+}
