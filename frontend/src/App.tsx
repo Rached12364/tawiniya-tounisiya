@@ -3,6 +3,8 @@ import Layout from './components/layout/Layout';
 import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
+import ForgotPasswordPage from './pages/ForgotPasswordPage';
+import ResetPasswordPage from './pages/ResetPasswordPage';
 import JuridiquePage from './pages/JuridiquePage';
 import ReclamationPage from './pages/ReclamationPage';
 import EvenementsPage from './pages/EvenementsPage';
@@ -26,6 +28,8 @@ function App() {
         {/* Authentification (TASK-F006) — connectees aux vraies APIs backend */}
         <Route path="login" element={<LoginPage />} />
         <Route path="register" element={<RegisterPage />} />
+        <Route path="forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="reset-password" element={<ResetPasswordPage />} />
         {/* Espace admin (protege, role ADMIN uniquement) */}
         <Route
           path="admin"
