@@ -21,6 +21,17 @@ spring:
     multipart:
       max-file-size: 100MB
       max-request-size: 100MB
+  mail:
+    host: smtp-relay.brevo.com
+    port: 587
+    username: ${SMTP_USERNAME:}
+    password: ${SMTP_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
 # Exposition Actuator (sante de l'application)
 management:
   endpoints:
@@ -38,6 +49,7 @@ app:
   cors:
     allowed-origins: ${CORS_ORIGINS:http://localhost:3000}
   upload-dir: ${UPLOAD_DIR:uploads}
+  frontend-url: ${FRONTEND_URL:http://localhost:3000}
   ai:
     gemini:
       api-key: ${GEMINI_API_KEY:}
