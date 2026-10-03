@@ -9,6 +9,7 @@ import {
 } from '../services/userProfileService';
 import UserPostsList from '../components/post/UserPostsList';
 import ChangePasswordForm from '../components/ChangePasswordForm';
+import PrivacySettingsForm from '../components/PrivacySettingsForm';
 import type { User, ExperiencePro } from '../types/auth';
 const API_ORIGIN = (import.meta.env.VITE_API_URL || 'http://localhost:8080/api').replace(/\/api\/?$/, '');
 function imageUrl(path: string | null | undefined) {
@@ -569,6 +570,7 @@ export default function ProfilPage() {
                 <ReadOnlyFieldsGrid fields={ACCOUNT_SECTION.fields} form={form} />
               </div>
               <ChangePasswordForm />
+              <PrivacySettingsForm user={user} />
               {roleSections.length > 0 && (
                 <div className="bg-white dark:bg-[#12283F] rounded-xl shadow-sm dark:shadow-black/30 px-5">
                   {roleSections.map((section, i) => (

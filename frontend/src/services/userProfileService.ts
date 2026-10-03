@@ -45,3 +45,14 @@ export async function uploadCarteServiceDocument(file: File): Promise<User> {
   });
   return data;
 }
+export interface PrivacySettings {
+  privateFields: string[];
+}
+export async function getPrivacySettings(): Promise<PrivacySettings> {
+  const { data } = await api.get<PrivacySettings>('/users/me/privacy');
+  return data;
+}
+export async function updatePrivacySettings(privateFields: string[]): Promise<PrivacySettings> {
+  const { data } = await api.put<PrivacySettings>('/users/me/privacy', { privateFields });
+  return data;
+}
