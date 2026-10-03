@@ -2,14 +2,14 @@ import { useEffect, useState, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Camera, Image as ImageIcon, Loader2, Pencil, Check, X,
-  User as UserIcon, Plus, Trash2, Scale, Stethoscope, ChevronDown, SlidersHorizontal,
+  User as UserIcon, Plus, Trash2, Scale, Stethoscope, ChevronDown, SlidersHorizontal, Eye, EyeOff,
 } from 'lucide-react';
 import {
   getMyUserProfile, updateMyUserProfile, uploadMyPhotoProfil, uploadMyPhotoCouverture,
 } from '../services/userProfileService';
 import UserPostsList from '../components/post/UserPostsList';
 import ChangePasswordForm from '../components/ChangePasswordForm';
-import PrivacySettingsForm from '../components/PrivacySettingsForm';
+import { getPrivacySettings, updatePrivacySettings } from '../services/userProfileService';
 import type { User, ExperiencePro } from '../types/auth';
 const API_ORIGIN = (import.meta.env.VITE_API_URL || 'http://localhost:8080/api').replace(/\/api\/?$/, '');
 function imageUrl(path: string | null | undefined) {
@@ -190,15 +190,39 @@ function SectionFieldsGrid({
     </div>
   );
 }
-function ReadOnlyFieldsGrid({ fields, form }: { fields: FieldDef[]; form: Partial<User> }) {
+function ReadOnlyFieldsGrid({
+  fields, form, hiddenFields, onTogglePrivacy,
+}: {
+  fields: FieldDef[];
+  form: Partial<User>;
+  hiddenFields?: Set<string>;
+  onTogglePrivacy?: (key: string) => void;
+}) {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3">
-      {fields.map((f) => (
-        <div key={String(f.key)}>
-          <p className="text-[11px] text-navy/40 dark:text-white/40 font-semibold uppercase tracking-wide">{f.label}</p>
-          <p className="text-sm text-navy dark:text-white mt-0.5 whitespace-pre-line">{displayValue(f, (form as any)[f.key])}</p>
-        </div>
-      ))}
+      {fields.map((f) => {
+        const isHidden = hiddenFields?.has(String(f.key));
+        return (
+          <div key={String(f.key)}>
+            <div className="flex items-center justify-between gap-2">
+              <p className="text-[11px] text-navy/40 dark:text-white/40 font-semibold uppercase tracking-wide">{f.label}</p>
+              {onTogglePrivacy && (
+                <button
+                  type="button"
+                  onClick={() => onTogglePrivacy(String(f.key))}
+                  title={isHidden ? 'Privé — cliquer pour rendre public' : 'Public — cliquer pour rendre privé'}
+                  className={`shrink-0 p-1 rounded-full transition-colors ${
+                    isHidden ? 'text-navy/30 dark:text-white/30 hover:text-navy/50' : 'text-teal hover:text-teal/70'
+                  }`}
+                >
+                  {isHidden ? <EyeOff size={13} /> : <Eye size={13} />}
+                </button>
+              )}
+            </div>
+            <p className="text-sm text-navy dark:text-white mt-0.5 whitespace-pre-line">{displayValue(f, (form as any)[f.key])}</p>
+          </div>
+        );
+      })}
     </div>
   );
 }
@@ -392,6 +416,21 @@ export default function ProfilPage() {
   const [activeTab, setActiveTab] = useState('compte');
   const [snapshotForm, setSnapshotForm] = useState<Partial<User>>({});
   const [snapshotExperiences, setSnapshotExperiences] = useState<ExperiencePro[]>([]);
+  const [hiddenFields, setHiddenFields] = useState<Set<string>>(new Set());
+  useEffect(() => {
+    getPrivacySettings()
+      .then((res) => setHiddenFields(new Set(res.privateFields)))
+      .catch(() => {});
+  }, []);
+  async function togglePrivacy(key: string) {
+    setHiddenFields((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      updatePrivacySettings(Array.from(next)).catch(() => {});
+      return next;
+    });
+  }
   useEffect(() => {
     getMyUserProfile()
       .then((u) => {
@@ -567,15 +606,14 @@ export default function ProfilPage() {
             <div className="flex flex-col gap-5">
               <div className="bg-white dark:bg-[#12283F] rounded-xl shadow-sm dark:shadow-black/30 p-5">
                 <h2 className="text-sm font-bold text-teal dark:text-teal-light uppercase tracking-wide mb-4">{ACCOUNT_SECTION.title}</h2>
-                <ReadOnlyFieldsGrid fields={ACCOUNT_SECTION.fields} form={form} />
+                <ReadOnlyFieldsGrid fields={ACCOUNT_SECTION.fields} form={form} hiddenFields={hiddenFields} onTogglePrivacy={togglePrivacy} />
               </div>
               <ChangePasswordForm />
-              <PrivacySettingsForm user={user} />
               {roleSections.length > 0 && (
                 <div className="bg-white dark:bg-[#12283F] rounded-xl shadow-sm dark:shadow-black/30 px-5">
                   {roleSections.map((section, i) => (
                     <AccordionSection key={section.title} title={section.title} defaultOpen={i === 0}>
-                      <ReadOnlyFieldsGrid fields={section.fields} form={form} />
+                      <ReadOnlyFieldsGrid fields={section.fields} form={form} hiddenFields={hiddenFields} onTogglePrivacy={togglePrivacy} />
                     </AccordionSection>
                   ))}
                 </div>
