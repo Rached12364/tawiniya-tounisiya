@@ -4,6 +4,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import tn.tawiniya.tounisiya.dto.ChangePasswordRequest;
+import tn.tawiniya.tounisiya.dto.PrivacySettingsResponse;
+import tn.tawiniya.tounisiya.dto.UpdatePrivacyRequest;
 import tn.tawiniya.tounisiya.dto.UpdateProfileRequest;
 import tn.tawiniya.tounisiya.dto.UserResponse;
 import tn.tawiniya.tounisiya.entity.User;
@@ -59,5 +61,16 @@ public class UserProfileController {
             @RequestParam("file") MultipartFile file
     ) {
         return profileService.updateCarteServiceDocument(currentUser, file);
+    }
+    @GetMapping("/me/privacy")
+    public PrivacySettingsResponse getPrivacySettings(@AuthenticationPrincipal User currentUser) {
+        return profileService.getPrivacySettings(currentUser);
+    }
+    @PutMapping("/me/privacy")
+    public PrivacySettingsResponse updatePrivacySettings(
+            @AuthenticationPrincipal User currentUser,
+            @RequestBody UpdatePrivacyRequest request
+    ) {
+        return profileService.updatePrivacySettings(currentUser, request);
     }
 }

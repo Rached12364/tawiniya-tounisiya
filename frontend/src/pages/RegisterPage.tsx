@@ -1,12 +1,12 @@
 import { useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { User, Mail, Phone, Lock, UserPlus, Loader2, Wrench, Building2, GraduationCap, HeartHandshake, Check, Plus, Trash2 } from 'lucide-react';
+import { User, Mail, Phone, Lock, UserPlus, Loader2, Zap, Wrench, Building2, GraduationCap, HeartHandshake, Check, Plus, Trash2 } from 'lucide-react';
 import { register } from '../services/authService';
 import { useAuthStore, redirectPathForRole } from '../store/authStore';
 import type { ApiError, Role, RegisterPayload, ExperiencePro } from '../types/auth';
 const ROLE_OPTIONS: { value: Role; label: string; icon: typeof Wrench; description: string }[] = [
-  { value: 'TECHNICIEN', label: 'Technicien', icon: Wrench, description: 'Électricité, énergie renouvelable' },
+  { value: 'TECHNICIEN', label: 'Technicien', icon: Zap, description: 'Électricité, énergie renouvelable' },
   { value: 'ENTREPRISE', label: 'Entreprise', icon: Building2, description: 'Structure ou société' },
   { value: 'CENTRE_FORMATION', label: 'Centre de formation', icon: GraduationCap, description: 'Formations et apprentissage' },
   { value: 'BENEFICIEL', label: 'Bénéficiaire', icon: HeartHandshake, description: 'Beneficiaire des services' },

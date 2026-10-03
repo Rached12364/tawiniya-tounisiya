@@ -115,6 +115,13 @@ public class User implements UserDetails {
     @CollectionTable(name = "technicien_experiences", joinColumns = @JoinColumn(name = "user_id"))
     @Builder.Default
     private List<TechnicienExperience> experiencesPro = new ArrayList<>();
+    // ================== Confidentialite du profil ==================
+    // Noms des champs que l'utilisateur a choisi de masquer de son profil public.
+    @ElementCollection
+    @CollectionTable(name = "user_private_fields", joinColumns = @JoinColumn(name = "user_id"))
+    @Column(name = "field_name")
+    @Builder.Default
+    private java.util.Set<String> privateFields = new java.util.HashSet<>();
     // ================== Profil Entreprise ==================
     // Rempli uniquement quand role == ENTREPRISE ; null sinon.
     // ----- Informations générales -----

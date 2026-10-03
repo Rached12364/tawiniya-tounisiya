@@ -5,6 +5,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import tn.tawiniya.tounisiya.dto.ChangePasswordRequest;
+import tn.tawiniya.tounisiya.dto.PrivacySettingsResponse;
+import tn.tawiniya.tounisiya.dto.UpdatePrivacyRequest;
 import tn.tawiniya.tounisiya.dto.UpdateProfileRequest;
 import tn.tawiniya.tounisiya.exception.InvalidPasswordException;
 import tn.tawiniya.tounisiya.dto.UserMapper;
@@ -168,5 +170,23 @@ public class UserProfileService {
         user.setCarteServiceDocumentPath(fileStorageService.storeAttachment(file));
         userRepository.save(user);
         return userMapper.toResponse(user);
+    }
+    @Transactional(readOnly = true)
+    public PrivacySettingsResponse getPrivacySettings(User currentUser) {
+        User user = userRepository.findById(currentUser.getId())
+                .orElseThrow(() -> new IllegalStateException("Utilisateur introuvable"));
+        return PrivacySettingsResponse.builder()
+                .privateFields(user.getPrivateFields())
+                .build();
+    }
+    @Transactional
+    public PrivacySettingsResponse updatePrivacySettings(User currentUser, UpdatePrivacyRequest request) {
+        User user = userRepository.findById(currentUser.getId())
+                .orElseThrow(() -> new IllegalStateException("Utilisateur introuvable"));
+        user.setPrivateFields(request.getPrivateFields() == null ? new java.util.HashSet<>() : request.getPrivateFields());
+        userRepository.save(user);
+        return PrivacySettingsResponse.builder()
+                .privateFields(user.getPrivateFields())
+                .build();
     }
 }
