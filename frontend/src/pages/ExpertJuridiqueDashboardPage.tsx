@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import {
   LayoutDashboard, MessageSquareWarning, LogOut, Camera, Image as ImageIcon, Loader2, User as UserIcon,
-  UserCog, Check, X, Pencil, FileText, Paperclip, Inbox, Clock, CheckCircle2, MessagesSquare, Newspaper, ChevronsLeft, ChevronsRight, Calendar,
+  UserCog, Check, X, Pencil, FileText, Paperclip, Inbox, Clock, CheckCircle2, MessagesSquare, Newspaper, ChevronsLeft, ChevronsRight, Calendar, Eye, EyeOff,
 } from 'lucide-react';
-import { getMyUserProfile, updateMyUserProfile, uploadMyPhotoProfil, uploadMyPhotoCouverture, uploadDiplomeDocument, uploadCarteServiceDocument } from '../services/userProfileService';
+import { getMyUserProfile, updateMyUserProfile, uploadMyPhotoProfil, uploadMyPhotoCouverture, uploadDiplomeDocument, uploadCarteServiceDocument, getPrivacySettings, updatePrivacySettings } from '../services/userProfileService';
 import { getMyConversations } from '../services/expertConversationService';
 import ExpertConversationThread from '../components/ExpertConversationThread';
 import ActualitesPage from './ActualitesPage';
@@ -42,6 +42,21 @@ function ProfilTab({ user, onSaved }: { user: User; onSaved: (u: User) => void }
   const [error, setError] = useState<string | null>(null);
   const [diplomeUploading, setDiplomeUploading] = useState(false);
   const [carteServiceUploading, setCarteServiceUploading] = useState(false);
+  const [hiddenFields, setHiddenFields] = useState<Set<string>>(new Set());
+  useEffect(() => {
+    getPrivacySettings()
+      .then((res) => setHiddenFields(new Set(res.privateFields)))
+      .catch(() => {});
+  }, []);
+  function togglePrivacy(key: string) {
+    setHiddenFields((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      updatePrivacySettings(Array.from(next)).catch(() => {});
+      return next;
+    });
+  }
   useEffect(() => {
     setForm({
       nom: user.nom ?? '',
@@ -132,12 +147,27 @@ function ProfilTab({ user, onSaved }: { user: User; onSaved: (u: User) => void }
         {error && <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2 mb-4">{error}</p>}
         {!editing ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3">
-            {fields.map((f) => (
-              <div key={f.key} className={f.textarea ? 'sm:col-span-2' : ''}>
-                <p className="text-[11px] text-navy/40 font-semibold uppercase tracking-wide">{f.label}</p>
-                <p className="text-sm text-navy mt-0.5 whitespace-pre-line">{form[f.key] || '—'}</p>
-              </div>
-            ))}
+            {fields.map((f) => {
+              const isHidden = hiddenFields.has(f.key);
+              return (
+                <div key={f.key} className={f.textarea ? 'sm:col-span-2' : ''}>
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="text-[11px] text-navy/40 font-semibold uppercase tracking-wide">{f.label}</p>
+                    <button
+                      type="button"
+                      onClick={() => togglePrivacy(f.key)}
+                      title={isHidden ? 'Privé — cliquer pour rendre public' : 'Public — cliquer pour rendre privé'}
+                      className={`shrink-0 p-1 rounded-full transition-colors ${
+                        isHidden ? 'text-navy/30 hover:text-navy/50' : 'text-teal hover:text-teal/70'
+                      }`}
+                    >
+                      {isHidden ? <EyeOff size={13} /> : <Eye size={13} />}
+                    </button>
+                  </div>
+                  <p className="text-sm text-navy mt-0.5 whitespace-pre-line">{form[f.key] || '—'}</p>
+                </div>
+              );
+            })}
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
