@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
-import { Link, NavLink as RouterNavLink } from 'react-router-dom';
+import { Link, NavLink as RouterNavLink, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Menu, X, ChevronDown, User as UserIcon, Users, Sun, Moon } from 'lucide-react';
 import { useUiStore } from '../../store/uiStore';
@@ -56,6 +56,8 @@ function NavBadge({ count }: { count: number }) {
 }
 export default function Navbar() {
   const { t, i18n } = useTranslation();
+  const location = useLocation();
+  const isLoginPage = location.pathname === '/login';
   const [isSpacesOpen, setIsSpacesOpen] = useState(false);
   const [isAccountOpen, setIsAccountOpen] = useState(false);
   const [isLangOpen, setIsLangOpen] = useState(false);
@@ -300,10 +302,10 @@ export default function Navbar() {
             </div>
           ) : (
             <Link
-              to="/register"
+              to={isLoginPage ? '/register' : '/login'}
               className="shrink-0 whitespace-nowrap rounded-full bg-gold px-4 py-1.5 text-[13px] font-semibold text-navy-dark hover:bg-gold-light transition-colors"
             >
-              {t('nav.register')}
+              {isLoginPage ? t('nav.register') : t('nav.login')}
             </Link>
           )}
         </div>
@@ -398,11 +400,11 @@ export default function Navbar() {
             </button>
           ) : (
             <Link
-              to="/register"
+              to={isLoginPage ? '/register' : '/login'}
               onClick={closeMobileMenu}
               className="mt-2 rounded-full bg-gold px-5 py-2 text-sm font-semibold text-navy-dark text-center"
             >
-              {t('nav.register')}
+              {isLoginPage ? t('nav.register') : t('nav.login')}
             </Link>
           )}
         </div>

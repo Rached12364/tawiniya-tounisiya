@@ -16,7 +16,8 @@
     "juridique": "Juridique",
     "reclamation": "Réclamation",
     "evenements": "Événements",
-    "register": "S'inscrire"
+    "register": "S'inscrire",
+    "login": "Se connecter"
   },
   "footer": {
     "tagline": "La plateforme qui connecte techniciens et entreprises partout en Tunisie.",
